@@ -29,6 +29,7 @@ webhook-inbox/
 │   └── webhook-inbox/       # main.go (entrypoint)
 ├── internal/                # all app logic, not exported
 │   ├── api/                 # HTTP handlers (versioned if needed)
+│   ├── config/              # app config
 │   ├── db/                  # SQLC or data access logic
 │   ├── ingest/              # validation + event persistence
 │   └── models/              # types (Event, Endpoint, etc.)
@@ -39,8 +40,10 @@ webhook-inbox/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── go.mod
+├── go.sum
 ├── LICENSE
-└── README.md
+├── README.md
+└── sqlc.yaml
 ```
 
 ## 🚧 Status
