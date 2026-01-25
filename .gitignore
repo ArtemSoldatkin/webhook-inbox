@@ -1,0 +1,34 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace artifacts
+bin/
+build/
+dist/
+coverage.out
+
+# Vendor dir (if you vendor deps)
+vendor/
+
+# IDE/editor configs
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env files
+.env
+.env.*

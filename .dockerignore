@@ -1,0 +1,29 @@
+# Ignore everything not needed for the Docker build
+
+# Version control
+.git
+.gitignore
+
+# Editor/IDE junk
+.vscode
+.idea
+*.swp
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Local env and secrets
+.env
+.env.*
+
+# Go build cache + artifacts
+bin/
+build/
+dist/
+*.out
+*.test
+
+# Docs or unused files
+README.md
+LICENSE
