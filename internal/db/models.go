@@ -29,7 +29,7 @@ type Event struct {
 	Size        int32
 	SourceIp    netip.Addr
 	ContentType string
-	EventHash   string
+	EventHash   pgtype.Text
 }
 
 type User struct {

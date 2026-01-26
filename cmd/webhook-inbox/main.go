@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -18,5 +19,8 @@ func main() {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
-	http.ListenAndServe(fmt.Sprintf(":%s", config.API_PORT), r)
+	err := http.ListenAndServe(fmt.Sprintf(":%s", config.ApiPort), r)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

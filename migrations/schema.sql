@@ -5,6 +5,19 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+NEW.updated_at = NOW();
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_set_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
 CREATE TABLE endpoints (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
@@ -28,7 +41,7 @@ CREATE TABLE events (
     size INT NOT NULL,
     source_ip INET NOT NULL,
     content_type TEXT NOT NULL,
-    event_hash TEXT NOT NULL UNIQUE
+    event_hash TEXT
 );
 
 CREATE INDEX idx_events_endpoint_id_received_at_id ON events(endpoint_id, received_at DESC, id DESC);

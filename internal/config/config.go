@@ -2,17 +2,22 @@
 package config
 
 import (
+	"log"
 	"os"
 )
 
 // Config holds the application configuration values.
 type Config struct {
-	API_PORT string
+	ApiPort string
 }
 
 // LoadConfig loads configuration from environment variables.
 func LoadConfig() Config {
+	apiPort := os.Getenv("API_PORT")
+	if apiPort == "" {
+		log.Fatal("API_PORT environment variable is required")
+	}
 	return Config{
-		API_PORT: os.Getenv("API_PORT"),
+		ApiPort: os.Getenv("API_PORT"),
 	}
 }

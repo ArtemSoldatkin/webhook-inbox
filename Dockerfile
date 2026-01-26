@@ -16,6 +16,9 @@ WORKDIR /app
 
 COPY --from=builder /app/webhook-inbox .
 
+RUN groupadd -r webhookinbox && useradd -r -g webhookinbox webhookinbox && chown -R webhookinbox:webhookinbox /app
+USER webhookinbox
+
 EXPOSE 8080
 
 CMD ["./webhook-inbox"]
