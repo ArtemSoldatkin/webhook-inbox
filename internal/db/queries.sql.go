@@ -7,15 +7,49 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const tmp = `-- name: Tmp :one
-SELECT 1
+const registerEndpoint = `-- name: RegisterEndpoint :one
+INSERT INTO endpoints (
+    user_id,
+    public_key,
+    name,
+    description
+)
+VALUES (
+    $1,
+    $2,
+    $3,
+    $4
+)
+RETURNING id, user_id, public_key, name, description, created_at, last_received_at
 `
 
-func (q *Queries) Tmp(ctx context.Context) (int32, error) {
-	row := q.db.QueryRow(ctx, tmp)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+type RegisterEndpointParams struct {
+	UserID      pgtype.Int8
+	PublicKey   string
+	Name        string
+	Description pgtype.Text
+}
+
+func (q *Queries) RegisterEndpoint(ctx context.Context, arg RegisterEndpointParams) (Endpoint, error) {
+	row := q.db.QueryRow(ctx, registerEndpoint,
+		arg.UserID,
+		arg.PublicKey,
+		arg.Name,
+		arg.Description,
+	)
+	var i Endpoint
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.PublicKey,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.LastReceivedAt,
+	)
+	return i, err
 }

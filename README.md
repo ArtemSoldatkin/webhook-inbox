@@ -17,9 +17,9 @@ This project allows developers to create unique HTTP endpoints that capture and 
 
 - **Go** (API)
 - **PostgreSQL** (event storage)
-- **Chi** or **Gin** (router)
-- **SQLC** or raw SQL (DB layer)
-- (Optional) React + Vite for frontend
+- **Chi** (router)
+- **SQLC** (DB layer)
+- (Optional) Svetle + Vite for frontend
 
 ## 📦 Project Structure
 
@@ -32,7 +32,8 @@ webhook-inbox/
 │   ├── config/              # app config
 │   ├── db/                  # SQLC or data access logic
 │   ├── ingest/              # validation + event persistence
-│   └── models/              # types (Event, Endpoint, etc.)
+│   ├── models/              # types (Event, Endpoint, etc.)
+│   └── service/             # business logic of the app
 ├── migrations/              # SQL files for schema
 ├── web/                     # optional UI (React, HTMX, etc.)
 ├── .dockerignore
