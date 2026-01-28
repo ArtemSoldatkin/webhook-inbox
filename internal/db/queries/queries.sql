@@ -1,14 +1,16 @@
 -- name: RegisterEndpoint :one
 INSERT INTO endpoints (
     user_id,
-    public_key,
+    url,
     name,
-    description
+    description,
+    headers
 )
 VALUES (
     $1,
     $2,
     $3,
-    $4
+    $4,
+    $5
 )
 RETURNING *;

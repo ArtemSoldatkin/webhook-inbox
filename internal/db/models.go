@@ -10,25 +10,37 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Delivery struct {
+	ID           int64
+	EventID      pgtype.Int8
+	EndpointID   pgtype.Int8
+	StatusCode   pgtype.Int4
+	ErrorMessage pgtype.Text
+	CreatedAt    pgtype.Timestamp
+}
+
 type Endpoint struct {
-	ID             int64
-	UserID         pgtype.Int8
-	PublicKey      string
-	Name           string
-	Description    pgtype.Text
-	CreatedAt      pgtype.Timestamp
-	LastReceivedAt pgtype.Timestamp
+	ID          int64
+	UserID      pgtype.Int8
+	Url         string
+	Name        string
+	Description pgtype.Text
+	Headers     []byte
+	IsActive    pgtype.Bool
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 }
 
 type Event struct {
 	ID          int64
-	EndpointID  pgtype.Int8
+	WebhookID   pgtype.Int8
 	ReceivedAt  pgtype.Timestamp
+	Method      string
+	QueryParams []byte
 	Headers     []byte
 	Body        []byte
 	Size        int32
 	SourceIp    netip.Addr
-	ContentType string
 	EventHash   pgtype.Text
 }
 
@@ -36,5 +48,15 @@ type User struct {
 	ID        int64
 	Email     string
 	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+}
+
+type Webhook struct {
+	ID          int64
+	EndpointID  pgtype.Int8
+	PublicKey   string
+	Name        string
+	Description pgtype.Text
+	IsActive    pgtype.Bool
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 }

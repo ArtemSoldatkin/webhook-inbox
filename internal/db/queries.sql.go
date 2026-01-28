@@ -14,42 +14,48 @@ import (
 const registerEndpoint = `-- name: RegisterEndpoint :one
 INSERT INTO endpoints (
     user_id,
-    public_key,
+    url,
     name,
-    description
+    description,
+    headers
 )
 VALUES (
     $1,
     $2,
     $3,
-    $4
+    $4,
+    $5
 )
-RETURNING id, user_id, public_key, name, description, created_at, last_received_at
+RETURNING id, user_id, url, name, description, headers, is_active, created_at, updated_at
 `
 
 type RegisterEndpointParams struct {
 	UserID      pgtype.Int8
-	PublicKey   string
+	Url         string
 	Name        string
 	Description pgtype.Text
+	Headers     []byte
 }
 
 func (q *Queries) RegisterEndpoint(ctx context.Context, arg RegisterEndpointParams) (Endpoint, error) {
 	row := q.db.QueryRow(ctx, registerEndpoint,
 		arg.UserID,
-		arg.PublicKey,
+		arg.Url,
 		arg.Name,
 		arg.Description,
+		arg.Headers,
 	)
 	var i Endpoint
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.PublicKey,
+		&i.Url,
 		&i.Name,
 		&i.Description,
+		&i.Headers,
+		&i.IsActive,
 		&i.CreatedAt,
-		&i.LastReceivedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

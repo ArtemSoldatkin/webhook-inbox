@@ -2,6 +2,8 @@ DROP TABLE users;
 
 DROP TABLE endpoints;
 
+DROP TABLE webhooks;
+
 DROP TABLE events;
 
-DROP FUNCTION set_updated_at();
+DROP TABLE deliveries;
