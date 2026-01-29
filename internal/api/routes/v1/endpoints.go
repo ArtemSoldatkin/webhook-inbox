@@ -2,36 +2,68 @@ package routev1
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
 )
 
-// postEndpointRequest represents the expected structure of a POST endpoint request.
-type postEndpointRequest struct {
-	Name string `json:"name"`
-	Description *string `json:"description"`
+// listEndpoints handles listing all endpoints for a given user.
+func listEndpoints(r chi.Router, svc *service.Service) {
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		userIDRaw := r.URL.Query().Get("user_id")
+		if userIDRaw == "" {
+			http.Error(w, "user_id query parameter is required", http.StatusBadRequest)
+			return
+		}
+		userID, err := strconv.ParseInt(userIDRaw, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid user_id query parameter", http.StatusBadRequest)
+			return
+		}
+		endpoints, err := svc.Endpoints.ListEndpoints(userID)
+		if err != nil {
+			http.Error(w, "Failed to list endpoints", http.StatusInternalServerError)
+			return
+		}
+		response, err := json.Marshal(endpoints)
+		if err != nil {
+			http.Error(w, "Failed to list endpoints", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
+	})
 }
 
-// postEndpoints sets up the POST endpoints for the API.
-func postEndpoints(r chi.Router, service *service.Service) {
+// registerEndpointRequest represents the request payload for registering a new endpoint.
+type registerEndpointRequest struct {
+	UserID int64 `json:"user_id"`
+	Url	string `json:"url"`
+	Name   string `json:"name"`
+	Description string `json:"description"`
+	Headers map[string]string `json:"headers"`
+}
+
+
+// registerEndpoint handles the registration of a new endpoint.
+func registerEndpoint(r chi.Router, svc *service.Service) {
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		var req postEndpointRequest
+		var req registerEndpointRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		endpoint, err := service.CreateEndpoint(req.Name, req.Description)
+		user, err := svc.Endpoints.RegisterEndpoint(req.UserID, req.Url, req.Name, req.Description, req.Headers)
 		if err != nil {
-			log.Println("Error creating endpoint:", err)
-			http.Error(w, "Failed to create endpoint", http.StatusInternalServerError)
+			http.Error(w, "Failed to register endpoint", http.StatusInternalServerError)
 			return
 		}
-		response, err := json.Marshal(endpoint)
+		response, err := json.Marshal(user)
 		if err != nil {
-			http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+			http.Error(w, "Failed to register endpoint", http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -40,18 +72,36 @@ func postEndpoints(r chi.Router, service *service.Service) {
 	})
 }
 
-// getEvents sets up the GET events endpoint for the API.
-func getEvents(r chi.Router) {
-	r.Get("/{endpointId}/events", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("GET events reached"))
+// toggleEndpoint handles toggling the active status of an endpoint.
+func toggleEndpoint(r chi.Router, svc *service.Service) {
+	r.Put("/{endpointID}/toggle", func(w http.ResponseWriter, r *http.Request) {
+		endpointIDRaw := chi.URLParam(r, "endpointID")
+		endpointID, err := strconv.ParseInt(endpointIDRaw, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid endpoint ID", http.StatusBadRequest)
+			return
+		}
+		endpoint, err := svc.Endpoints.ToggleEndpoint(endpointID)
+		if err != nil {
+			http.Error(w, "Failed to toggle endpoint", http.StatusInternalServerError)
+			return
+		}
+		response, err := json.Marshal(endpoint)
+		if err != nil {
+			http.Error(w, "Failed to toggle endpoint", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
 	})
 }
 
-
-// endpointsRouter sets up the router for endpoint routes.
-func endpointsRouter(service *service.Service) chi.Router {
-	r := chi.NewRouter()
-	postEndpoints(r, service)
-	getEvents(r)
-	return r
+// deliveriesRouter sets up the router for deliveries-related endpoints.
+func endpointsRouter(svc *service.Service) chi.Router {
+	router := chi.NewRouter()
+	listEndpoints(router, svc)
+	registerEndpoint(router, svc)
+	toggleEndpoint(router, svc)
+	return router
 }

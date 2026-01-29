@@ -9,8 +9,10 @@ import (
 // V1Router sets up and returns the router for API version 1.
 func V1Router(service *service.Service) chi.Router {
 	r := chi.NewRouter()
+	r.Mount("/users", usersRouter(service))
 	r.Mount("/endpoints", endpointsRouter(service))
-	r.Mount("/webhooks", webhooksRouter())
-	r.Mount("/events", eventsRouter())
+	r.Mount("/webhooks", webhooksRouter(service))
+	r.Mount("/events", eventsRouter(service))
+	r.Mount("/deliveries", deliveriesRouter(service))
 	return r
 }

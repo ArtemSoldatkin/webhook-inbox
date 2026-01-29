@@ -6,7 +6,7 @@ import (
 )
 
 // deliveriesRouter sets up the router for deliveries-related endpoints.
-func eventsRouter(svc *service.Service) chi.Router {
+func deliveriesRouter(svc *service.Service) chi.Router {
 	router := chi.NewRouter()
 	return router
 }
