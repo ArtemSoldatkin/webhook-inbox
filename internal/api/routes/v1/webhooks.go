@@ -91,8 +91,6 @@ func toggleWebhook(r chi.Router, svc *service.Service) {
 	})
 }
 
-
-
 // deliveriesRouter sets up the router for deliveries-related endpoints.
 func webhooksRouter(svc *service.Service) chi.Router {
 	router := chi.NewRouter()
