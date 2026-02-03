@@ -21,7 +21,7 @@ func createUser(r chi.Router, svc *service.Service) {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		user, err := svc.Users.CreateUser(req.Email)
+		user, err := svc.CreateUser(r.Context(), req.Email)
 		if err != nil {
 			http.Error(w, "Failed to create user", http.StatusInternalServerError)
 			return

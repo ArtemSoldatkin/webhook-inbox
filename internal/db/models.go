@@ -28,7 +28,6 @@ type Endpoint struct {
 	Headers     []byte
 	IsActive    pgtype.Bool
 	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
 }
 
 type Event struct {

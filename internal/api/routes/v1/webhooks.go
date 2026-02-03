@@ -18,7 +18,7 @@ func listWebhooks(r chi.Router, svc *service.Service) {
 			http.Error(w, "Invalid endpoint ID", http.StatusBadRequest)
 			return
 		}
-		webhooks, err := svc.Webhooks.ListWebhooks(endpointID)
+		webhooks, err := svc.ListWebhooks(r.Context(), endpointID)
 		if err != nil {
 			http.Error(w, "Failed to list webhooks", http.StatusInternalServerError)
 			return
@@ -50,7 +50,7 @@ func createWebhook(r chi.Router, svc *service.Service) {
 			return
 		}
 		// TODO add public key generation
-		user, err := svc.Webhooks.CreateWebhook(req.EndpointID, req.Name, req.Description)
+		user, err := svc.CreateWebhook(r.Context(), req.EndpointID, req.Name, req.Description)
 		if err != nil {
 			http.Error(w, "Failed to create webhook", http.StatusInternalServerError)
 			return
@@ -75,7 +75,7 @@ func toggleWebhook(r chi.Router, svc *service.Service) {
 			http.Error(w, "Invalid webhook ID", http.StatusBadRequest)
 			return
 		}
-		webhook, err := svc.Webhooks.ToggleWebhook(webhookID)
+		webhook, err := svc.ToggleWebhook(r.Context(), webhookID)
 		if err != nil {
 			http.Error(w, "Failed to toggle webhook", http.StatusInternalServerError)
 			return
@@ -96,5 +96,6 @@ func webhooksRouter(svc *service.Service) chi.Router {
 	router := chi.NewRouter()
 	listWebhooks(router, svc)
 	createWebhook(router, svc)
+	toggleWebhook(router, svc)
 	return router
 }

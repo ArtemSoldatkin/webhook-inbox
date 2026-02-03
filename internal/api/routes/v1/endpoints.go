@@ -22,7 +22,7 @@ func listEndpoints(r chi.Router, svc *service.Service) {
 			http.Error(w, "Invalid user_id query parameter", http.StatusBadRequest)
 			return
 		}
-		endpoints, err := svc.Endpoints.ListEndpoints(userID)
+		endpoints, err := svc.ListEndpoints(r.Context(), userID)
 		if err != nil {
 			http.Error(w, "Failed to list endpoints", http.StatusInternalServerError)
 			return
@@ -56,7 +56,7 @@ func registerEndpoint(r chi.Router, svc *service.Service) {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		user, err := svc.Endpoints.RegisterEndpoint(req.UserID, req.Url, req.Name, req.Description, req.Headers)
+		user, err := svc.RegisterEndpoint(r.Context(), req.UserID, req.Url, req.Name, req.Description, req.Headers)
 		if err != nil {
 			http.Error(w, "Failed to register endpoint", http.StatusInternalServerError)
 			return
@@ -81,7 +81,7 @@ func toggleEndpoint(r chi.Router, svc *service.Service) {
 			http.Error(w, "Invalid endpoint ID", http.StatusBadRequest)
 			return
 		}
-		endpoint, err := svc.Endpoints.ToggleEndpoint(endpointID)
+		endpoint, err := svc.ToggleEndpoint(r.Context(), endpointID)
 		if err != nil {
 			http.Error(w, "Failed to toggle endpoint", http.StatusInternalServerError)
 			return

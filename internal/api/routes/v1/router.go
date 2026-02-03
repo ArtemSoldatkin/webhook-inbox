@@ -12,7 +12,7 @@ func V1Router(service *service.Service) chi.Router {
 	r.Mount("/users", usersRouter(service))
 	r.Mount("/endpoints", endpointsRouter(service))
 	r.Mount("/webhooks", webhooksRouter(service))
-	r.Mount("/events", eventsRouter(service))
-	r.Mount("/deliveries", deliveriesRouter(service))
+	// r.Mount("/events", eventsRouter(service))
+	// r.Mount("/deliveries", deliveriesRouter(service))
 	return r
 }
