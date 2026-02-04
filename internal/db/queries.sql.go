@@ -7,15 +7,346 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const tmp = `-- name: Tmp :one
-SELECT 1
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (
+    email
+)
+VALUES (
+    $1
+)
+RETURNING id, email, created_at
 `
 
-func (q *Queries) Tmp(ctx context.Context) (int32, error) {
-	row := q.db.QueryRow(ctx, tmp)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+func (q *Queries) CreateUser(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, createUser, email)
+	var i User
+	err := row.Scan(&i.ID, &i.Email, &i.CreatedAt)
+	return i, err
+}
+
+const createWebhook = `-- name: CreateWebhook :one
+INSERT INTO webhooks (
+    endpoint_id,
+    public_key,
+    name,
+    description
+)
+VALUES (
+    $1, $2, $3, $4
+)
+RETURNING id, endpoint_id, public_key, name, description, is_active, created_at, updated_at
+`
+
+type CreateWebhookParams struct {
+	EndpointID  pgtype.Int8
+	PublicKey   string
+	Name        string
+	Description pgtype.Text
+}
+
+func (q *Queries) CreateWebhook(ctx context.Context, arg CreateWebhookParams) (Webhook, error) {
+	row := q.db.QueryRow(ctx, createWebhook,
+		arg.EndpointID,
+		arg.PublicKey,
+		arg.Name,
+		arg.Description,
+	)
+	var i Webhook
+	err := row.Scan(
+		&i.ID,
+		&i.EndpointID,
+		&i.PublicKey,
+		&i.Name,
+		&i.Description,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const listDeliveries = `-- name: ListDeliveries :many
+SELECT
+    id,
+    event_id,
+    endpoint_id,
+    status_code,
+    error_message,
+    created_at
+FROM
+    deliveries
+WHERE
+    endpoint_id = $1
+ORDER BY
+    created_at DESC
+`
+
+func (q *Queries) ListDeliveries(ctx context.Context, endpointID pgtype.Int8) ([]Delivery, error) {
+	rows, err := q.db.Query(ctx, listDeliveries, endpointID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Delivery
+	for rows.Next() {
+		var i Delivery
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.EndpointID,
+			&i.StatusCode,
+			&i.ErrorMessage,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEndpoints = `-- name: ListEndpoints :many
+SELECT
+    id,
+    user_id,
+    url,
+    name,
+    description,
+    headers,
+    is_active,
+    created_at
+FROM
+    endpoints
+WHERE
+    user_id = $1
+ORDER BY
+    created_at DESC
+`
+
+func (q *Queries) ListEndpoints(ctx context.Context, userID pgtype.Int8) ([]Endpoint, error) {
+	rows, err := q.db.Query(ctx, listEndpoints, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Endpoint
+	for rows.Next() {
+		var i Endpoint
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Url,
+			&i.Name,
+			&i.Description,
+			&i.Headers,
+			&i.IsActive,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEvents = `-- name: ListEvents :many
+SELECT
+    id,
+    webhook_id,
+    received_at,
+    method,
+    query_params,
+    headers,
+    body,
+    size,
+    source_ip,
+    event_hash
+FROM
+    events
+WHERE
+    webhook_id = $1
+ORDER BY
+    received_at DESC
+`
+
+func (q *Queries) ListEvents(ctx context.Context, webhookID pgtype.Int8) ([]Event, error) {
+	rows, err := q.db.Query(ctx, listEvents, webhookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Event
+	for rows.Next() {
+		var i Event
+		if err := rows.Scan(
+			&i.ID,
+			&i.WebhookID,
+			&i.ReceivedAt,
+			&i.Method,
+			&i.QueryParams,
+			&i.Headers,
+			&i.Body,
+			&i.Size,
+			&i.SourceIp,
+			&i.EventHash,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listWebhooks = `-- name: ListWebhooks :many
+SELECT
+    id,
+    endpoint_id,
+    public_key,
+    name,
+    description,
+    is_active,
+    created_at,
+    updated_at
+FROM
+    webhooks
+WHERE
+    endpoint_id = $1
+ORDER BY
+    updated_at DESC
+`
+
+func (q *Queries) ListWebhooks(ctx context.Context, endpointID pgtype.Int8) ([]Webhook, error) {
+	rows, err := q.db.Query(ctx, listWebhooks, endpointID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Webhook
+	for rows.Next() {
+		var i Webhook
+		if err := rows.Scan(
+			&i.ID,
+			&i.EndpointID,
+			&i.PublicKey,
+			&i.Name,
+			&i.Description,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const registerEndpoint = `-- name: RegisterEndpoint :one
+INSERT INTO endpoints (
+    user_id,
+    url,
+    name,
+    description,
+    headers
+)
+VALUES (
+    $1, $2, $3, $4, $5
+)
+RETURNING id, user_id, url, name, description, headers, is_active, created_at
+`
+
+type RegisterEndpointParams struct {
+	UserID      pgtype.Int8
+	Url         string
+	Name        string
+	Description pgtype.Text
+	Headers     []byte
+}
+
+func (q *Queries) RegisterEndpoint(ctx context.Context, arg RegisterEndpointParams) (Endpoint, error) {
+	row := q.db.QueryRow(ctx, registerEndpoint,
+		arg.UserID,
+		arg.Url,
+		arg.Name,
+		arg.Description,
+		arg.Headers,
+	)
+	var i Endpoint
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.Name,
+		&i.Description,
+		&i.Headers,
+		&i.IsActive,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const toggleEndpoint = `-- name: ToggleEndpoint :one
+UPDATE endpoints
+SET
+    is_active = NOT is_active
+WHERE
+    id = $1
+RETURNING id, user_id, url, name, description, headers, is_active, created_at
+`
+
+func (q *Queries) ToggleEndpoint(ctx context.Context, id int64) (Endpoint, error) {
+	row := q.db.QueryRow(ctx, toggleEndpoint, id)
+	var i Endpoint
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.Name,
+		&i.Description,
+		&i.Headers,
+		&i.IsActive,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const toggleWebhook = `-- name: ToggleWebhook :one
+UPDATE webhooks
+SET
+    is_active = NOT is_active
+WHERE
+    id = $1
+RETURNING id, endpoint_id, public_key, name, description, is_active, created_at, updated_at
+`
+
+func (q *Queries) ToggleWebhook(ctx context.Context, id int64) (Webhook, error) {
+	row := q.db.QueryRow(ctx, toggleWebhook, id)
+	var i Webhook
+	err := row.Scan(
+		&i.ID,
+		&i.EndpointID,
+		&i.PublicKey,
+		&i.Name,
+		&i.Description,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
