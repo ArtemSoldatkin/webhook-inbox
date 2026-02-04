@@ -85,3 +85,38 @@ SET
 WHERE
     id = $1
 RETURNING *;
+
+
+-- name: ListEvents :many
+SELECT
+    id,
+    webhook_id,
+    received_at,
+    method,
+    query_params,
+    headers,
+    body,
+    size,
+    source_ip,
+    event_hash
+FROM
+    events
+WHERE
+    webhook_id = $1
+ORDER BY
+    received_at DESC;
+
+-- name: ListDeliveries :many
+SELECT
+    id,
+    event_id,
+    endpoint_id,
+    status_code,
+    error_message,
+    created_at
+FROM
+    deliveries
+WHERE
+    endpoint_id = $1
+ORDER BY
+    created_at DESC;

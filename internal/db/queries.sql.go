@@ -69,6 +69,49 @@ func (q *Queries) CreateWebhook(ctx context.Context, arg CreateWebhookParams) (W
 	return i, err
 }
 
+const listDeliveries = `-- name: ListDeliveries :many
+SELECT
+    id,
+    event_id,
+    endpoint_id,
+    status_code,
+    error_message,
+    created_at
+FROM
+    deliveries
+WHERE
+    endpoint_id = $1
+ORDER BY
+    created_at DESC
+`
+
+func (q *Queries) ListDeliveries(ctx context.Context, endpointID pgtype.Int8) ([]Delivery, error) {
+	rows, err := q.db.Query(ctx, listDeliveries, endpointID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Delivery
+	for rows.Next() {
+		var i Delivery
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.EndpointID,
+			&i.StatusCode,
+			&i.ErrorMessage,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listEndpoints = `-- name: ListEndpoints :many
 SELECT
     id,
@@ -105,6 +148,57 @@ func (q *Queries) ListEndpoints(ctx context.Context, userID pgtype.Int8) ([]Endp
 			&i.Headers,
 			&i.IsActive,
 			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEvents = `-- name: ListEvents :many
+SELECT
+    id,
+    webhook_id,
+    received_at,
+    method,
+    query_params,
+    headers,
+    body,
+    size,
+    source_ip,
+    event_hash
+FROM
+    events
+WHERE
+    webhook_id = $1
+ORDER BY
+    received_at DESC
+`
+
+func (q *Queries) ListEvents(ctx context.Context, webhookID pgtype.Int8) ([]Event, error) {
+	rows, err := q.db.Query(ctx, listEvents, webhookID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Event
+	for rows.Next() {
+		var i Event
+		if err := rows.Scan(
+			&i.ID,
+			&i.WebhookID,
+			&i.ReceivedAt,
+			&i.Method,
+			&i.QueryParams,
+			&i.Headers,
+			&i.Body,
+			&i.Size,
+			&i.SourceIp,
+			&i.EventHash,
 		); err != nil {
 			return nil, err
 		}

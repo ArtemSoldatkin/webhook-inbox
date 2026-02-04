@@ -7,6 +7,6 @@ import (
 )
 
 // CreateUser creates a new user with the given email.
-func (svc *Service) CreateUser(context context.Context, email string) (db.User, error) {
-	return svc.queries.CreateUser(context, email)
+func (svc *Service) CreateUser(ctx context.Context, email string) (db.User, error) {
+	return svc.queries.CreateUser(ctx, email)
 }
