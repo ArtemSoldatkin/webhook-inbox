@@ -7,6 +7,7 @@ import (
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/sirupsen/logrus"
 )
 
 // listEvents handles listing all events for a given webhook.
@@ -14,21 +15,25 @@ func listEvents(r chi.Router, svc *service.Service) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		webhookIDRaw := r.URL.Query().Get("webhook_id")
 		if webhookIDRaw == "" {
+			logrus.Error("Missing webhook_id query parameter")
 			http.Error(w, "webhook_id query parameter is required", http.StatusBadRequest)
 			return
 		}
 		webhookID, err := strconv.ParseInt(webhookIDRaw, 10, 64)
 		if err != nil {
+			logrus.WithError(err).Error("Invalid webhook_id query parameter")
 			http.Error(w, "Invalid webhook_id query parameter", http.StatusBadRequest)
 			return
 		}
 		events, err := svc.ListEvents(r.Context(), webhookID)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to list events")
 			http.Error(w, "Failed to list events", http.StatusInternalServerError)
 			return
 		}
 		response, err := json.Marshal(events)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal events")
 			http.Error(w, "Failed to list events", http.StatusInternalServerError)
 			return
 		}
