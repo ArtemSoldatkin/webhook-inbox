@@ -56,12 +56,12 @@ func registerEndpoint(r chi.Router, svc *service.Service) {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		user, err := svc.RegisterEndpoint(r.Context(), req.UserID, req.Url, req.Name, req.Description, req.Headers)
+		endpoint, err := svc.RegisterEndpoint(r.Context(), req.UserID, req.Url, req.Name, req.Description, req.Headers)
 		if err != nil {
 			http.Error(w, "Failed to register endpoint", http.StatusInternalServerError)
 			return
 		}
-		response, err := json.Marshal(user)
+		response, err := json.Marshal(endpoint)
 		if err != nil {
 			http.Error(w, "Failed to register endpoint", http.StatusInternalServerError)
 			return
@@ -97,7 +97,7 @@ func toggleEndpoint(r chi.Router, svc *service.Service) {
 	})
 }
 
-// deliveriesRouter sets up the router for deliveries-related endpoints.
+// endpointsRouter sets up the router for endpoints-related endpoints.
 func endpointsRouter(svc *service.Service) chi.Router {
 	router := chi.NewRouter()
 	listEndpoints(router, svc)

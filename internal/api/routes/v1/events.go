@@ -39,7 +39,7 @@ func listEvents(r chi.Router, svc *service.Service) {
 }
 
 
-// deliveriesRouter sets up the router for deliveries-related endpoints.
+// eventsRouter sets up the router for events-related endpoints.
 func eventsRouter(svc *service.Service) chi.Router {
 	router := chi.NewRouter()
 	listEvents(router, svc)

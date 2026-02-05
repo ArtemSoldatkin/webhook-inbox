@@ -37,7 +37,7 @@ func createUser(r chi.Router, svc *service.Service) {
 	})
 }
 
-// deliveriesRouter sets up the router for deliveries-related endpoints.
+// usersRouter sets up the router for users-related endpoints.
 func usersRouter(svc *service.Service) chi.Router {
 	router := chi.NewRouter()
 	createUser(router, svc)

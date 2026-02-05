@@ -329,7 +329,8 @@ func (q *Queries) ToggleEndpoint(ctx context.Context, id int64) (Endpoint, error
 const toggleWebhook = `-- name: ToggleWebhook :one
 UPDATE webhooks
 SET
-    is_active = NOT is_active
+    is_active = NOT is_active,
+    updated_at = NOW()
 WHERE
     id = $1
 RETURNING id, endpoint_id, public_key, name, description, is_active, created_at, updated_at
