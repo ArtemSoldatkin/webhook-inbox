@@ -81,7 +81,8 @@ RETURNING *;
 -- name: ToggleWebhook :one
 UPDATE webhooks
 SET
-    is_active = NOT is_active
+    is_active = NOT is_active,
+    updated_at = NOW()
 WHERE
     id = $1
 RETURNING *;

@@ -19,7 +19,7 @@ This project allows developers to create unique HTTP endpoints that capture and 
 - **PostgreSQL** (event storage)
 - **Chi** (router)
 - **SQLC** (DB layer)
-- (Optional) Svetle + Vite for frontend
+- (Optional) Svelte + Vite for frontend
 
 ## 📦 Project Structure
 

@@ -3,8 +3,9 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Config holds the application configuration values.
@@ -26,7 +27,7 @@ func getIntEnv(envVar string, defaultValue int) int {
 	var value int
 	_, err := fmt.Sscanf(valueStr, "%d", &value)
 	if err != nil {
-		log.Fatalf("Invalid value for %s: %v", envVar, err)
+		logrus.Fatalf("Invalid value for %s: %v", envVar, err)
 	}
 	return value
 }
@@ -40,7 +41,7 @@ func LoadConfig() Config {
 	dbName := os.Getenv("POSTGRES_DB")
 	apiPort := os.Getenv("API_PORT")
 	if apiPort == "" {
-		log.Fatal("API_PORT environment variable is required")
+		logrus.Fatal("API_PORT environment variable is required")
 	}
 	return Config{
 		DBUser:    dbUser,

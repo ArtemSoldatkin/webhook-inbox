@@ -7,6 +7,7 @@ import (
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/sirupsen/logrus"
 )
 
 // listEndpoints handles listing all endpoints for a given user.
@@ -14,21 +15,25 @@ func listEndpoints(r chi.Router, svc *service.Service) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		userIDRaw := r.URL.Query().Get("user_id")
 		if userIDRaw == "" {
+			logrus.Error("Missing user_id query parameter")
 			http.Error(w, "user_id query parameter is required", http.StatusBadRequest)
 			return
 		}
 		userID, err := strconv.ParseInt(userIDRaw, 10, 64)
 		if err != nil {
+			logrus.WithError(err).Error("Invalid user_id query parameter")
 			http.Error(w, "Invalid user_id query parameter", http.StatusBadRequest)
 			return
 		}
 		endpoints, err := svc.ListEndpoints(r.Context(), userID)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to list endpoints")
 			http.Error(w, "Failed to list endpoints", http.StatusInternalServerError)
 			return
 		}
 		response, err := json.Marshal(endpoints)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal endpoints")
 			http.Error(w, "Failed to list endpoints", http.StatusInternalServerError)
 			return
 		}
@@ -53,16 +58,19 @@ func registerEndpoint(r chi.Router, svc *service.Service) {
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		var req registerEndpointRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			logrus.WithError(err).Error("Invalid request body")
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		user, err := svc.RegisterEndpoint(r.Context(), req.UserID, req.Url, req.Name, req.Description, req.Headers)
+		endpoint, err := svc.RegisterEndpoint(r.Context(), req.UserID, req.Url, req.Name, req.Description, req.Headers)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to register endpoint")
 			http.Error(w, "Failed to register endpoint", http.StatusInternalServerError)
 			return
 		}
-		response, err := json.Marshal(user)
+		response, err := json.Marshal(endpoint)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal endpoint")
 			http.Error(w, "Failed to register endpoint", http.StatusInternalServerError)
 			return
 		}
@@ -78,16 +86,19 @@ func toggleEndpoint(r chi.Router, svc *service.Service) {
 		endpointIDRaw := chi.URLParam(r, "endpointID")
 		endpointID, err := strconv.ParseInt(endpointIDRaw, 10, 64)
 		if err != nil {
+			logrus.WithError(err).Error("Invalid endpoint ID")
 			http.Error(w, "Invalid endpoint ID", http.StatusBadRequest)
 			return
 		}
 		endpoint, err := svc.ToggleEndpoint(r.Context(), endpointID)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to toggle endpoint")
 			http.Error(w, "Failed to toggle endpoint", http.StatusInternalServerError)
 			return
 		}
 		response, err := json.Marshal(endpoint)
 		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal endpoint")
 			http.Error(w, "Failed to toggle endpoint", http.StatusInternalServerError)
 			return
 		}
@@ -97,7 +108,7 @@ func toggleEndpoint(r chi.Router, svc *service.Service) {
 	})
 }
 
-// deliveriesRouter sets up the router for deliveries-related endpoints.
+// endpointsRouter sets up the router for endpoints-related endpoints.
 func endpointsRouter(svc *service.Service) chi.Router {
 	router := chi.NewRouter()
 	listEndpoints(router, svc)
