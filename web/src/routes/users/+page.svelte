@@ -1,9 +1,5 @@
 <script lang="ts">
-	interface User {
-		ID: number;
-		Email: string;
-		CreatedAt: Date;
-	}
+	import type { User } from '$lib/types';
 
 	let email: string = '';
 	let data: User | null = null;
@@ -30,6 +26,7 @@
 			email = '';
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
+			console.error('Error creating user:', err);
 		} finally {
 			loading = false;
 		}

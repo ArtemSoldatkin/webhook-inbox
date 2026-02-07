@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
@@ -31,7 +32,25 @@ func listEndpoints(r chi.Router, svc *service.Service) {
 			http.Error(w, "Failed to list endpoints", http.StatusInternalServerError)
 			return
 		}
-		response, err := json.Marshal(endpoints)
+		endpointDTOs := make([]dtov1.Endpoint, len(endpoints))
+		for i, endpoint := range endpoints {
+			var data map[string]any
+			err := json.Unmarshal(endpoint.Headers, &data)
+			if err != nil {
+				logrus.WithError(err).Error("Failed to unmarshal endpoint headers")
+			}
+			endpointDTOs[i] = dtov1.Endpoint{
+				ID:          endpoint.ID,
+				UserID:      endpoint.UserID,
+				Url:         endpoint.Url,
+				Name:        endpoint.Name,
+				Description: endpoint.Description,
+				Headers:     data,
+				IsActive:    endpoint.IsActive,
+				CreatedAt:   endpoint.CreatedAt,
+			}
+		}
+		response, err := json.Marshal(endpointDTOs)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal endpoints")
 			http.Error(w, "Failed to list endpoints", http.StatusInternalServerError)
@@ -45,7 +64,7 @@ func listEndpoints(r chi.Router, svc *service.Service) {
 
 // registerEndpointRequest represents the request payload for registering a new endpoint.
 type registerEndpointRequest struct {
-	UserID int64 `json:"user_id"`
+	UserID int64 `json:"userID"`
 	Url	string `json:"url"`
 	Name   string `json:"name"`
 	Description string `json:"description"`
