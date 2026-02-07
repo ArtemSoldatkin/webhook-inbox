@@ -13,6 +13,11 @@ func (svc *Service) ListEndpoints(ctx context.Context, userID int64) ([]db.Endpo
     return svc.queries.ListEndpoints(ctx, pgtype.Int8{Int64: userID, Valid: true})
 }
 
+// GetEndpointByID retrieves a specific endpoint by its ID.
+func (svc *Service) GetEndpointByID(ctx context.Context, endpointID int64) (db.Endpoint, error) {
+    return svc.queries.GetEndpointByID(ctx, endpointID)
+}
+
 // RegisterEndpoint creates a new endpoint for a user with the provided details.
 func (svc *Service) RegisterEndpoint(ctx context.Context, userID int64, url, name, description string, headers map[string]string) (db.Endpoint, error) {
     jsonHeaders, err := json.Marshal(headers)

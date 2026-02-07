@@ -24,6 +24,21 @@ WHERE
 ORDER BY
     created_at DESC;
 
+-- name: GetEndpointByID :one
+SELECT
+    id,
+    user_id,
+    url,
+    name,
+    description,
+    headers,
+    is_active,
+    created_at
+FROM
+    endpoints
+WHERE
+    id = $1;
+
 
 -- name: RegisterEndpoint :one
 INSERT INTO endpoints (

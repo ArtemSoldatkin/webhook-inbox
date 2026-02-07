@@ -14,16 +14,16 @@ import (
 // listEndpoints handles listing all endpoints for a given user.
 func listEndpoints(r chi.Router, svc *service.Service) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		userIDRaw := r.URL.Query().Get("user_id")
+		userIDRaw := r.URL.Query().Get("userID")
 		if userIDRaw == "" {
-			logrus.Error("Missing user_id query parameter")
-			http.Error(w, "user_id query parameter is required", http.StatusBadRequest)
+			logrus.Error("Missing userID query parameter")
+			http.Error(w, "userID query parameter is required", http.StatusBadRequest)
 			return
 		}
 		userID, err := strconv.ParseInt(userIDRaw, 10, 64)
 		if err != nil {
-			logrus.WithError(err).Error("Invalid user_id query parameter")
-			http.Error(w, "Invalid user_id query parameter", http.StatusBadRequest)
+			logrus.WithError(err).Error("Invalid userID query parameter")
+			http.Error(w, "Invalid userID query parameter", http.StatusBadRequest)
 			return
 		}
 		endpoints, err := svc.ListEndpoints(r.Context(), userID)
@@ -54,6 +54,51 @@ func listEndpoints(r chi.Router, svc *service.Service) {
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal endpoints")
 			http.Error(w, "Failed to list endpoints", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
+	})
+}
+
+// getEndpointByID handles retrieving a specific endpoint by its ID.
+func getEndpointByID(r chi.Router, svc *service.Service) {
+	r.Get("/{endpointID}", func(w http.ResponseWriter, r *http.Request) {
+		endpointIDRaw := chi.URLParam(r, "endpointID")
+		endpointID, err := strconv.ParseInt(endpointIDRaw, 10, 64)
+		if err != nil {
+			logrus.WithError(err).Error("Invalid endpoint ID")
+			http.Error(w, "Invalid endpoint ID", http.StatusBadRequest)
+			return
+		}
+		endpoint, err := svc.GetEndpointByID(r.Context(), endpointID)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to get endpoint")
+			http.Error(w, "Failed to get endpoint", http.StatusInternalServerError)
+			return
+		}
+		var data map[string]any
+		errHeaders := json.Unmarshal(endpoint.Headers, &data)
+		if errHeaders != nil {
+			logrus.WithError(errHeaders).Error("Failed to unmarshal endpoint headers")
+			http.Error(w, "Failed to get endpoint", http.StatusInternalServerError)
+			return
+		}
+		endpointDTO := dtov1.Endpoint{
+			ID:          endpoint.ID,
+			UserID:      endpoint.UserID,
+			Url:         endpoint.Url,
+			Name:        endpoint.Name,
+			Description: endpoint.Description,
+			Headers:     data,
+			IsActive:    endpoint.IsActive,
+			CreatedAt:   endpoint.CreatedAt,
+		}
+		response, err := json.Marshal(endpointDTO)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal endpoint")
+			http.Error(w, "Failed to get endpoint", http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -131,6 +176,7 @@ func toggleEndpoint(r chi.Router, svc *service.Service) {
 func endpointsRouter(svc *service.Service) chi.Router {
 	router := chi.NewRouter()
 	listEndpoints(router, svc)
+	getEndpointByID(router, svc)
 	registerEndpoint(router, svc)
 	toggleEndpoint(router, svc)
 	return router

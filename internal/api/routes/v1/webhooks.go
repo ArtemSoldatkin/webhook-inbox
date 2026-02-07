@@ -12,8 +12,8 @@ import (
 
 // listWebhooks handles listing all webhooks for a given endpoint.
 func listWebhooks(r chi.Router, svc *service.Service) {
-	r.Get("/{endpointID}", func(w http.ResponseWriter, r *http.Request) {
-		endpointIDRaw := chi.URLParam(r, "endpointID")
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		endpointIDRaw := r.URL.Query().Get("endpointID")
 		endpointID, err := strconv.ParseInt(endpointIDRaw, 10, 64)
 		if err != nil {
 			logrus.WithError(err).Error("Invalid endpoint ID")

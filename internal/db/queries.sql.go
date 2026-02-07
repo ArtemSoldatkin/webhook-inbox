@@ -69,6 +69,38 @@ func (q *Queries) CreateWebhook(ctx context.Context, arg CreateWebhookParams) (W
 	return i, err
 }
 
+const getEndpointByID = `-- name: GetEndpointByID :one
+SELECT
+    id,
+    user_id,
+    url,
+    name,
+    description,
+    headers,
+    is_active,
+    created_at
+FROM
+    endpoints
+WHERE
+    id = $1
+`
+
+func (q *Queries) GetEndpointByID(ctx context.Context, id int64) (Endpoint, error) {
+	row := q.db.QueryRow(ctx, getEndpointByID, id)
+	var i Endpoint
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Url,
+		&i.Name,
+		&i.Description,
+		&i.Headers,
+		&i.IsActive,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listDeliveries = `-- name: ListDeliveries :many
 SELECT
     id,

@@ -16,7 +16,6 @@
 
 	function removeKey(keyToRemove: string) {
 		delete json[keyToRemove];
-		console.log('Removing key:', keyToRemove);
 		json = { ...json };
 	}
 </script>

@@ -15,6 +15,7 @@
 			<li><a href="/">Home</a></li>
 			<li><a href="/users">Users</a></li>
 			<li><a href="/endpoints">Endpoints</a></li>
+			<li><a href="/webhooks">Webhooks</a></li>
 		</ul>
 	</nav>
 </header>

@@ -14,3 +14,14 @@ export interface Endpoint {
 	IsActive: boolean;
 	CreatedAt: Date;
 }
+
+export interface Webhook {
+	ID: number;
+	EndpointID: number;
+	PublicKey: string;
+	Name: string;
+	Description: string;
+	IsActive: boolean;
+	CreatedAt: Date;
+	UpdatedAt: Date;
+}
