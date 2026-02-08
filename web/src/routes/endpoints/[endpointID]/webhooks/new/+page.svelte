@@ -6,9 +6,7 @@
 
 <nav>
 	<ul>
-		<li><a href="/endpoints">Endpoints</a></li>
 		<li><a href={`/endpoints/${endpointID}/webhooks`}>Webhooks</a></li>
 	</ul>
 </nav>
-<h2>Endpoint {endpointID}</h2>
-<p>Endpoint {endpointID} full description</p>
+<h2>Register webhook for endpoint {endpointID}</h2>
