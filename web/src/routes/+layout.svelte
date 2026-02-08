@@ -1,7 +1,9 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
+	import { writable } from 'svelte/store';
 
 	let { children } = $props();
+	export const userID = writable<string>('2');
 </script>
 
 <svelte:head>
