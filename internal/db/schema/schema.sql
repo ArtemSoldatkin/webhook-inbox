@@ -1,3 +1,31 @@
+CREATE TABLE sources (
+    id BIGSERIAL PRIMARY KEY,
+    ingress_url TEXT NOT NULL, -- where events arrive from
+    egress_url TEXT NOT NULL, -- where deliveries are sent to
+    static_headers JSONB NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL CHECK (status IN ('active', 'paused', 'quarantined', 'disabled')),
+    status_reason VARCHAR(512),
+    description VARCHAR(512),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    disable_at TIMESTAMP,
+    UNIQUE (ingress_url, egress_url)
+);
+
+
+CREATE TABLE events (
+
+)
+
+CREATE TABLE deliveries (
+
+)
+
+
+
+
+
+
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     email VARCHAR(256) UNIQUE NOT NULL,
@@ -25,6 +53,22 @@ CREATE TABLE webhooks (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Automatically maintain updated_at on row updates for webhooks
+CREATE OR REPLACE FUNCTION set_webhooks_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at := CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_webhooks_updated_at
+BEFORE UPDATE ON webhooks
+FOR EACH ROW
+EXECUTE FUNCTION set_webhooks_updated_at();
 
 CREATE TABLE events (
     id BIGSERIAL PRIMARY KEY,
