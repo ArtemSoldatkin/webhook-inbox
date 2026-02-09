@@ -5,57 +5,43 @@
 package db
 
 import (
-	"net/netip"
-
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Delivery struct {
-	ID           int64
-	EventID      pgtype.Int8
-	EndpointID   pgtype.Int8
-	StatusCode   pgtype.Int4
-	ErrorMessage pgtype.Text
-	CreatedAt    pgtype.Timestamp
-}
-
-type Endpoint struct {
-	ID          int64
-	UserID      pgtype.Int8
-	Url         string
-	Name        string
-	Description pgtype.Text
-	Headers     []byte
-	IsActive    pgtype.Bool
-	CreatedAt   pgtype.Timestamp
+type DeliveryAttempt struct {
+	ID            int64
+	EventID       int64
+	AttemptNumber int32
+	State         string
+	StatusCode    pgtype.Int4
+	ErrorType     pgtype.Text
+	ErrorMessage  pgtype.Text
+	StartedAt     pgtype.Timestamptz
+	FinishedAt    pgtype.Timestamptz
+	CreatedAt     pgtype.Timestamptz
 }
 
 type Event struct {
-	ID          int64
-	WebhookID   pgtype.Int8
-	ReceivedAt  pgtype.Timestamp
-	Method      string
-	QueryParams []byte
-	Headers     []byte
-	Body        []byte
-	Size        int32
-	SourceIp    netip.Addr
-	EventHash   pgtype.Text
+	ID              int64
+	SourceID        int64
+	DedupHash       pgtype.Text
+	Method          string
+	QueryParams     []byte
+	RawHeaders      []byte
+	Body            []byte
+	BodyContentType string
+	ReceivedAt      pgtype.Timestamptz
 }
 
-type User struct {
-	ID        int64
-	Email     string
-	CreatedAt pgtype.Timestamp
-}
-
-type Webhook struct {
-	ID          int64
-	EndpointID  pgtype.Int8
-	PublicKey   string
-	Name        string
-	Description pgtype.Text
-	IsActive    pgtype.Bool
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+type Source struct {
+	ID            int64
+	IngressUrl    string
+	EgressUrl     string
+	StaticHeaders []byte
+	Status        string
+	StatusReason  pgtype.Text
+	Description   pgtype.Text
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	DisableAt     pgtype.Timestamptz
 }

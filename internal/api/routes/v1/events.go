@@ -10,22 +10,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// listEvents handles listing all events for a given webhook.
-func listEvents(r chi.Router, svc *service.Service) {
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		webhookIDRaw := r.URL.Query().Get("webhook_id")
-		if webhookIDRaw == "" {
-			logrus.Error("Missing webhook_id query parameter")
-			http.Error(w, "webhook_id query parameter is required", http.StatusBadRequest)
+// listEvents handles GET requests to list all events.
+func listEvents(svc *service.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sourceIDRaw := r.URL.Query().Get("source_id")
+		if sourceIDRaw == "" {
+			logrus.Error("Missing source_id query parameter")
+			http.Error(w, "source_id query parameter is required", http.StatusBadRequest)
 			return
 		}
-		webhookID, err := strconv.ParseInt(webhookIDRaw, 10, 64)
+		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
 		if err != nil {
-			logrus.WithError(err).Error("Invalid webhook_id query parameter")
-			http.Error(w, "Invalid webhook_id query parameter", http.StatusBadRequest)
+			logrus.WithError(err).Error("Invalid source_id query parameter")
+			http.Error(w, "Invalid source_id query parameter", http.StatusBadRequest)
 			return
 		}
-		events, err := svc.ListEvents(r.Context(), webhookID)
+		events, err := svc.ListEvents(r.Context(), sourceID)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list events")
 			http.Error(w, "Failed to list events", http.StatusInternalServerError)
@@ -40,13 +40,12 @@ func listEvents(r chi.Router, svc *service.Service) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(response)
-	})
+	}
 }
-
 
 // eventsRouter sets up the router for events-related endpoints.
 func eventsRouter(svc *service.Service) chi.Router {
-	router := chi.NewRouter()
-	listEvents(router, svc)
-	return router
+	r := chi.NewRouter()
+	r.Get("/", listEvents(svc))
+	return r
 }

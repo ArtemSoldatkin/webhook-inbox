@@ -1,9 +1,5 @@
-DROP TABLE users;
-
-DROP TABLE endpoints;
-
-DROP TABLE webhooks;
+DROP TABLE sources;
 
 DROP TABLE events;
 
-DROP TABLE deliveries;
+DROP TABLE delivery_attempts;
