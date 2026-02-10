@@ -3,7 +3,7 @@ CREATE TABLE sources (
     ingress_url TEXT NOT NULL, -- where events arrive from
     egress_url TEXT NOT NULL, -- where deliveries are sent to
     static_headers JSONB NOT NULL DEFAULT '{}',
-    status TEXT NOT NULL CHECK (status IN ('active', 'paused', 'quarantined', 'disabled')),
+    status TEXT NOT NULL CHECK (status IN ('active', 'paused', 'quarantined', 'disabled')) DEFAULT 'active',
     status_reason VARCHAR(512),
     description VARCHAR(512),
     created_at TIMESTAMPTZ DEFAULT NOW(),

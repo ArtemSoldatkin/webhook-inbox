@@ -15,6 +15,20 @@ FROM
 ORDER BY
     created_at DESC;
 
+-- name: CreateSource :one
+INSERT INTO sources (
+    ingress_url,
+    egress_url,
+    static_headers,
+    description
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4
+)
+RETURNING *;
+
 -- name: ListEventsBySource :many
 SELECT
     id,

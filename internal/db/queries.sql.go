@@ -7,7 +7,54 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createSource = `-- name: CreateSource :one
+INSERT INTO sources (
+    ingress_url,
+    egress_url,
+    static_headers,
+    description
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4
+)
+RETURNING id, ingress_url, egress_url, static_headers, status, status_reason, description, created_at, updated_at, disable_at
+`
+
+type CreateSourceParams struct {
+	IngressUrl    string
+	EgressUrl     string
+	StaticHeaders []byte
+	Description   pgtype.Text
+}
+
+func (q *Queries) CreateSource(ctx context.Context, arg CreateSourceParams) (Source, error) {
+	row := q.db.QueryRow(ctx, createSource,
+		arg.IngressUrl,
+		arg.EgressUrl,
+		arg.StaticHeaders,
+		arg.Description,
+	)
+	var i Source
+	err := row.Scan(
+		&i.ID,
+		&i.IngressUrl,
+		&i.EgressUrl,
+		&i.StaticHeaders,
+		&i.Status,
+		&i.StatusReason,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisableAt,
+	)
+	return i, err
+}
 
 const listDeliveryAttemptsByEvent = `-- name: ListDeliveryAttemptsByEvent :many
 SELECT

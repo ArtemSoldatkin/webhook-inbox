@@ -10,3 +10,8 @@ import (
 func (svc *Service) ListSources(ctx context.Context) ([]db.Source, error) {
 	return svc.queries.ListSources(ctx)
 }
+
+// CreateSource creates a new source in the database with the provided parameters.
+func (svc *Service) CreateSource(ctx context.Context, source db.CreateSourceParams) (db.Source, error) {
+	return svc.queries.CreateSource(ctx, source)
+}
