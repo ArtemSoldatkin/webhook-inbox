@@ -4,7 +4,7 @@
 
 	type NewSource = Omit<
 		Source,
-		'ID' | 'Status' | 'StatusReason' | 'CreatedAt' | 'UpdatedAt' | 'DisableAt'
+		'ID' | 'IngressUrl' | 'Status' | 'StatusReason' | 'CreatedAt' | 'UpdatedAt' | 'DisableAt'
 	>;
 
 	let data = newData();
@@ -12,7 +12,7 @@
 	let error: string | null = null;
 
 	function newData(): NewSource {
-		return { IngressUrl: '', EgressUrl: '', StaticHeaders: {}, Description: '' };
+		return { EgressUrl: '', StaticHeaders: {}, Description: '' };
 	}
 
 	async function createSource() {
@@ -41,7 +41,7 @@
 	}
 
 	function validateInput() {
-		if (data.IngressUrl.trim() === '' || data.EgressUrl.trim() === '') {
+		if (data.EgressUrl.trim() === '') {
 			return false;
 		}
 		return true;
@@ -58,14 +58,6 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
-	<label for="ingress-url">Ingress URL</label>
-	<input
-		id="ingress-url"
-		type="text"
-		bind:value={data.IngressUrl}
-		placeholder="https://example.com/ingress"
-		required
-	/>
 	<label for="egress-url">Egress URL</label>
 	<input
 		id="egress-url"

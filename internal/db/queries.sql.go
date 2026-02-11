@@ -13,37 +13,29 @@ import (
 
 const createSource = `-- name: CreateSource :one
 INSERT INTO sources (
-    ingress_url,
     egress_url,
     static_headers,
     description
 ) VALUES (
     $1,
     $2,
-    $3,
-    $4
+    $3
 )
-RETURNING id, ingress_url, egress_url, static_headers, status, status_reason, description, created_at, updated_at, disable_at
+RETURNING id, public_id, egress_url, static_headers, status, status_reason, description, created_at, updated_at, disable_at
 `
 
 type CreateSourceParams struct {
-	IngressUrl    string
 	EgressUrl     string
 	StaticHeaders []byte
 	Description   pgtype.Text
 }
 
 func (q *Queries) CreateSource(ctx context.Context, arg CreateSourceParams) (Source, error) {
-	row := q.db.QueryRow(ctx, createSource,
-		arg.IngressUrl,
-		arg.EgressUrl,
-		arg.StaticHeaders,
-		arg.Description,
-	)
+	row := q.db.QueryRow(ctx, createSource, arg.EgressUrl, arg.StaticHeaders, arg.Description)
 	var i Source
 	err := row.Scan(
 		&i.ID,
-		&i.IngressUrl,
+		&i.PublicID,
 		&i.EgressUrl,
 		&i.StaticHeaders,
 		&i.Status,
@@ -159,7 +151,7 @@ func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Eve
 const listSources = `-- name: ListSources :many
 SELECT
     id,
-    ingress_url,
+    public_id,
     egress_url,
     static_headers,
     status,
@@ -185,7 +177,7 @@ func (q *Queries) ListSources(ctx context.Context) ([]Source, error) {
 		var i Source
 		if err := rows.Scan(
 			&i.ID,
-			&i.IngressUrl,
+			&i.PublicID,
 			&i.EgressUrl,
 			&i.StaticHeaders,
 			&i.Status,

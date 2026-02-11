@@ -1,7 +1,7 @@
 -- name: ListSources :many
 SELECT
     id,
-    ingress_url,
+    public_id,
     egress_url,
     static_headers,
     status,
@@ -17,15 +17,13 @@ ORDER BY
 
 -- name: CreateSource :one
 INSERT INTO sources (
-    ingress_url,
     egress_url,
     static_headers,
     description
 ) VALUES (
     $1,
     $2,
-    $3,
-    $4
+    $3
 )
 RETURNING *;
 

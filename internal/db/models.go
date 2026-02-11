@@ -35,7 +35,7 @@ type Event struct {
 
 type Source struct {
 	ID            int64
-	IngressUrl    string
+	PublicID      pgtype.UUID
 	EgressUrl     string
 	StaticHeaders []byte
 	Status        string

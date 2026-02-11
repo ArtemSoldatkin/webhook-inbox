@@ -1,6 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 CREATE TABLE sources (
     id BIGSERIAL PRIMARY KEY,
-    ingress_url TEXT NOT NULL, -- where events arrive from
+    public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(), -- public identifier for external use
     egress_url TEXT NOT NULL, -- where deliveries are sent to
     static_headers JSONB NOT NULL DEFAULT '{}',
     status TEXT NOT NULL CHECK (status IN ('active', 'paused', 'quarantined', 'disabled')) DEFAULT 'active',
@@ -8,8 +10,7 @@ CREATE TABLE sources (
     description VARCHAR(512),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    disable_at TIMESTAMPTZ,
-    UNIQUE (ingress_url, egress_url)
+    disable_at TIMESTAMPTZ
 );
 
 CREATE TABLE events (

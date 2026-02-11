@@ -8,6 +8,7 @@ import (
 	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
@@ -41,7 +42,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			}
 			sourceDTOs[i] = dtov1.SourceDTO{
 				ID:             source.ID,
-				IngressUrl:     source.IngressUrl,
+				IngressUrl:     utils.GenerateIngressURL(source.PublicID.String()),
 				EgressUrl:      source.EgressUrl,
 				StaticHeaders:  staticHeaders,
 				Status:         source.Status,
@@ -88,11 +89,11 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			return
 		}
 		source, err := svc.CreateSource(r.Context(), db.CreateSourceParams{
-			IngressUrl:		data.IngressUrl,
 			EgressUrl:		data.EgressUrl,
 			StaticHeaders:  staticHeaders,
 			Description: 	pgtype.Text{String: data.Description},
 		})
+		// TODO repalce return with DTO and generate ingress URL based on public ID
 		if err != nil {
 			logrus.WithError(err).Error("Failed to create source")
 			http.Error(w, "Failed to create source", http.StatusInternalServerError)
