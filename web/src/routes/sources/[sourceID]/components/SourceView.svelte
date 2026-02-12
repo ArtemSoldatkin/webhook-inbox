@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { SourceDTO } from '$lib/types';
+	import ListEvents from './ListEvents.svelte';
 	import TestWebhook from './TestWebhook.svelte';
 
 	export let sourceID: string;
@@ -55,5 +56,6 @@
 	<section>
 		<h3>Test Webhook</h3>
 		<TestWebhook publicID={data.PublicID} staticHeaders={data.StaticHeaders} />
+		<ListEvents sourceID={sourceID} />
 	</section>
 {/if}

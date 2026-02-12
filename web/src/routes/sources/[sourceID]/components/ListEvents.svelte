@@ -30,6 +30,7 @@
 	}
 </script>
 
+<button on:click={fetchEvents}>Refresh Events</button>
 {#if loading}
 	<p>Loading events...</p>
 {:else if error}

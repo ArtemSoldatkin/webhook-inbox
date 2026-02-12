@@ -1,3 +1,5 @@
+export type ContentType = 'application/json' | 'application/x-www-form-urlencoded' | 'text/plain';
+
 export interface SourceDTO {
 	ID: number;
 	PublicID: string;

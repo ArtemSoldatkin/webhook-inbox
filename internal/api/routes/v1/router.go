@@ -11,7 +11,6 @@ func V1Router(svc *service.Service) chi.Router {
 	r := chi.NewRouter()
 	r.Mount("/ingest", ingestRouter(svc))
 	r.Mount("/sources", sourcesRouter(svc))
-	r.Mount("/events", eventsRouter(svc))
 	r.Mount("/delivery-attempts", deliveryAttemptsRouter(svc))
 	return r
 }

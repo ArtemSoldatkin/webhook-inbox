@@ -1,5 +1,6 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import type { ContentType } from '$lib/types';
 	import BodyInput from './BodyInput.svelte';
 
 	export let publicID: string;
@@ -11,6 +12,7 @@
 	let headers: Record<string, string> = {};
 	let queryParams: Record<string, string> = {};
 	let body: string = '';
+	let contentType: ContentType = 'application/json';
 
 	let loading = false;
 	let error: string | null = null;
@@ -45,7 +47,7 @@
 <form on:submit|preventDefault={testWebhook}>
 	<label
 		>HTTP Method:
-		<select id="method" name="method" bind:value={method} disabled={loading}>
+		<select bind:value={method} disabled={loading}>
 			<option value="GET">GET</option>
 			<option value="POST">POST</option>
 			<option value="PUT">PUT</option>
@@ -61,9 +63,13 @@
 		Query Parameters (optional):
 		<InputMap bind:json={queryParams} disabled={loading} />
 	</label>
-	<label>
+	{#if method!=="GET"}<label>
 		Body (optional):
-		<BodyInput bind:data={body} />
+		<BodyInput bind:body={body} bind:contentType={contentType} />
 	</label>
+	{/if}
+	{#if error}
+		<div class="error">{error}</div>
+	{/if}
 	<button type="submit" disabled={loading}>Test Webhook</button>
 </form>

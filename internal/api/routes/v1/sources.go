@@ -26,14 +26,11 @@ func listSources(svc *service.Service) http.HandlerFunc {
 		}
 		sourceDTOs := make([]dtov1.SourceDTO, len(sources))
 		for i, source := range sources {
-			var staticHeaders = make(map[string]string)
-			if err := json.Unmarshal(source.StaticHeaders, &staticHeaders); err != nil {
+			staticHeaders, err := utils.JSONBtoMap(source.StaticHeaders)
+			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal static headers")
 				http.Error(w, "Failed to list sources", http.StatusInternalServerError)
 				return
-			}
-			if staticHeaders == nil {
-				staticHeaders = make(map[string]string)
 			}
 			var disbaleAt *time.Time
 			if source.DisableAt.Valid {
@@ -174,5 +171,6 @@ func sourcesRouter(svc *service.Service) chi.Router {
 	r.Get("/", listSources(svc))
 	r.Get("/{sourceID}", getSourceByID(svc))
 	r.Post("/", createSource(svc))
+	r.Mount("/{sourceID}/events", eventsRouter(svc))
 	return r
 }
