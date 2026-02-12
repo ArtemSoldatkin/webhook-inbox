@@ -1,5 +1,6 @@
-export interface Source {
+export interface SourceDTO {
 	ID: number;
+	PublicID: string;
 	IngressUrl: string;
 	EgressUrl: string;
 	StaticHeaders: Record<string, string>;
@@ -9,4 +10,15 @@ export interface Source {
 	CreatedAt: Date;
 	UpdatedAt: Date;
 	DisableAt: Date | null;
+}
+
+export interface EventDTO {
+	ID: number;
+	SourceID: number;
+	Method: string;
+	QueryParams: Record<string, string>;
+	RawHeaders: Record<string, string>;
+	Body: Record<string, string>;
+	BodyContentType: string;
+	ReceivedAt: Date;
 }

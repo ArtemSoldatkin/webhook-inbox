@@ -7,9 +7,64 @@ package db
 
 import (
 	"context"
+	"net/netip"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createEvent = `-- name: CreateEvent :one
+INSERT INTO events (
+    source_id,
+    dedup_hash,
+    method,
+    ingress_path,
+    remote_address,
+    query_params,
+    raw_headers,
+    body,
+    body_content_type
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9
+)
+RETURNING id
+`
+
+type CreateEventParams struct {
+	SourceID        int64
+	DedupHash       pgtype.Text
+	Method          string
+	IngressPath     string
+	RemoteAddress   *netip.Addr
+	QueryParams     []byte
+	RawHeaders      []byte
+	Body            []byte
+	BodyContentType string
+}
+
+func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createEvent,
+		arg.SourceID,
+		arg.DedupHash,
+		arg.Method,
+		arg.IngressPath,
+		arg.RemoteAddress,
+		arg.QueryParams,
+		arg.RawHeaders,
+		arg.Body,
+		arg.BodyContentType,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
 
 const createSource = `-- name: CreateSource :one
 INSERT INTO sources (
@@ -32,6 +87,78 @@ type CreateSourceParams struct {
 
 func (q *Queries) CreateSource(ctx context.Context, arg CreateSourceParams) (Source, error) {
 	row := q.db.QueryRow(ctx, createSource, arg.EgressUrl, arg.StaticHeaders, arg.Description)
+	var i Source
+	err := row.Scan(
+		&i.ID,
+		&i.PublicID,
+		&i.EgressUrl,
+		&i.StaticHeaders,
+		&i.Status,
+		&i.StatusReason,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisableAt,
+	)
+	return i, err
+}
+
+const getSourceByID = `-- name: GetSourceByID :one
+SELECT
+    id,
+    public_id,
+    egress_url,
+    static_headers,
+    status,
+    status_reason,
+    description,
+    created_at,
+    updated_at,
+    disable_at
+FROM
+    sources
+WHERE
+    id = $1
+`
+
+func (q *Queries) GetSourceByID(ctx context.Context, id int64) (Source, error) {
+	row := q.db.QueryRow(ctx, getSourceByID, id)
+	var i Source
+	err := row.Scan(
+		&i.ID,
+		&i.PublicID,
+		&i.EgressUrl,
+		&i.StaticHeaders,
+		&i.Status,
+		&i.StatusReason,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisableAt,
+	)
+	return i, err
+}
+
+const getSourceByPublicID = `-- name: GetSourceByPublicID :one
+SELECT
+    id,
+    public_id,
+    egress_url,
+    static_headers,
+    status,
+    status_reason,
+    description,
+    created_at,
+    updated_at,
+    disable_at
+FROM
+    sources
+WHERE
+    public_id = $1
+`
+
+func (q *Queries) GetSourceByPublicID(ctx context.Context, publicID pgtype.UUID) (Source, error) {
+	row := q.db.QueryRow(ctx, getSourceByPublicID, publicID)
 	var i Source
 	err := row.Scan(
 		&i.ID,
@@ -105,6 +232,8 @@ SELECT
     source_id,
     dedup_hash,
     method,
+    ingress_path,
+    remote_address,
     query_params,
     raw_headers,
     body,
@@ -132,6 +261,8 @@ func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Eve
 			&i.SourceID,
 			&i.DedupHash,
 			&i.Method,
+			&i.IngressPath,
+			&i.RemoteAddress,
 			&i.QueryParams,
 			&i.RawHeaders,
 			&i.Body,

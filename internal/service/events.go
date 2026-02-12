@@ -10,3 +10,8 @@ import (
 func (svc *Service) ListEvents(ctx context.Context, sourceID int64) ([]db.Event, error) {
 	return svc.queries.ListEventsBySource(ctx, sourceID)
 }
+
+// CreateEvent inserts a new event into the database and returns its ID.
+func (svc *Service) CreateEvent(ctx context.Context, event db.CreateEventParams) (int64, error) {
+	return svc.queries.CreateEvent(ctx, event)
+}

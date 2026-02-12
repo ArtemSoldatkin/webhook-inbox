@@ -3,6 +3,7 @@ package routev1
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
@@ -42,6 +43,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			}
 			sourceDTOs[i] = dtov1.SourceDTO{
 				ID:             source.ID,
+				PublicID:       source.PublicID.String(),
 				IngressUrl:     utils.GenerateIngressURL(source.PublicID.String()),
 				EgressUrl:      source.EgressUrl,
 				StaticHeaders:  staticHeaders,
@@ -57,6 +59,61 @@ func listSources(svc *service.Service) http.HandlerFunc {
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal sources")
 			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
+	}
+}
+
+func getSourceByID(svc *service.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sourceIDRaw := chi.URLParam(r, "sourceID")
+		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
+		if err != nil {
+			logrus.WithError(err).Error("Invalid source ID")
+			http.Error(w, "Invalid source ID", http.StatusBadRequest)
+			return
+		}
+		source, err := svc.GetSourceByID(r.Context(), sourceID)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to get source by ID")
+			http.Error(w, "Failed to get source", http.StatusInternalServerError)
+			return
+		}
+		var staticHeaders = make(map[string]string)
+		if err := json.Unmarshal(source.StaticHeaders, &staticHeaders); err != nil {
+			logrus.WithError(err).Error("Failed to unmarshal static headers")
+			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
+			return
+		}
+		if staticHeaders == nil {
+			staticHeaders = make(map[string]string)
+		}
+		var disbaleAt *time.Time
+		if source.DisableAt.Valid {
+			disbaleAt = &source.DisableAt.Time
+		} else {
+			disbaleAt = nil
+		}
+		sourceDTO := dtov1.SourceDTO{
+				ID:             source.ID,
+				PublicID:       source.PublicID.String(),
+				IngressUrl:     utils.GenerateIngressURL(source.PublicID.String()),
+				EgressUrl:      source.EgressUrl,
+				StaticHeaders:  staticHeaders,
+				Status:         source.Status,
+				StatusReason:   source.StatusReason.String,
+				Description:    source.Description.String,
+				CreatedAt:      source.CreatedAt.Time,
+				UpdatedAt:      source.UpdatedAt.Time,
+				DisableAt:      disbaleAt,
+			}
+		response, err := json.Marshal(sourceDTO)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal source")
+			http.Error(w, "Failed to get source", http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -115,6 +172,7 @@ func createSource(svc *service.Service) http.HandlerFunc {
 func sourcesRouter(svc *service.Service) chi.Router {
 	r := chi.NewRouter()
 	r.Get("/", listSources(svc))
+	r.Get("/{sourceID}", getSourceByID(svc))
 	r.Post("/", createSource(svc))
 	return r
 }

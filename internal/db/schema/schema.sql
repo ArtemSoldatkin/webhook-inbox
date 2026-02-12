@@ -18,6 +18,8 @@ CREATE TABLE events (
     source_id BIGINT NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
     dedup_hash TEXT,
     method VARCHAR(16) NOT NULL,
+    ingress_path TEXT NOT NULL,
+    remote_address INET,
     query_params JSONB NOT NULL DEFAULT '{}',
     raw_headers JSONB NOT NULL DEFAULT '{}',
     body BYTEA NOT NULL,

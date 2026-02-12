@@ -1,9 +1,9 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
-	import type { Source } from '$lib/types';
+	import type { SourceDTO } from '$lib/types';
 
 	type NewSource = Omit<
-		Source,
+		SourceDTO,
 		'ID' | 'IngressUrl' | 'Status' | 'StatusReason' | 'CreatedAt' | 'UpdatedAt' | 'DisableAt'
 	>;
 
@@ -65,10 +65,11 @@
 		bind:value={data.EgressUrl}
 		placeholder="https://example.com/egress"
 		required
+		disabled={loading}
 	/>
 	<label
 		>Static Headers
-		<InputMap bind:json={data.StaticHeaders} />
+		<InputMap bind:json={data.StaticHeaders} disabled={loading} />
 	</label>
 	<label for="description">Description</label>
 	<textarea id="description" bind:value={data.Description} placeholder="Optional description"

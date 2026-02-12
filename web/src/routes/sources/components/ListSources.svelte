@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Source } from '$lib/types';
+	import type { SourceDTO } from '$lib/types';
 	import { onMount } from 'svelte';
 
-	let data: Source[] | null = null;
+	let data: SourceDTO[] | null = null;
 	let loading = false;
 	let error: string | null = null;
 
@@ -39,7 +39,7 @@
 			{#each data as source}
 				<li>
 					<section>
-						<h2>{source.ID}</h2>
+						<h2><a href={`/sources/${source.ID}`}>{source.ID}</a></h2>
 						<p>{source.Description}</p>
 						<p>{source.IngressUrl}</p>
 						<p>{source.EgressUrl}</p>

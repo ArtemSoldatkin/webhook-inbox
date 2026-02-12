@@ -5,6 +5,8 @@
 package db
 
 import (
+	"net/netip"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -26,6 +28,8 @@ type Event struct {
 	SourceID        int64
 	DedupHash       pgtype.Text
 	Method          string
+	IngressPath     string
+	RemoteAddress   *netip.Addr
 	QueryParams     []byte
 	RawHeaders      []byte
 	Body            []byte

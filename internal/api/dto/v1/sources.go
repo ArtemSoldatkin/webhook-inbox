@@ -8,6 +8,7 @@ import (
 // SourceDTO represents the data transfer object for a source in the API.
 type SourceDTO struct {
 	ID            int64
+	PublicID      string
 	IngressUrl    string
 	EgressUrl     string
 	StaticHeaders map[string]string
