@@ -12,6 +12,56 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createDeliveryAttempt = `-- name: CreateDeliveryAttempt :one
+INSERT INTO delivery_attempts (
+    event_id,
+    attempt_number,
+    state,
+    status_code,
+    error_type,
+    error_message,
+    started_at,
+    finished_at
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8
+)
+RETURNING id
+`
+
+type CreateDeliveryAttemptParams struct {
+	EventID       int64
+	AttemptNumber int32
+	State         string
+	StatusCode    pgtype.Int4
+	ErrorType     pgtype.Text
+	ErrorMessage  pgtype.Text
+	StartedAt     pgtype.Timestamptz
+	FinishedAt    pgtype.Timestamptz
+}
+
+func (q *Queries) CreateDeliveryAttempt(ctx context.Context, arg CreateDeliveryAttemptParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createDeliveryAttempt,
+		arg.EventID,
+		arg.AttemptNumber,
+		arg.State,
+		arg.StatusCode,
+		arg.ErrorType,
+		arg.ErrorMessage,
+		arg.StartedAt,
+		arg.FinishedAt,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createEvent = `-- name: CreateEvent :one
 INSERT INTO events (
     source_id,
@@ -99,6 +149,44 @@ func (q *Queries) CreateSource(ctx context.Context, arg CreateSourceParams) (Sou
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DisableAt,
+	)
+	return i, err
+}
+
+const getEventByID = `-- name: GetEventByID :one
+SELECT
+    id,
+    source_id,
+    dedup_hash,
+    method,
+    ingress_path,
+    remote_address,
+    query_params,
+    raw_headers,
+    body,
+    body_content_type,
+    received_at
+FROM
+    events
+WHERE
+    id = $1
+`
+
+func (q *Queries) GetEventByID(ctx context.Context, id int64) (Event, error) {
+	row := q.db.QueryRow(ctx, getEventByID, id)
+	var i Event
+	err := row.Scan(
+		&i.ID,
+		&i.SourceID,
+		&i.DedupHash,
+		&i.Method,
+		&i.IngressPath,
+		&i.RemoteAddress,
+		&i.QueryParams,
+		&i.RawHeaders,
+		&i.Body,
+		&i.BodyContentType,
+		&i.ReceivedAt,
 	)
 	return i, err
 }
@@ -269,6 +357,46 @@ func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Eve
 			&i.BodyContentType,
 			&i.ReceivedAt,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPendingDeliveryAttempts = `-- name: ListPendingDeliveryAttempts :many
+SELECT
+    id,
+    event_id,
+    attempt_number
+FROM
+    delivery_attempts
+WHERE
+    state = 'pending'
+ORDER BY
+    created_at ASC
+FOR UPDATE SKIP LOCKED
+`
+
+type ListPendingDeliveryAttemptsRow struct {
+	ID            int64
+	EventID       int64
+	AttemptNumber int32
+}
+
+func (q *Queries) ListPendingDeliveryAttempts(ctx context.Context) ([]ListPendingDeliveryAttemptsRow, error) {
+	rows, err := q.db.Query(ctx, listPendingDeliveryAttempts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPendingDeliveryAttemptsRow
+	for rows.Next() {
+		var i ListPendingDeliveryAttemptsRow
+		if err := rows.Scan(&i.ID, &i.EventID, &i.AttemptNumber); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -37,7 +37,7 @@ CREATE TABLE delivery_attempts (
     status_code INT,
     error_type TEXT,
     error_message TEXT,
-    started_at TIMESTAMPTZ NOT NULL,
+    started_at TIMESTAMPTZ,
     finished_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (event_id, attempt_number),

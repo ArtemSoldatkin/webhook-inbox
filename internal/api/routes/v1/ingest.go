@@ -69,6 +69,17 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			return
 		}
 		logrus.Infof("Successfully ingested event with ID: %d", eventID)
+		deliveryAttemptID, err := svc.CreateDeliveryAttempt(r.Context(), db.CreateDeliveryAttemptParams{
+			EventID: eventID,
+			AttemptNumber: 1,
+			State: "pending",
+		})
+		if err != nil {
+			logrus.WithError(err).Error("Failed to create delivery attempt")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		logrus.Infof("Created initial delivery attempt with ID: %d for event ID: %d", deliveryAttemptID, eventID)
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("OK"))
 	}}

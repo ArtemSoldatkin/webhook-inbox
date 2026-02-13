@@ -82,6 +82,25 @@ ORDER BY
     received_at DESC;
 
 
+-- name: GetEventByID :one
+SELECT
+    id,
+    source_id,
+    dedup_hash,
+    method,
+    ingress_path,
+    remote_address,
+    query_params,
+    raw_headers,
+    body,
+    body_content_type,
+    received_at
+FROM
+    events
+WHERE
+    id = $1;
+
+
 -- name: CreateEvent :one
 INSERT INTO events (
     source_id,
@@ -124,3 +143,38 @@ WHERE
     event_id = $1
 ORDER BY
     created_at DESC;
+
+-- name: CreateDeliveryAttempt :one
+INSERT INTO delivery_attempts (
+    event_id,
+    attempt_number,
+    state,
+    status_code,
+    error_type,
+    error_message,
+    started_at,
+    finished_at
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8
+)
+RETURNING id;
+
+-- name: ListPendingDeliveryAttempts :many
+SELECT
+    id,
+    event_id,
+    attempt_number
+FROM
+    delivery_attempts
+WHERE
+    state = 'pending'
+ORDER BY
+    created_at ASC
+FOR UPDATE SKIP LOCKED;
