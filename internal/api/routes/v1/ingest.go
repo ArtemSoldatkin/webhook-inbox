@@ -46,6 +46,12 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+		queryParams, err := json.Marshal(r.URL.Query())
+		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal query parameters")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
 		bodyBytes, err := json.Marshal(r.Body)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to read request body")
@@ -58,7 +64,7 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			Method: r.Method,
 			IngressPath: r.URL.Path,
 			RemoteAddress: &remoteAddress,
-			QueryParams: []byte("{}"), // TODO replace with actual query parameters
+			QueryParams: queryParams,
 			RawHeaders: headerBytes,
 			Body: bodyBytes,
 			BodyContentType: r.Header.Get("Content-Type"),

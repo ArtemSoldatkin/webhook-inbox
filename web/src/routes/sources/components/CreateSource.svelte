@@ -4,7 +4,7 @@
 
 	type NewSource = Omit<
 		SourceDTO,
-		'ID' | 'IngressUrl' | 'Status' | 'StatusReason' | 'CreatedAt' | 'UpdatedAt' | 'DisableAt'
+		'ID' | 'PublicID' | 'IngressUrl' | 'Status' | 'StatusReason' | 'CreatedAt' | 'UpdatedAt' | 'DisableAt'
 	>;
 
 	let data = newData();
@@ -58,22 +58,23 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
-	<label for="egress-url">Egress URL</label>
-	<input
-		id="egress-url"
-		type="text"
-		bind:value={data.EgressUrl}
-		placeholder="https://example.com/egress"
-		required
-		disabled={loading}
-	/>
+	<label>Egress URL
+		<input
+			type="text"
+			bind:value={data.EgressUrl}
+			placeholder="https://example.com/egress"
+			required
+			disabled={loading}
+		/>
+	</label>
 	<label
 		>Static Headers
 		<InputMap bind:json={data.StaticHeaders} disabled={loading} />
 	</label>
-	<label for="description">Description</label>
-	<textarea id="description" bind:value={data.Description} placeholder="Optional description"
-	></textarea>
+	<label>Description
+		<textarea bind:value={data.Description} placeholder="Optional description"
+		></textarea>
+	</label>
 	<button type="submit" disabled={loading}>Create New Source</button>
 	{#if error}
 		<p class="error">Error: {error}</p>

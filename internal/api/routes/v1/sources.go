@@ -26,7 +26,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 		}
 		sourceDTOs := make([]dtov1.SourceDTO, len(sources))
 		for i, source := range sources {
-			staticHeaders, err := utils.JSONBtoMap(source.StaticHeaders)
+			staticHeaders, err := utils.JSONBtoType[map[string]string](source.StaticHeaders)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal static headers")
 				http.Error(w, "Failed to list sources", http.StatusInternalServerError)
@@ -64,6 +64,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 	}
 }
 
+// getSourceByID handles GET requests to retrieve a source by its ID.
 func getSourceByID(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sourceIDRaw := chi.URLParam(r, "sourceID")

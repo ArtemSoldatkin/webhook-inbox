@@ -35,16 +35,16 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 		}
 		eventDTOs := make([]dtov1.EventDTO, len(events))
 		for i, event := range events {
-			queryParams, queryParamsErr := utils.JSONBtoMap(event.QueryParams); if queryParamsErr != nil {
-				logrus.WithError(queryParamsErr).Error("Failed to unmarshal query params")
+			queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams); if err != nil {
+				logrus.WithError(err).Error("Failed to unmarshal query params")
 				continue
 			}
-			// rawHeaders, rawHeadersErr := utils.JSONBtoMap(event.RawHeaders); if rawHeadersErr != nil {
-			// 	logrus.WithError(rawHeadersErr).Error("Failed to unmarshal query params")
-			// 	continue
-			// }
-			body, bodyErr := utils.JSONBtoMap(event.Body); if bodyErr != nil {
-				logrus.WithError(bodyErr).Error("Failed to unmarshal query params")
+			rawHeaders, err := utils.JSONBtoType[map[string][]string](event.RawHeaders); if err != nil {
+				logrus.WithError(err).Error("Failed to unmarshal query params")
+				continue
+			}
+			body, err := utils.JSONBtoType[map[string]string](event.Body); if err != nil {
+				logrus.WithError(err).Error("Failed to unmarshal query params")
 				continue
 			}
 			eventDTOs[i] = dtov1.EventDTO{
@@ -55,7 +55,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				IngressPath:     event.IngressPath,
 				RemoteAddress:   event.RemoteAddress.String(),
 				QueryParams:     queryParams,
-				RawHeaders:      map[string]string{}, // TODO: unmarshal raw headers
+				RawHeaders:      rawHeaders,
 				Body:            body,
 				BodyContentType: event.BodyContentType,
 				ReceivedAt:      event.ReceivedAt.Time,

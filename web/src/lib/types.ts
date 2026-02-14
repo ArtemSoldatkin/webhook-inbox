@@ -18,8 +18,8 @@ export interface EventDTO {
 	ID: number;
 	SourceID: number;
 	Method: string;
-	QueryParams: Record<string, string>;
-	RawHeaders: Record<string, string>;
+	QueryParams: Record<string, string[]>;
+	RawHeaders: Record<string, string[]>;
 	Body: Record<string, string>;
 	BodyContentType: string;
 	ReceivedAt: Date;

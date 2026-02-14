@@ -1,6 +1,7 @@
 <script lang="ts">
 	import DisplayMap from '$lib/components/DisplayMap.svelte';
 	import type { EventDTO } from '$lib/types';
+	import DisplayMapOfStringArrays from './DisplayMapOfStringArrays.svelte';
 
 	export let sourceID: string;
 
@@ -46,8 +47,8 @@
 						<h3>Event ID: {event.ID}</h3>
 						<p>Source ID: {event.SourceID}</p>
 						<p>Method: {event.Method}</p>
-						<DisplayMap data={event.QueryParams} />
-						<DisplayMap data={event.RawHeaders} />
+						<DisplayMapOfStringArrays title="Query Parameters" data={event.QueryParams} />
+						<DisplayMapOfStringArrays title="Raw Headers" data={event.RawHeaders} />
 						<DisplayMap data={event.Body} />
 					</section>
 				</li>

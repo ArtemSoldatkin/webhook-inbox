@@ -11,8 +11,8 @@ func (svc *Service) ListEvents(ctx context.Context, sourceID int64) ([]db.Event,
 	return svc.queries.ListEventsBySource(ctx, sourceID)
 }
 
-// GetEvent retrieves a specific event by its ID from the database.
-func (svc *Service) GetEvent(ctx context.Context, eventID int64) (db.Event, error) {
+// GetEventByID retrieves a specific event by its ID from the database.
+func (svc *Service) GetEventByID(ctx context.Context, eventID int64) (db.Event, error) {
 	return svc.queries.GetEventByID(ctx, eventID)
 }
 

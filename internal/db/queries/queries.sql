@@ -168,13 +168,18 @@ RETURNING id;
 
 -- name: ListPendingDeliveryAttempts :many
 SELECT
-    id,
-    event_id,
-    attempt_number
+    delivery_attempts.id,
+    delivery_attempts.event_id,
+    delivery_attempts.attempt_number
 FROM
     delivery_attempts
+INNER JOIN events
+    ON delivery_attempts.event_id = events.id
+INNER JOIN sources
+    ON events.source_id = sources.id
 WHERE
-    state = 'pending'
+    delivery_attempts.state = 'pending'
+    AND sources.status = 'active'
 ORDER BY
-    created_at ASC
+    delivery_attempts.created_at ASC
 FOR UPDATE SKIP LOCKED;

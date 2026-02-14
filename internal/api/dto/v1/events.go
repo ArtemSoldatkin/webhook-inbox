@@ -10,8 +10,8 @@ type EventDTO struct {
 	Method          string
 	IngressPath     string
 	RemoteAddress   string
-	QueryParams     map[string]string
-	RawHeaders      map[string]string
+	QueryParams     map[string][]string
+	RawHeaders      map[string][]string
 	Body           	map[string]string
 	BodyContentType string
 	ReceivedAt      time.Time
