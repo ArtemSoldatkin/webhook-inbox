@@ -183,3 +183,17 @@ WHERE
 ORDER BY
     delivery_attempts.created_at ASC
 FOR UPDATE SKIP LOCKED;
+
+
+-- name: UpdateDeliveryAttempt :exec
+UPDATE delivery_attempts
+SET
+    state = $1,
+    status_code = $2,
+    error_type = $3,
+    error_message = $4,
+    started_at = COALESCE(started_at, $5),
+    finished_at = COALESCE(finished_at, $6)
+WHERE
+    id = $7
+    AND state IN ('pending', 'in_flight');

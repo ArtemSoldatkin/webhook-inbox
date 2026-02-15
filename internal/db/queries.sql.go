@@ -460,3 +460,40 @@ func (q *Queries) ListSources(ctx context.Context) ([]Source, error) {
 	}
 	return items, nil
 }
+
+const updateDeliveryAttempt = `-- name: UpdateDeliveryAttempt :exec
+UPDATE delivery_attempts
+SET
+    state = $1,
+    status_code = $2,
+    error_type = $3,
+    error_message = $4,
+    started_at = COALESCE(started_at, $5),
+    finished_at = COALESCE(finished_at, $6)
+WHERE
+    id = $7
+    AND state IN ('pending', 'in_flight')
+`
+
+type UpdateDeliveryAttemptParams struct {
+	State        string
+	StatusCode   pgtype.Int4
+	ErrorType    pgtype.Text
+	ErrorMessage pgtype.Text
+	StartedAt    pgtype.Timestamptz
+	FinishedAt   pgtype.Timestamptz
+	ID           int64
+}
+
+func (q *Queries) UpdateDeliveryAttempt(ctx context.Context, arg UpdateDeliveryAttemptParams) error {
+	_, err := q.db.Exec(ctx, updateDeliveryAttempt,
+		arg.State,
+		arg.StatusCode,
+		arg.ErrorType,
+		arg.ErrorMessage,
+		arg.StartedAt,
+		arg.FinishedAt,
+		arg.ID,
+	)
+	return err
+}

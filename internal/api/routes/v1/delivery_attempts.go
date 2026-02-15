@@ -13,16 +13,11 @@ import (
 // listDevliveryAttempts handles GET requests to list all delivery attempts.
 func listDevliveryAttempts(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		eventIDRaw := r.URL.Query().Get("event_id")
-		if eventIDRaw == "" {
-			logrus.Error("Missing event_id query parameter")
-			http.Error(w, "event_id query parameter is required", http.StatusBadRequest)
-			return
-		}
+		eventIDRaw := chi.URLParam(r, "eventID")
 		eventID, err := strconv.ParseInt(eventIDRaw, 10, 64)
 		if err != nil {
-			logrus.WithError(err).Error("Invalid event_id query parameter")
-			http.Error(w, "Invalid event_id query parameter", http.StatusBadRequest)
+			logrus.WithError(err).Error("Invalid event ID")
+			http.Error(w, "Invalid event ID", http.StatusBadRequest)
 			return
 		}
 		deliveryAttempts, err := svc.ListDeliveryAttempts(r.Context(), eventID)

@@ -24,3 +24,16 @@ export interface EventDTO {
 	BodyContentType: string;
 	ReceivedAt: Date;
 }
+
+export interface DeliveryAttemptDTO {
+	ID: number;
+	EventID: number;
+	AttemptNumber: number;
+	State: string;
+	StatusCode: number | null;
+	ErrorType: string | null;
+	ErrorMessage: string | null;
+	StartedAt: Date | null;
+	FinishedAt: Date | null;
+	CreatedAt: Date;
+}

@@ -20,3 +20,8 @@ func (svc *Service) CreateDeliveryAttempt(ctx context.Context, delivery db.Creat
 func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context) ([]db.ListPendingDeliveryAttemptsRow, error) {
 	return svc.queries.ListPendingDeliveryAttempts(ctx)
 }
+
+// UpdateDeliveryAttempt updates the status and other relevant fields of a delivery attempt in the database after it has been processed by the delivery engine.
+func (svc *Service) UpdateDeliveryAttempt(ctx context.Context, attempt db.UpdateDeliveryAttemptParams) error {
+	return svc.queries.UpdateDeliveryAttempt(ctx, attempt)
+}
