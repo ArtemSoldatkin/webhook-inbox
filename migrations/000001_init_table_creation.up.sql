@@ -1,50 +1,49 @@
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    email VARCHAR(256) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-CREATE TABLE endpoints (
+CREATE TABLE sources (
     id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
-    url TEXT NOT NULL,
-    name VARCHAR(128) NOT NULL,
+    public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(), -- public identifier for external use
+    egress_url TEXT NOT NULL, -- where deliveries are sent to
+    static_headers JSONB NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL CHECK (status IN ('active', 'paused', 'quarantined', 'disabled')) DEFAULT 'active',
+    status_reason VARCHAR(512),
     description VARCHAR(512),
-    headers JSONB,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE webhooks (
-    id BIGSERIAL PRIMARY KEY,
-    endpoint_id BIGINT REFERENCES endpoints(id) ON DELETE CASCADE,
-    public_key TEXT UNIQUE NOT NULL,
-    name VARCHAR(128) NOT NULL,
-    description VARCHAR(512),
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    disable_at TIMESTAMPTZ
 );
 
 CREATE TABLE events (
     id BIGSERIAL PRIMARY KEY,
-    webhook_id BIGINT REFERENCES webhooks(id) ON DELETE CASCADE,
-    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    source_id BIGINT NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
+    dedup_hash TEXT,
     method VARCHAR(16) NOT NULL,
-    query_params JSONB,
-    headers JSONB,
-    body JSONB NOT NULL,
-    size INT NOT NULL,
-    source_ip INET NOT NULL,
-    event_hash TEXT
+    ingress_path TEXT NOT NULL,
+    remote_address INET,
+    query_params JSONB NOT NULL DEFAULT '{}',
+    raw_headers JSONB NOT NULL DEFAULT '{}',
+    body BYTEA NOT NULL,
+    body_content_type TEXT NOT NULL,
+    received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE deliveries (
+CREATE TABLE delivery_attempts (
     id BIGSERIAL PRIMARY KEY,
-    event_id BIGINT REFERENCES events(id) ON DELETE CASCADE,
-    endpoint_id BIGINT REFERENCES endpoints(id) ON DELETE CASCADE,
+    event_id BIGINT NOT NULL
+        REFERENCES events(id) ON DELETE CASCADE,
+    attempt_number INT NOT NULL,
+    state TEXT NOT NULL
+        CHECK (state IN ('pending', 'in_flight', 'succeeded', 'failed', 'aborted')),
     status_code INT,
+    error_type TEXT,
     error_message TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    started_at TIMESTAMPTZ,
+    finished_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (event_id, attempt_number),
+    CHECK (
+        (state IN ('succeeded', 'failed', 'aborted') AND finished_at IS NOT NULL)
+        OR
+        (state IN ('pending', 'in_flight') AND finished_at IS NULL)
+    )
 );

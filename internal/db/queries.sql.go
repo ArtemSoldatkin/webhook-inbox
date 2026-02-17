@@ -7,180 +7,336 @@ package db
 
 import (
 	"context"
+	"net/netip"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createUser = `-- name: CreateUser :one
-INSERT INTO users (
-    email
+const createDeliveryAttempt = `-- name: CreateDeliveryAttempt :one
+INSERT INTO delivery_attempts (
+    event_id,
+    attempt_number,
+    state,
+    status_code,
+    error_type,
+    error_message,
+    started_at,
+    finished_at
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8
 )
-VALUES (
-    $1
-)
-RETURNING id, email, created_at
+RETURNING id
 `
 
-func (q *Queries) CreateUser(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, email)
-	var i User
-	err := row.Scan(&i.ID, &i.Email, &i.CreatedAt)
-	return i, err
+type CreateDeliveryAttemptParams struct {
+	EventID       int64
+	AttemptNumber int32
+	State         string
+	StatusCode    pgtype.Int4
+	ErrorType     pgtype.Text
+	ErrorMessage  pgtype.Text
+	StartedAt     pgtype.Timestamptz
+	FinishedAt    pgtype.Timestamptz
 }
 
-const createWebhook = `-- name: CreateWebhook :one
-INSERT INTO webhooks (
-    endpoint_id,
-    public_key,
-    name,
-    description
-)
-VALUES (
-    $1, $2, $3, $4
-)
-RETURNING id, endpoint_id, public_key, name, description, is_active, created_at, updated_at
-`
-
-type CreateWebhookParams struct {
-	EndpointID  pgtype.Int8
-	PublicKey   string
-	Name        string
-	Description pgtype.Text
-}
-
-func (q *Queries) CreateWebhook(ctx context.Context, arg CreateWebhookParams) (Webhook, error) {
-	row := q.db.QueryRow(ctx, createWebhook,
-		arg.EndpointID,
-		arg.PublicKey,
-		arg.Name,
-		arg.Description,
+func (q *Queries) CreateDeliveryAttempt(ctx context.Context, arg CreateDeliveryAttemptParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createDeliveryAttempt,
+		arg.EventID,
+		arg.AttemptNumber,
+		arg.State,
+		arg.StatusCode,
+		arg.ErrorType,
+		arg.ErrorMessage,
+		arg.StartedAt,
+		arg.FinishedAt,
 	)
-	var i Webhook
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const createEvent = `-- name: CreateEvent :one
+INSERT INTO events (
+    source_id,
+    dedup_hash,
+    method,
+    ingress_path,
+    remote_address,
+    query_params,
+    raw_headers,
+    body,
+    body_content_type
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9
+)
+RETURNING id
+`
+
+type CreateEventParams struct {
+	SourceID        int64
+	DedupHash       pgtype.Text
+	Method          string
+	IngressPath     string
+	RemoteAddress   *netip.Addr
+	QueryParams     []byte
+	RawHeaders      []byte
+	Body            []byte
+	BodyContentType string
+}
+
+func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createEvent,
+		arg.SourceID,
+		arg.DedupHash,
+		arg.Method,
+		arg.IngressPath,
+		arg.RemoteAddress,
+		arg.QueryParams,
+		arg.RawHeaders,
+		arg.Body,
+		arg.BodyContentType,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
+const createSource = `-- name: CreateSource :one
+INSERT INTO sources (
+    egress_url,
+    static_headers,
+    description
+) VALUES (
+    $1,
+    $2,
+    $3
+)
+RETURNING id, public_id, egress_url, static_headers, status, status_reason, description, created_at, updated_at, disable_at
+`
+
+type CreateSourceParams struct {
+	EgressUrl     string
+	StaticHeaders []byte
+	Description   pgtype.Text
+}
+
+func (q *Queries) CreateSource(ctx context.Context, arg CreateSourceParams) (Source, error) {
+	row := q.db.QueryRow(ctx, createSource, arg.EgressUrl, arg.StaticHeaders, arg.Description)
+	var i Source
 	err := row.Scan(
 		&i.ID,
-		&i.EndpointID,
-		&i.PublicKey,
-		&i.Name,
+		&i.PublicID,
+		&i.EgressUrl,
+		&i.StaticHeaders,
+		&i.Status,
+		&i.StatusReason,
 		&i.Description,
-		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DisableAt,
 	)
 	return i, err
 }
 
-const listDeliveries = `-- name: ListDeliveries :many
+const getEventByID = `-- name: GetEventByID :one
 SELECT
     id,
-    event_id,
-    endpoint_id,
-    status_code,
-    error_message,
-    created_at
-FROM
-    deliveries
-WHERE
-    endpoint_id = $1
-ORDER BY
-    created_at DESC
-`
-
-func (q *Queries) ListDeliveries(ctx context.Context, endpointID pgtype.Int8) ([]Delivery, error) {
-	rows, err := q.db.Query(ctx, listDeliveries, endpointID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Delivery
-	for rows.Next() {
-		var i Delivery
-		if err := rows.Scan(
-			&i.ID,
-			&i.EventID,
-			&i.EndpointID,
-			&i.StatusCode,
-			&i.ErrorMessage,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listEndpoints = `-- name: ListEndpoints :many
-SELECT
-    id,
-    user_id,
-    url,
-    name,
-    description,
-    headers,
-    is_active,
-    created_at
-FROM
-    endpoints
-WHERE
-    user_id = $1
-ORDER BY
-    created_at DESC
-`
-
-func (q *Queries) ListEndpoints(ctx context.Context, userID pgtype.Int8) ([]Endpoint, error) {
-	rows, err := q.db.Query(ctx, listEndpoints, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Endpoint
-	for rows.Next() {
-		var i Endpoint
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.Url,
-			&i.Name,
-			&i.Description,
-			&i.Headers,
-			&i.IsActive,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listEvents = `-- name: ListEvents :many
-SELECT
-    id,
-    webhook_id,
-    received_at,
+    source_id,
+    dedup_hash,
     method,
+    ingress_path,
+    remote_address,
     query_params,
-    headers,
+    raw_headers,
     body,
-    size,
-    source_ip,
-    event_hash
+    body_content_type,
+    received_at
 FROM
     events
 WHERE
-    webhook_id = $1
+    id = $1
+`
+
+func (q *Queries) GetEventByID(ctx context.Context, id int64) (Event, error) {
+	row := q.db.QueryRow(ctx, getEventByID, id)
+	var i Event
+	err := row.Scan(
+		&i.ID,
+		&i.SourceID,
+		&i.DedupHash,
+		&i.Method,
+		&i.IngressPath,
+		&i.RemoteAddress,
+		&i.QueryParams,
+		&i.RawHeaders,
+		&i.Body,
+		&i.BodyContentType,
+		&i.ReceivedAt,
+	)
+	return i, err
+}
+
+const getSourceByID = `-- name: GetSourceByID :one
+SELECT
+    id,
+    public_id,
+    egress_url,
+    static_headers,
+    status,
+    status_reason,
+    description,
+    created_at,
+    updated_at,
+    disable_at
+FROM
+    sources
+WHERE
+    id = $1
+`
+
+func (q *Queries) GetSourceByID(ctx context.Context, id int64) (Source, error) {
+	row := q.db.QueryRow(ctx, getSourceByID, id)
+	var i Source
+	err := row.Scan(
+		&i.ID,
+		&i.PublicID,
+		&i.EgressUrl,
+		&i.StaticHeaders,
+		&i.Status,
+		&i.StatusReason,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisableAt,
+	)
+	return i, err
+}
+
+const getSourceByPublicID = `-- name: GetSourceByPublicID :one
+SELECT
+    id,
+    public_id,
+    egress_url,
+    static_headers,
+    status,
+    status_reason,
+    description,
+    created_at,
+    updated_at,
+    disable_at
+FROM
+    sources
+WHERE
+    public_id = $1
+`
+
+func (q *Queries) GetSourceByPublicID(ctx context.Context, publicID pgtype.UUID) (Source, error) {
+	row := q.db.QueryRow(ctx, getSourceByPublicID, publicID)
+	var i Source
+	err := row.Scan(
+		&i.ID,
+		&i.PublicID,
+		&i.EgressUrl,
+		&i.StaticHeaders,
+		&i.Status,
+		&i.StatusReason,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisableAt,
+	)
+	return i, err
+}
+
+const listDeliveryAttemptsByEvent = `-- name: ListDeliveryAttemptsByEvent :many
+SELECT
+    id,
+    event_id,
+    attempt_number,
+    state,
+    status_code,
+    error_type,
+    error_message,
+    started_at,
+    finished_at,
+    created_at
+FROM
+    delivery_attempts
+WHERE
+    event_id = $1
+ORDER BY
+    created_at DESC
+`
+
+func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64) ([]DeliveryAttempt, error) {
+	rows, err := q.db.Query(ctx, listDeliveryAttemptsByEvent, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DeliveryAttempt
+	for rows.Next() {
+		var i DeliveryAttempt
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.AttemptNumber,
+			&i.State,
+			&i.StatusCode,
+			&i.ErrorType,
+			&i.ErrorMessage,
+			&i.StartedAt,
+			&i.FinishedAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEventsBySource = `-- name: ListEventsBySource :many
+SELECT
+    id,
+    source_id,
+    dedup_hash,
+    method,
+    ingress_path,
+    remote_address,
+    query_params,
+    raw_headers,
+    body,
+    body_content_type,
+    received_at
+FROM
+    events
+WHERE
+    source_id = $1
 ORDER BY
     received_at DESC
 `
 
-func (q *Queries) ListEvents(ctx context.Context, webhookID pgtype.Int8) ([]Event, error) {
-	rows, err := q.db.Query(ctx, listEvents, webhookID)
+func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Event, error) {
+	rows, err := q.db.Query(ctx, listEventsBySource, sourceID)
 	if err != nil {
 		return nil, err
 	}
@@ -190,15 +346,16 @@ func (q *Queries) ListEvents(ctx context.Context, webhookID pgtype.Int8) ([]Even
 		var i Event
 		if err := rows.Scan(
 			&i.ID,
-			&i.WebhookID,
-			&i.ReceivedAt,
+			&i.SourceID,
+			&i.DedupHash,
 			&i.Method,
+			&i.IngressPath,
+			&i.RemoteAddress,
 			&i.QueryParams,
-			&i.Headers,
+			&i.RawHeaders,
 			&i.Body,
-			&i.Size,
-			&i.SourceIp,
-			&i.EventHash,
+			&i.BodyContentType,
+			&i.ReceivedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -210,42 +367,89 @@ func (q *Queries) ListEvents(ctx context.Context, webhookID pgtype.Int8) ([]Even
 	return items, nil
 }
 
-const listWebhooks = `-- name: ListWebhooks :many
+const listPendingDeliveryAttempts = `-- name: ListPendingDeliveryAttempts :many
 SELECT
-    id,
-    endpoint_id,
-    public_key,
-    name,
-    description,
-    is_active,
-    created_at,
-    updated_at
+    delivery_attempts.id,
+    delivery_attempts.event_id,
+    delivery_attempts.attempt_number
 FROM
-    webhooks
+    delivery_attempts
+INNER JOIN events
+    ON delivery_attempts.event_id = events.id
+INNER JOIN sources
+    ON events.source_id = sources.id
 WHERE
-    endpoint_id = $1
+    delivery_attempts.state = 'pending'
+    AND sources.status = 'active'
 ORDER BY
-    updated_at DESC
+    delivery_attempts.created_at ASC
+FOR UPDATE SKIP LOCKED
 `
 
-func (q *Queries) ListWebhooks(ctx context.Context, endpointID pgtype.Int8) ([]Webhook, error) {
-	rows, err := q.db.Query(ctx, listWebhooks, endpointID)
+type ListPendingDeliveryAttemptsRow struct {
+	ID            int64
+	EventID       int64
+	AttemptNumber int32
+}
+
+func (q *Queries) ListPendingDeliveryAttempts(ctx context.Context) ([]ListPendingDeliveryAttemptsRow, error) {
+	rows, err := q.db.Query(ctx, listPendingDeliveryAttempts)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Webhook
+	var items []ListPendingDeliveryAttemptsRow
 	for rows.Next() {
-		var i Webhook
+		var i ListPendingDeliveryAttemptsRow
+		if err := rows.Scan(&i.ID, &i.EventID, &i.AttemptNumber); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSources = `-- name: ListSources :many
+SELECT
+    id,
+    public_id,
+    egress_url,
+    static_headers,
+    status,
+    status_reason,
+    description,
+    created_at,
+    updated_at,
+    disable_at
+FROM
+    sources
+ORDER BY
+    created_at DESC
+`
+
+func (q *Queries) ListSources(ctx context.Context) ([]Source, error) {
+	rows, err := q.db.Query(ctx, listSources)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Source
+	for rows.Next() {
+		var i Source
 		if err := rows.Scan(
 			&i.ID,
-			&i.EndpointID,
-			&i.PublicKey,
-			&i.Name,
+			&i.PublicID,
+			&i.EgressUrl,
+			&i.StaticHeaders,
+			&i.Status,
+			&i.StatusReason,
 			&i.Description,
-			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DisableAt,
 		); err != nil {
 			return nil, err
 		}
@@ -257,97 +461,45 @@ func (q *Queries) ListWebhooks(ctx context.Context, endpointID pgtype.Int8) ([]W
 	return items, nil
 }
 
-const registerEndpoint = `-- name: RegisterEndpoint :one
-INSERT INTO endpoints (
-    user_id,
-    url,
-    name,
-    description,
-    headers
-)
-VALUES (
-    $1, $2, $3, $4, $5
-)
-RETURNING id, user_id, url, name, description, headers, is_active, created_at
-`
-
-type RegisterEndpointParams struct {
-	UserID      pgtype.Int8
-	Url         string
-	Name        string
-	Description pgtype.Text
-	Headers     []byte
-}
-
-func (q *Queries) RegisterEndpoint(ctx context.Context, arg RegisterEndpointParams) (Endpoint, error) {
-	row := q.db.QueryRow(ctx, registerEndpoint,
-		arg.UserID,
-		arg.Url,
-		arg.Name,
-		arg.Description,
-		arg.Headers,
-	)
-	var i Endpoint
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Url,
-		&i.Name,
-		&i.Description,
-		&i.Headers,
-		&i.IsActive,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const toggleEndpoint = `-- name: ToggleEndpoint :one
-UPDATE endpoints
+const updateDeliveryAttempt = `-- name: UpdateDeliveryAttempt :exec
+UPDATE delivery_attempts
 SET
-    is_active = NOT is_active
+    state = $1,
+    status_code = $2,
+    error_type = $3,
+    error_message = $4,
+    started_at = CASE
+        WHEN $1 = 'pending' THEN NULL
+        ELSE COALESCE(started_at, $5)
+    END,
+    finished_at = CASE
+        WHEN $1 IN ('pending', 'in_flight') THEN NULL
+        ELSE COALESCE(finished_at, $6)
+    END
 WHERE
-    id = $1
-RETURNING id, user_id, url, name, description, headers, is_active, created_at
+    id = $7
+    AND state IN ('pending', 'in_flight')
 `
 
-func (q *Queries) ToggleEndpoint(ctx context.Context, id int64) (Endpoint, error) {
-	row := q.db.QueryRow(ctx, toggleEndpoint, id)
-	var i Endpoint
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.Url,
-		&i.Name,
-		&i.Description,
-		&i.Headers,
-		&i.IsActive,
-		&i.CreatedAt,
-	)
-	return i, err
+type UpdateDeliveryAttemptParams struct {
+	State        string
+	StatusCode   pgtype.Int4
+	ErrorType    pgtype.Text
+	ErrorMessage pgtype.Text
+	StartedAt    pgtype.Timestamptz
+	FinishedAt   pgtype.Timestamptz
+	ID           int64
 }
 
-const toggleWebhook = `-- name: ToggleWebhook :one
-UPDATE webhooks
-SET
-    is_active = NOT is_active,
-    updated_at = NOW()
-WHERE
-    id = $1
-RETURNING id, endpoint_id, public_key, name, description, is_active, created_at, updated_at
-`
-
-func (q *Queries) ToggleWebhook(ctx context.Context, id int64) (Webhook, error) {
-	row := q.db.QueryRow(ctx, toggleWebhook, id)
-	var i Webhook
-	err := row.Scan(
-		&i.ID,
-		&i.EndpointID,
-		&i.PublicKey,
-		&i.Name,
-		&i.Description,
-		&i.IsActive,
-		&i.CreatedAt,
-		&i.UpdatedAt,
+func (q *Queries) UpdateDeliveryAttempt(ctx context.Context, arg UpdateDeliveryAttemptParams) error {
+	_, err := q.db.Exec(ctx, updateDeliveryAttempt,
+		arg.State,
+		arg.StatusCode,
+		arg.ErrorType,
+		arg.ErrorMessage,
+		arg.StartedAt,
+		arg.FinishedAt,
+		arg.ID,
 	)
-	return i, err
+	return err
 }

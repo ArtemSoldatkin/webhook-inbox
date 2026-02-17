@@ -12,6 +12,7 @@ import (
 	routev1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/routes/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/config"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
+	deliveryengine "github.com/ArtemSoldatkin/webhook-inbox/internal/delivery_engine"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/sirupsen/logrus"
 )
@@ -58,6 +59,7 @@ func main() {
 	queries := db.New(dbPool)
 	service := service.NewService(queries)
 
+	go deliveryengine.Start(service, 300 * time.Millisecond) // TODO make this configurable
 
 	r.Mount("/api/v1", routev1.V1Router(service))
 

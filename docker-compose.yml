@@ -9,6 +9,9 @@ services:
     ports: ["${POSTGRES_PORT}:5432"]
     volumes:
       - db_data:/var/lib/postgresql/data
+    profiles:
+      - prod
+      - dev
 
   app:
     build: .
@@ -23,6 +26,19 @@ services:
       POSTGRES_PORT: ${POSTGRES_PORT}
     depends_on:
       - db
+    profiles:
+      - prod
+      - dev
+
+  dev-server:
+    build:
+      context: ./dev-tools
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+    profiles:
+      - dev
 
 volumes:
   db_data:
