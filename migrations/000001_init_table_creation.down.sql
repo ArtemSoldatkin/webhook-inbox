@@ -1,5 +1,5 @@
-DROP TABLE sources;
+DROP TABLE delivery_attempts;
 
 DROP TABLE events;
 
-DROP TABLE delivery_attempts;
+DROP TABLE sources;

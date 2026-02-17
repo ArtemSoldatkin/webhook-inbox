@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// JSONBtoMap converts a JSONB byte array to a Go map of string keys and values.
+// JSONBtoType converts a JSONB byte array to a Go map of string keys and values.
 func JSONBtoType[T any](jsonb []byte) (T, error) {
 	var result T
 	err := json.Unmarshal(jsonb, &result)

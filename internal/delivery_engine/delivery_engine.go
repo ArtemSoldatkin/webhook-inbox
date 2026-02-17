@@ -12,10 +12,10 @@ import (
 )
 
 // Start initializes and starts the delivery engine, which periodically checks for pending deliveries and processes them.
-func Start(svc *service.Service, pollIntervalMs time.Duration) {
+func Start(svc *service.Service, pollInterval time.Duration) {
 	logrus.Info("Starting delivery engine...")
 	ctx := context.Background()
-	ticker := time.NewTicker(pollIntervalMs * time.Millisecond)
+	ticker := time.NewTicker(pollInterval)
 	httpClient := &http.Client{
 		Timeout: 10 * time.Second,
 	}

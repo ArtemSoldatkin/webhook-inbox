@@ -192,8 +192,14 @@ SET
     status_code = $2,
     error_type = $3,
     error_message = $4,
-    started_at = COALESCE(started_at, $5),
-    finished_at = COALESCE(finished_at, $6)
+    started_at = CASE
+        WHEN $1 = 'pending' THEN NULL
+        ELSE COALESCE(started_at, $5)
+    END,
+    finished_at = CASE
+        WHEN $1 IN ('pending', 'in_flight') THEN NULL
+        ELSE COALESCE(finished_at, $6)
+    END
 WHERE
     id = $7
     AND state IN ('pending', 'in_flight');

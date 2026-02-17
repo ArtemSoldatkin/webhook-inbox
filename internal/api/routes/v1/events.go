@@ -22,11 +22,6 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Invalid source ID", http.StatusBadRequest)
 			return
 		}
-		if err != nil {
-			logrus.WithError(err).Error("Invalid source_id query parameter")
-			http.Error(w, "Invalid source_id query parameter", http.StatusBadRequest)
-			return
-		}
 		events, err := svc.ListEvents(r.Context(), sourceID)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list events")
@@ -47,13 +42,17 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				logrus.WithError(err).Error("Failed to unmarshal query params")
 				continue
 			}
+			remoteAddress := ""
+			if event.RemoteAddress != nil {
+				remoteAddress = event.RemoteAddress.String()
+			}
 			eventDTOs[i] = dtov1.EventDTO{
 				ID:              event.ID,
 				SourceID:        event.SourceID,
 				DedupHash:       event.DedupHash.String,
 				Method:          event.Method,
 				IngressPath:     event.IngressPath,
-				RemoteAddress:   event.RemoteAddress.String(),
+				RemoteAddress:   remoteAddress,
 				QueryParams:     queryParams,
 				RawHeaders:      rawHeaders,
 				Body:            body,
@@ -101,8 +100,12 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 		}
 		body, err := utils.JSONBtoType[map[string]string](event.Body); if err != nil {
 			logrus.WithError(err).Error("Failed to unmarshal query params")
-			http.Error(w, "Failed	 to get event", http.StatusInternalServerError)
+			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
+		}
+		remoteAddress := ""
+		if event.RemoteAddress != nil {
+			remoteAddress = event.RemoteAddress.String()
 		}
 		eventDTO := dtov1.EventDTO{
 			ID:              event.ID,
@@ -110,7 +113,7 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			DedupHash:       event.DedupHash.String,
 			Method:          event.Method,
 			IngressPath:     event.IngressPath,
-			RemoteAddress:   event.RemoteAddress.String(),
+			RemoteAddress:   remoteAddress,
 			QueryParams:     queryParams,
 			RawHeaders:      rawHeaders,
 			Body:            body,

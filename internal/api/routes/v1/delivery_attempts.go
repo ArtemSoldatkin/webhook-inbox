@@ -10,8 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// listDevliveryAttempts handles GET requests to list all delivery attempts.
-func listDevliveryAttempts(svc *service.Service) http.HandlerFunc {
+// listDeliveryAttempts handles GET requests to list all delivery attempts.
+func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		eventIDRaw := chi.URLParam(r, "eventID")
 		eventID, err := strconv.ParseInt(eventIDRaw, 10, 64)
@@ -41,6 +41,6 @@ func listDevliveryAttempts(svc *service.Service) http.HandlerFunc {
 // deliveryAttemptsRouter sets up the router for delivery attempts-related endpoints.
 func deliveryAttemptsRouter(svc *service.Service) chi.Router {
 	r := chi.NewRouter()
-	r.Get("/", listDevliveryAttempts(svc))
+	r.Get("/", listDeliveryAttempts(svc))
 	return r
 }

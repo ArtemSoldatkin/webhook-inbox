@@ -43,6 +43,8 @@ func finalizeDeliveryAttempt(ctx context.Context, svc *service.Service, delivery
 	})
 }
 
+
+// scheduleRetry creates a new delivery attempt with an incremented attempt number and a state of "pending" to schedule a retry for a failed delivery attempt.
 func scheduleRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow) (int64, error) {
 	// TODO implement retry scheduling logic, e.g. using exponential backoff
 	return svc.CreateDeliveryAttempt(ctx, db.CreateDeliveryAttemptParams{

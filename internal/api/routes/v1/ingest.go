@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ingestEvent handles POST requests to ingest a new event.
+// ingestEvent handles ANY requests to ingest a new event.
 func ingestEvent(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		publicID := chi.URLParam(r, "public_id")

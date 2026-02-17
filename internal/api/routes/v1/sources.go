@@ -122,10 +122,10 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 
 // CreateSourceData defines the parameters required to create a new source.
 type CreateSourceData struct {
-	IngressUrl           string            `json:"IngressUrl"`
-	EgressUrl            string            `json:"EgressUrl"`
-	StaticHeaders map[string]string `json:"staticHeaders,omitempty"`
-	Description   string            `json:"description,omitempty"`
+	IngressUrl           string         `json:"IngressUrl"`
+	EgressUrl            string         `json:"EgressUrl"`
+	StaticHeaders map[string]string 	`json:"StaticHeaders,omitempty"`
+	Description   string            	`json:"Description,omitempty"`
 }
 
 // createSource handles POST requests to create a new source.
@@ -146,7 +146,7 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		source, err := svc.CreateSource(r.Context(), db.CreateSourceParams{
 			EgressUrl:		data.EgressUrl,
 			StaticHeaders:  staticHeaders,
-			Description: 	pgtype.Text{String: data.Description},
+			Description: 	pgtype.Text{String: data.Description, Valid: data.Description != ""},
 		})
 		// TODO repalce return with DTO and generate ingress URL based on public ID
 		if err != nil {
