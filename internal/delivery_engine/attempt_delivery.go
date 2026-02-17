@@ -3,6 +3,7 @@ package deliveryengine
 import (
 	"bytes"
 	"context"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -155,36 +156,8 @@ func interpretDeliveryResponse(res *http.Response) *DeliveryResult {
 	}
 }
 
-// TODO add context with timeout to prevent hanging deliveries
-// TODO add delay before retrying failed deliveries
-// AttemptDelivery processes a single delivery attempt by retrieving the associated event and source, merging headers, and sending the HTTP request to the configured egress URL.
-func AttemptDelivery(ctx context.Context, svc *service.Service, httpClient *http.Client, delivery db.ListPendingDeliveryAttemptsRow) {
-	if err := markInFlight(ctx, svc, delivery.ID); err != nil {
-		logrus.Error("Error updating delivery attempt state to in_flight:", err)
-		return
-	}
-
-	payload, err := loadDeliveryPayload(ctx, svc, delivery)
-	if err != nil {
-		logrus.Error("Error loading delivery payload:", err)
-		if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
-			logrus.Error("Error reverting delivery attempt state to pending after load failure:", markErr)
-		}
-		return
-	}
-
-	res, err := sendDeliveryRequest(httpClient, payload)
-	if err != nil {
-		logrus.Error("Error sending delivery request:", err)
-		if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
-			logrus.Error("Error reverting delivery attempt state to pending after send failure:", markErr)
-		}
-		return
-	}
-	defer res.Body.Close()
-
-	result := interpretDeliveryResponse(res)
-
+// handleDeliveryFinalizationAndRetry finalizes the delivery attempt by updating its state and result in the database, and if the delivery failed, it schedules a retry if the maximum number of attempts has not been reached.
+func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow, result *DeliveryResult)  {
 	if err := finalizeDeliveryAttempt(ctx, svc, delivery.ID, result); err != nil {
 		logrus.Error("Error finalizing delivery attempt:", err)
 		return
@@ -203,4 +176,50 @@ func AttemptDelivery(ctx context.Context, svc *service.Service, httpClient *http
 			logrus.Infof("Scheduled retry delivery attempt with ID: %d for event ID: %d", deliveryAttemptID, delivery.EventID)
 		}
 	}
+}
+
+// TODO add delay before retrying failed deliveries
+// AttemptDelivery processes a single delivery attempt by retrieving the associated event and source, merging headers, and sending the HTTP request to the configured egress URL.
+func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.ListPendingDeliveryAttemptsRow) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // TODO make timeout configurable
+	defer cancel()
+
+	if err := markInFlight(ctx, svc, delivery.ID); err != nil {
+		logrus.Error("Error updating delivery attempt state to in_flight:", err)
+		return
+	}
+
+	payload, err := loadDeliveryPayload(ctx, svc, delivery)
+	if err != nil {
+		logrus.Error("Error loading delivery payload:", err)
+		if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
+			logrus.Error("Error reverting delivery attempt state to pending after load failure:", markErr)
+		}
+		return
+	}
+
+	res, err := sendDeliveryRequest(httpClient, payload)
+	if err != nil {
+		logrus.Error("Error sending delivery request:", err)
+		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+			logrus.Warn("Delivery request timed out, scheduling retry")
+			result := &DeliveryResult{
+				StatusCode: 0,
+				DeliveryState: "failed",
+				ErrorType: "timeout",
+				ErrorMessage: nerr.Error(),
+			}
+			handleDeliveryFinalizationAndRetry(ctx, svc, delivery, result)
+			return
+		} else {
+			if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
+				logrus.Error("Error reverting delivery attempt state to pending after send failure:", markErr)
+			}
+		}
+		return
+	}
+	defer res.Body.Close()
+
+	result := interpretDeliveryResponse(res)
+	handleDeliveryFinalizationAndRetry(ctx, svc, delivery, result)
 }

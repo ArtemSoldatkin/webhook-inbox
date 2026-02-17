@@ -60,6 +60,7 @@ func main() {
 	service := service.NewService(queries)
 
 	go deliveryengine.Start(service, 300 * time.Millisecond) // TODO make this configurable
+	go deliveryengine.StartRecoveryEngine(service, 5 * time.Minute) // TODO make this configurable
 
 	r.Mount("/api/v1", routev1.V1Router(service))
 

@@ -203,3 +203,13 @@ SET
 WHERE
     id = $7
     AND state IN ('pending', 'in_flight');
+
+-- name: RecoverStuckDeliveryAttempts :exec
+UPDATE delivery_attempts
+SET
+    state = 'pending',
+    started_at = NULL,
+    finished_at = NULL
+WHERE
+    state = 'in_flight'
+    AND started_at < NOW() - INTERVAL '15 minutes';

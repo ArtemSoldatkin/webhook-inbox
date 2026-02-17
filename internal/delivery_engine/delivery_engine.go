@@ -31,7 +31,7 @@ func Start(svc *service.Service, pollInterval time.Duration) {
 			semaphore <- struct{}{}
 			go func(delivery db.ListPendingDeliveryAttemptsRow) {
 				defer func() { <-semaphore }()
-				AttemptDelivery(ctx, svc, httpClient, delivery)
+				attemptDelivery(svc, httpClient, delivery)
 			}(delivery)
 		}
 		<-ticker.C
