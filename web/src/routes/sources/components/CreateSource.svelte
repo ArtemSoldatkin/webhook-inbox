@@ -1,10 +1,18 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import env from '$lib/env';
 	import type { SourceDTO } from '$lib/types';
 
 	type NewSource = Omit<
 		SourceDTO,
-		'ID' | 'PublicID' | 'IngressUrl' | 'Status' | 'StatusReason' | 'CreatedAt' | 'UpdatedAt' | 'DisableAt'
+		| 'ID'
+		| 'PublicID'
+		| 'IngressUrl'
+		| 'Status'
+		| 'StatusReason'
+		| 'CreatedAt'
+		| 'UpdatedAt'
+		| 'DisableAt'
 	>;
 
 	let data = newData();
@@ -41,10 +49,7 @@
 	}
 
 	function validateInput() {
-		if (data.EgressUrl.trim() === '') {
-			return false;
-		}
-		return true;
+		return validateEgressUrl(data.EgressUrl);
 	}
 
 	function handleSubmit() {
@@ -55,10 +60,31 @@
 		}
 		createSource();
 	}
+
+	function validateEgressUrl(url: string): boolean {
+		try {
+			new URL(url);
+			if (env.VITE_ENV === 'dev') {
+				return true;
+			}
+			// TODO add additional checks to ensure the URL is valid for egress (e.g., not localhost, etc.)
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	let egressError: string | null = null;
+	$: if (data.EgressUrl.trim() !== '' && !validateEgressUrl(data.EgressUrl)) {
+		egressError = 'Egress URL is required';
+	} else {
+		egressError = null;
+	}
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
-	<label>Egress URL
+	<label
+		>Egress URL
 		<input
 			type="text"
 			bind:value={data.EgressUrl}
@@ -67,15 +93,18 @@
 			disabled={loading}
 		/>
 	</label>
+	{#if egressError}
+		<p class="error">Egress URL Error: {egressError}</p>
+	{/if}
 	<label
 		>Static Headers
 		<InputMap bind:json={data.StaticHeaders} disabled={loading} />
 	</label>
-	<label>Description
-		<textarea bind:value={data.Description} placeholder="Optional description"
-		></textarea>
+	<label
+		>Description
+		<textarea bind:value={data.Description} placeholder="Optional description"></textarea>
 	</label>
-	<button type="submit" disabled={loading}>Create New Source</button>
+	<button type="submit" disabled={loading || Boolean(egressError)}>Create New Source</button>
 	{#if error}
 		<p class="error">Error: {error}</p>
 	{/if}

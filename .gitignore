@@ -33,3 +33,6 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Dev migrations
+migrations/*_dev.up.sql

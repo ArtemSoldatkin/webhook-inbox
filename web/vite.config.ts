@@ -13,5 +13,8 @@ export default defineConfig({
 				rewrite: (path) => path.replace(/^\/api/, '')
 			}
 		}
+	},
+	define: {
+		'import.meta.env.VITE_ENV': JSON.stringify(env.ENV)
 	}
 });
