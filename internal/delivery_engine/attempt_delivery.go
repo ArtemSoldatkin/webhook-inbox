@@ -3,6 +3,8 @@ package deliveryengine
 import (
 	"bytes"
 	"context"
+	"errors"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -96,7 +98,7 @@ func loadDeliveryPayload(ctx context.Context, svc *service.Service, delivery db.
 }
 
 // sendDeliveryRequest constructs and sends an HTTP request based on the provided delivery payload and returns the response or an error if the request fails.
-func sendDeliveryRequest(httpClient *http.Client, payload *DeliveryPayload) (*http.Response, error) {
+func sendDeliveryRequest(ctx context.Context, httpClient *http.Client, payload *DeliveryPayload) (*http.Response, error) {
 	URL, err := url.Parse(payload.URL)
     if err != nil {
         return nil, err
@@ -108,14 +110,14 @@ func sendDeliveryRequest(httpClient *http.Client, payload *DeliveryPayload) (*ht
 		}
 	}
 	URL.RawQuery = query.Encode()
-	req, err := http.NewRequest(payload.Method, URL.String(), bytes.NewReader(payload.Body))
+	req, err := http.NewRequestWithContext(ctx, payload.Method, URL.String(), bytes.NewReader(payload.Body))
 	if err != nil {
 		return nil, err
 	}
 	req.Header = http.Header(payload.Headers)
 	res, err := httpClient.Do(req)
 	if err != nil {
-		logrus.Error("Error sending HTTP request for delivery attempt:", err)
+		logrus.WithError(err).Error("Error sending HTTP request for delivery attempt")
 		return nil, err
 	}
 	return res, nil
@@ -155,38 +157,10 @@ func interpretDeliveryResponse(res *http.Response) *DeliveryResult {
 	}
 }
 
-// TODO add context with timeout to prevent hanging deliveries
-// TODO add delay before retrying failed deliveries
-// AttemptDelivery processes a single delivery attempt by retrieving the associated event and source, merging headers, and sending the HTTP request to the configured egress URL.
-func AttemptDelivery(ctx context.Context, svc *service.Service, httpClient *http.Client, delivery db.ListPendingDeliveryAttemptsRow) {
-	if err := markInFlight(ctx, svc, delivery.ID); err != nil {
-		logrus.Error("Error updating delivery attempt state to in_flight:", err)
-		return
-	}
-
-	payload, err := loadDeliveryPayload(ctx, svc, delivery)
-	if err != nil {
-		logrus.Error("Error loading delivery payload:", err)
-		if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
-			logrus.Error("Error reverting delivery attempt state to pending after load failure:", markErr)
-		}
-		return
-	}
-
-	res, err := sendDeliveryRequest(httpClient, payload)
-	if err != nil {
-		logrus.Error("Error sending delivery request:", err)
-		if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
-			logrus.Error("Error reverting delivery attempt state to pending after send failure:", markErr)
-		}
-		return
-	}
-	defer res.Body.Close()
-
-	result := interpretDeliveryResponse(res)
-
+// handleDeliveryFinalizationAndRetry finalizes the delivery attempt by updating its state and result in the database, and if the delivery failed, it schedules a retry if the maximum number of attempts has not been reached.
+func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow, result *DeliveryResult) {
 	if err := finalizeDeliveryAttempt(ctx, svc, delivery.ID, result); err != nil {
-		logrus.Error("Error finalizing delivery attempt:", err)
+		logrus.WithError(err).Error("Error finalizing delivery attempt")
 		return
 	}
 
@@ -203,4 +177,62 @@ func AttemptDelivery(ctx context.Context, svc *service.Service, httpClient *http
 			logrus.Infof("Scheduled retry delivery attempt with ID: %d for event ID: %d", deliveryAttemptID, delivery.EventID)
 		}
 	}
+}
+
+// TODO add delay before retrying failed deliveries
+// attemptDelivery processes a single delivery attempt by retrieving the associated event and source, merging headers, and sending the HTTP request to the configured egress URL.
+func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.ListPendingDeliveryAttemptsRow) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // TODO make timeout configurable
+	defer cancel()
+
+	if err := markInFlight(ctx, svc, delivery.ID); err != nil {
+		logrus.WithError(err).Error("Error updating delivery attempt state to in_flight")
+		return
+	}
+
+	payload, err := loadDeliveryPayload(ctx, svc, delivery)
+	if err != nil {
+		logrus.WithError(err).Error("Error loading delivery payload")
+		if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
+			logrus.WithError(err).Error("Error reverting delivery attempt state to pending after load failure:", markErr)
+		}
+		return
+	}
+
+	res, err := sendDeliveryRequest(ctx, httpClient, payload)
+	if err != nil {
+		logrus.WithError(err).Error("Error sending delivery request")
+		if errors.Is(err, context.DeadlineExceeded) {
+			// If the context deadline is exceeded, suspend delivery and let the recovery worker resume it.
+			return
+		}
+		var errorType string
+		var errorMessage string
+		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+			errorType = "timeout"
+			errorMessage = nerr.Error()
+		} else if dnsErr, ok := err.(*net.DNSError); ok {
+			errorType = "dns_error"
+			errorMessage = dnsErr.Error()
+		} else if opErr, ok := err.(*net.OpError); ok {
+			errorType = "connection_error"
+			errorMessage = opErr.Error()
+		} else {
+			errorType = "network_error"
+			errorMessage = err.Error()
+		}
+		logrus.Warnf("Delivery request failed for event ID %d with error type %s: %s", delivery.EventID, errorType, errorMessage)
+		result := &DeliveryResult{
+			StatusCode: 0,
+			DeliveryState: "failed",
+			ErrorType: errorType,
+			ErrorMessage: errorMessage,
+		}
+		handleDeliveryFinalizationAndRetry(ctx, svc, delivery, result)
+		return
+	}
+	defer res.Body.Close()
+
+	result := interpretDeliveryResponse(res)
+	handleDeliveryFinalizationAndRetry(ctx, svc, delivery, result)
 }

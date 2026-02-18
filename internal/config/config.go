@@ -27,7 +27,7 @@ func getIntEnv(envVar string, defaultValue int) int {
 	var value int
 	_, err := fmt.Sscanf(valueStr, "%d", &value)
 	if err != nil {
-		logrus.Fatalf("Invalid value for %s: %v", envVar, err)
+		logrus.WithError(err).Fatalf("Invalid value for %s", envVar)
 	}
 	return value
 }

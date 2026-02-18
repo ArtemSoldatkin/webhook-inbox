@@ -25,3 +25,8 @@ func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context) ([]db.ListP
 func (svc *Service) UpdateDeliveryAttempt(ctx context.Context, attempt db.UpdateDeliveryAttemptParams) error {
 	return svc.queries.UpdateDeliveryAttempt(ctx, attempt)
 }
+
+// RecoverStuckDeliveryAttempts identifies and resets delivery attempts that have been in-flight for too long, allowing them to be retried by the delivery engine.
+func (svc *Service) RecoverStuckDeliveryAttempts(ctx context.Context) error {
+	return svc.queries.RecoverStuckDeliveryAttempts(ctx)
+}

@@ -461,6 +461,22 @@ func (q *Queries) ListSources(ctx context.Context) ([]Source, error) {
 	return items, nil
 }
 
+const recoverStuckDeliveryAttempts = `-- name: RecoverStuckDeliveryAttempts :exec
+UPDATE delivery_attempts
+SET
+    state = 'pending',
+    started_at = NULL,
+    finished_at = NULL
+WHERE
+    state = 'in_flight'
+    AND started_at < NOW() - INTERVAL '15 minutes'
+`
+
+func (q *Queries) RecoverStuckDeliveryAttempts(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, recoverStuckDeliveryAttempts)
+	return err
+}
+
 const updateDeliveryAttempt = `-- name: UpdateDeliveryAttempt :exec
 UPDATE delivery_attempts
 SET
