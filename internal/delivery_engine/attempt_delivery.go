@@ -3,6 +3,7 @@ package deliveryengine
 import (
 	"bytes"
 	"context"
+	"errors"
 	"net"
 	"net/http"
 	"net/url"
@@ -201,6 +202,10 @@ func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.
 	res, err := sendDeliveryRequest(ctx, httpClient, payload)
 	if err != nil {
 		logrus.WithError(err).Error("Error sending delivery request")
+		if errors.Is(err, context.DeadlineExceeded) {
+			// If the context deadline is exceeded, suspend delivery and let the recovery worker resume it.
+			return
+		}
 		var errorType string
 		var errorMessage string
 		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
