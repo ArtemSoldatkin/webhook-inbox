@@ -3,7 +3,6 @@ package deliveryengine
 import (
 	"bytes"
 	"context"
-	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -200,22 +199,7 @@ func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.
 
 	res, err := sendDeliveryRequest(ctx, httpClient, payload)
 	if err != nil {
-		logrus.WithError(err).Error("Error sending delivery request")
-		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-			logrus.Warn("Delivery request timed out, scheduling retry")
-			result := &DeliveryResult{
-				StatusCode: 0,
-				DeliveryState: "failed",
-				ErrorType: "timeout",
-				ErrorMessage: nerr.Error(),
-			}
-			handleDeliveryFinalizationAndRetry(ctx, svc, delivery, result)
-			return
-		} else {
-			if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
-				logrus.WithError(err).Error("Error reverting delivery attempt state to pending after send failure:", markErr)
-			}
-		}
+		logrus.WithError(err).Error("Error sending delivery request - delivery will be recovered by recovery engine")
 		return
 	}
 	defer res.Body.Close()
