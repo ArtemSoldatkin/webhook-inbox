@@ -201,12 +201,19 @@ func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.
 	res, err := sendDeliveryRequest(ctx, httpClient, payload)
 	if err != nil {
 		logrus.WithError(err).Error("Error sending delivery request")
+		
+		// Check if the error is a timeout
+		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+			// For timeout errors, leave the delivery in "in_flight" state
+			// The recovery worker will pick it up and reset it to "pending"
+			logrus.Warnf("Delivery request timed out for event ID %d. Leaving in in_flight state for recovery worker", delivery.EventID)
+			return
+		}
+		
+		// For non-timeout errors, finalize the delivery attempt
 		var errorType string
 		var errorMessage string
-		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-			errorType = "timeout"
-			errorMessage = nerr.Error()
-		} else if dnsErr, ok := err.(*net.DNSError); ok {
+		if dnsErr, ok := err.(*net.DNSError); ok {
 			errorType = "dns_error"
 			errorMessage = dnsErr.Error()
 		} else if opErr, ok := err.(*net.OpError); ok {
