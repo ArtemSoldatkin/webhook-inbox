@@ -21,11 +21,12 @@ import (
 func createDatabasePool(user string, password string, url string, port int, db string) *pgxpool.Pool {
 	pool, err := pgxpool.New(context.Background(), fmt.Sprintf("postgres://%s:%s@%s:%d/%s", user, password, url, port, db))
 	if err != nil {
-		logrus.Fatal("Unable to connect to database:", err)
+		logrus.WithError(err).Fatal("Unable to connect to database")
 	}
 	return pool
 }
 
+// LogrusLogger is a middleware that logs incoming HTTP requests using logrus, including the method, path, and duration of the request.
 func LogrusLogger(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         start := time.Now()
@@ -66,6 +67,6 @@ func main() {
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", config.ApiPort), r)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatal("Failed to start server")
 	}
 }
