@@ -23,7 +23,7 @@ func StartRecoveryEngine(svc *service.Service, interval time.Duration) {
 	defer ticker.Stop()
 	for {
 		if err := recoverStuckDeliveryAttempts(svc); err != nil {
-			logrus.Error("Error recovering stuck delivery attempts:", err)
+			logrus.WithError(err).Error("Error recovering stuck delivery attempts")
 		}
 		<-ticker.C
 	}

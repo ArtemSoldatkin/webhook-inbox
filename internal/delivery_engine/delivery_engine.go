@@ -24,7 +24,7 @@ func Start(svc *service.Service, pollInterval time.Duration) {
 	for {
 		pendingDeliveries, err := svc.ListPendingDeliveryAttempts(ctx)
 		if err != nil {
-			logrus.Error("Error listing pending deliveries:", err)
+			logrus.WithError(err).Error("Error listing pending deliveries")
 			continue
 		}
 		for _, delivery := range pendingDeliveries {

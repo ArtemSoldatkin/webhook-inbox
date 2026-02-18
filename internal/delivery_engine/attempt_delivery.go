@@ -116,7 +116,7 @@ func sendDeliveryRequest(ctx context.Context, httpClient *http.Client, payload *
 	req.Header = http.Header(payload.Headers)
 	res, err := httpClient.Do(req)
 	if err != nil {
-		logrus.Error("Error sending HTTP request for delivery attempt:", err)
+		logrus.WithError(err).Error("Error sending HTTP request for delivery attempt")
 		return nil, err
 	}
 	return res, nil
@@ -159,7 +159,7 @@ func interpretDeliveryResponse(res *http.Response) *DeliveryResult {
 // handleDeliveryFinalizationAndRetry finalizes the delivery attempt by updating its state and result in the database, and if the delivery failed, it schedules a retry if the maximum number of attempts has not been reached.
 func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow, result *DeliveryResult)  {
 	if err := finalizeDeliveryAttempt(ctx, svc, delivery.ID, result); err != nil {
-		logrus.Error("Error finalizing delivery attempt:", err)
+		logrus.WithError(err).Error("Error finalizing delivery attempt")
 		return
 	}
 
@@ -185,22 +185,22 @@ func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.
 	defer cancel()
 
 	if err := markInFlight(ctx, svc, delivery.ID); err != nil {
-		logrus.Error("Error updating delivery attempt state to in_flight:", err)
+		logrus.WithError(err).Error("Error updating delivery attempt state to in_flight")
 		return
 	}
 
 	payload, err := loadDeliveryPayload(ctx, svc, delivery)
 	if err != nil {
-		logrus.Error("Error loading delivery payload:", err)
+		logrus.WithError(err).Error("Error loading delivery payload")
 		if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
-			logrus.Error("Error reverting delivery attempt state to pending after load failure:", markErr)
+			logrus.WithError(err).Error("Error reverting delivery attempt state to pending after load failure:", markErr)
 		}
 		return
 	}
 
 	res, err := sendDeliveryRequest(ctx, httpClient, payload)
 	if err != nil {
-		logrus.Error("Error sending delivery request:", err)
+		logrus.WithError(err).Error("Error sending delivery request")
 		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
 			logrus.Warn("Delivery request timed out, scheduling retry")
 			result := &DeliveryResult{
@@ -213,7 +213,7 @@ func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.
 			return
 		} else {
 			if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
-				logrus.Error("Error reverting delivery attempt state to pending after send failure:", markErr)
+				logrus.WithError(err).Error("Error reverting delivery attempt state to pending after send failure:", markErr)
 			}
 		}
 		return
