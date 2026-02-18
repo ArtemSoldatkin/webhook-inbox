@@ -201,21 +201,29 @@ func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.
 	res, err := sendDeliveryRequest(ctx, httpClient, payload)
 	if err != nil {
 		logrus.WithError(err).Error("Error sending delivery request")
+		var errorType string
+		var errorMessage string
 		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-			logrus.Warn("Delivery request timed out, scheduling retry")
-			result := &DeliveryResult{
-				StatusCode: 0,
-				DeliveryState: "failed",
-				ErrorType: "timeout",
-				ErrorMessage: nerr.Error(),
-			}
-			handleDeliveryFinalizationAndRetry(ctx, svc, delivery, result)
-			return
+			errorType = "timeout"
+			errorMessage = nerr.Error()
+		} else if dnsErr, ok := err.(*net.DNSError); ok {
+			errorType = "dns_error"
+			errorMessage = dnsErr.Error()
+		} else if opErr, ok := err.(*net.OpError); ok {
+			errorType = "connection_error"
+			errorMessage = opErr.Error()
 		} else {
-			if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
-				logrus.WithError(err).Error("Error reverting delivery attempt state to pending after send failure:", markErr)
-			}
+			errorType = "network_error"
+			errorMessage = err.Error()
 		}
+		logrus.Warnf("Delivery request failed for event ID %d with error type %s: %s", delivery.EventID, errorType, errorMessage)
+		result := &DeliveryResult{
+			StatusCode: 0,
+			DeliveryState: "failed",
+			ErrorType: errorType,
+			ErrorMessage: errorMessage,
+		}
+		handleDeliveryFinalizationAndRetry(ctx, svc, delivery, result)
 		return
 	}
 	defer res.Body.Close()
