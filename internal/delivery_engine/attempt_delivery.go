@@ -97,7 +97,7 @@ func loadDeliveryPayload(ctx context.Context, svc *service.Service, delivery db.
 }
 
 // sendDeliveryRequest constructs and sends an HTTP request based on the provided delivery payload and returns the response or an error if the request fails.
-func sendDeliveryRequest(httpClient *http.Client, payload *DeliveryPayload) (*http.Response, error) {
+func sendDeliveryRequest(ctx context.Context, httpClient *http.Client, payload *DeliveryPayload) (*http.Response, error) {
 	URL, err := url.Parse(payload.URL)
     if err != nil {
         return nil, err
@@ -109,7 +109,7 @@ func sendDeliveryRequest(httpClient *http.Client, payload *DeliveryPayload) (*ht
 		}
 	}
 	URL.RawQuery = query.Encode()
-	req, err := http.NewRequest(payload.Method, URL.String(), bytes.NewReader(payload.Body))
+	req, err := http.NewRequestWithContext(ctx, payload.Method, URL.String(), bytes.NewReader(payload.Body))
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.
 		return
 	}
 
-	res, err := sendDeliveryRequest(httpClient, payload)
+	res, err := sendDeliveryRequest(ctx, httpClient, payload)
 	if err != nil {
 		logrus.Error("Error sending delivery request:", err)
 		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
