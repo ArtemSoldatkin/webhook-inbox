@@ -204,9 +204,10 @@ func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.
 		
 		// Check if the error is a timeout
 		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-			// For timeout errors, leave the delivery in "in_flight" state
-			// The recovery worker will pick it up and reset it to "pending"
-			logrus.Warnf("Delivery request timed out for event ID %d. Leaving in in_flight state for recovery worker", delivery.EventID)
+			// For timeout errors, leave the delivery in "in-flight" state without finalization.
+			// The delivery attempt remains with state='in_flight' and started_at timestamp already set.
+			// The recovery worker will identify this as stuck (started_at > 15 minutes ago) and reset it to "pending".
+			logrus.Warnf("Delivery request timed out for event ID %d. Leaving in in-flight state for recovery worker", delivery.EventID)
 			return
 		}
 		
