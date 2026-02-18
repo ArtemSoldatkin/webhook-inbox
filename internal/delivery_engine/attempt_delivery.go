@@ -157,7 +157,7 @@ func interpretDeliveryResponse(res *http.Response) *DeliveryResult {
 }
 
 // handleDeliveryFinalizationAndRetry finalizes the delivery attempt by updating its state and result in the database, and if the delivery failed, it schedules a retry if the maximum number of attempts has not been reached.
-func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow, result *DeliveryResult)  {
+func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow, result *DeliveryResult) {
 	if err := finalizeDeliveryAttempt(ctx, svc, delivery.ID, result); err != nil {
 		logrus.WithError(err).Error("Error finalizing delivery attempt")
 		return
@@ -179,7 +179,7 @@ func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Servic
 }
 
 // TODO add delay before retrying failed deliveries
-// AttemptDelivery processes a single delivery attempt by retrieving the associated event and source, merging headers, and sending the HTTP request to the configured egress URL.
+// attemptDelivery processes a single delivery attempt by retrieving the associated event and source, merging headers, and sending the HTTP request to the configured egress URL.
 func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.ListPendingDeliveryAttemptsRow) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // TODO make timeout configurable
 	defer cancel()
