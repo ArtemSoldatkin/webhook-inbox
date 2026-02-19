@@ -9,7 +9,7 @@ import (
 // Service encapsulates the business logic and database queries.
 type Service struct {
 	queries *db.Queries
-	Config  *config.Config
+	Config	*config.Config
 }
 
 // NewService creates a new instance of Service.

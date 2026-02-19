@@ -42,8 +42,8 @@ func LoadConfig() Config {
 	dbPort := getIntEnv("POSTGRES_PORT", 5432)
 	dbName := os.Getenv("POSTGRES_DB")
 	apiPort := os.Getenv("API_PORT")
-	if env != "dev" && env != "prod" {
-		logrus.Fatal("ENV environment variable must be set to 'dev' or 'prod'")
+	if env != "dev" && env != "uat" && env != "prod" {
+		logrus.Fatal("ENV environment variable must be set to 'dev', 'uat' or 'prod'")
 	}
 	if apiPort == "" {
 		logrus.Fatal("API_PORT environment variable is required")
