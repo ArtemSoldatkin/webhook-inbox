@@ -10,6 +10,7 @@ import (
 
 // Config holds the application configuration values.
 type Config struct {
+	Env        string
 	DBUser    	string
 	DBPassword 	string
 	DBHost    	string
@@ -34,16 +35,21 @@ func getIntEnv(envVar string, defaultValue int) int {
 
 // LoadConfig loads configuration from environment variables.
 func LoadConfig() Config {
+	env := os.Getenv("ENV")
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPassword := os.Getenv("POSTGRES_PASSWORD")
 	dbHost := os.Getenv("POSTGRES_HOST")
 	dbPort := getIntEnv("POSTGRES_PORT", 5432)
 	dbName := os.Getenv("POSTGRES_DB")
 	apiPort := os.Getenv("API_PORT")
+	if env != "dev" && env != "prod" {
+		logrus.Fatal("ENV environment variable must be set to 'dev' or 'prod'")
+	}
 	if apiPort == "" {
 		logrus.Fatal("API_PORT environment variable is required")
 	}
 	return Config{
+		Env:       env,
 		DBUser:    dbUser,
 		DBPassword: dbPassword,
 		DBHost:     dbHost,

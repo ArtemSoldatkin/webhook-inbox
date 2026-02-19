@@ -3,6 +3,7 @@ package routev1
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -143,6 +144,11 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Invalid static headers", http.StatusBadRequest)
 			return
 		}
+		if !validateEgressUrl(data.EgressUrl, svc.Config.Env) {
+			logrus.WithField("egressUrl", data.EgressUrl).Error("Invalid egress URL")
+			http.Error(w, "Invalid egress URL", http.StatusBadRequest)
+			return
+		}
 		source, err := svc.CreateSource(r.Context(), db.CreateSourceParams{
 			EgressUrl:		data.EgressUrl,
 			StaticHeaders:  staticHeaders,
@@ -164,6 +170,19 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		w.WriteHeader(http.StatusCreated)
 		w.Write(response)
 	}
+}
+
+// validateEgressUrl checks if the provided egress URL is valid and does not point to local or private network addresses.
+func validateEgressUrl(url, env string) bool {
+	if env == "dev" {
+		return regexp.MustCompile(`^https?://`).MatchString(url)
+	}
+	return regexp.MustCompile(`^https?://`).MatchString(url) &&
+		!regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(/|:|$)`).MatchString(url) &&
+		!regexp.MustCompile(`^https?://10\.`).MatchString(url) &&
+		!regexp.MustCompile(`^https?://192\.168\.`).MatchString(url) &&
+		!regexp.MustCompile(`^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.`).MatchString(url) &&
+		!regexp.MustCompile(`^https?://169\.254\.169\.254(/|:|$)`).MatchString(url)
 }
 
 // sourcesRouter sets up the router for sources-related endpoints.

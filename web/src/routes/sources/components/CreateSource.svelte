@@ -67,8 +67,15 @@
 			if (env.VITE_ENV === 'dev') {
 				return true;
 			}
-			// TODO add additional checks to ensure the URL is valid for egress (e.g., not localhost, etc.)
-			return true;
+			return (
+				/^https?:\/\//g.test(url) &&
+				!/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(\/|:|$)/g.test(url) &&
+				!/^https?:\/\/10\./g.test(url) &&
+				!/^https?:\/\/192\.168\./g.test(url) &&
+				!/^https?:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./g.test(url) &&
+				!/^https?:\/\/169\.254\.169\.254(\/|:|$)/g.test(url) &&
+				url.length <= 2048
+			);
 		} catch {
 			return false;
 		}
@@ -76,7 +83,7 @@
 
 	let egressError: string | null = null;
 	$: if (data.EgressUrl.trim() !== '' && !validateEgressUrl(data.EgressUrl)) {
-		egressError = 'Egress URL is required';
+		egressError = 'Valid Egress URL is required';
 	} else {
 		egressError = null;
 	}
@@ -94,7 +101,7 @@
 		/>
 	</label>
 	{#if egressError}
-		<p class="error">Egress URL Error: {egressError}</p>
+		<p class="error">{egressError}</p>
 	{/if}
 	<label
 		>Static Headers
