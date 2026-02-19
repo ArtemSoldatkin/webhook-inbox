@@ -3,15 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE sources (
     id BIGSERIAL PRIMARY KEY,
     public_id UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(), -- public identifier for external use
-    egress_url TEXT NOT NULL CHECK (
-        -- Require HTTP/HTTPS and block obvious internal/loopback/metadata targets for SSRF mitigation
-        egress_url ~ '^https?://' AND
-        egress_url !~* '^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(/|:|$)' AND
-        egress_url !~* '^https?://10\.' AND
-        egress_url !~* '^https?://192\.168\.' AND
-        egress_url !~* '^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.' AND
-        egress_url !~* '^https?://169\.254\.169\.254(/|:|$)'
-    ), -- where deliveries are sent to
+    egress_url TEXT NOT NULL, -- where deliveries are sent to
     static_headers JSONB NOT NULL DEFAULT '{}',
     status TEXT NOT NULL CHECK (status IN ('active', 'paused', 'quarantined', 'disabled')) DEFAULT 'active',
     status_reason VARCHAR(512),
