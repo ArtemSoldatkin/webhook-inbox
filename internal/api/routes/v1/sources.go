@@ -17,6 +17,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	httpRegexp = regexp.MustCompile(`^https?://`)
+	localhostRegexp = regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(/|:|$)`)
+	private10Regexp = regexp.MustCompile(`^https?://10\.`)
+	private192Regexp = regexp.MustCompile(`^https?://192\.168\.`)
+	private172Regexp = regexp.MustCompile(`^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.`)
+	metadata169Regexp = regexp.MustCompile(`^https?://169\.254\.169\.254(/|:|$)`)
+)
+
 // listSources handles GET requests to list all sources.
 func listSources(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -186,12 +195,12 @@ func validateEgressUrl(egressUrl, env string) bool {
 	if env == "dev" {
 		return true
 	}
-	return regexp.MustCompile(`^https?://`).MatchString(parsedUrl) &&
-		!regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(/|:|$)`).MatchString(parsedUrl) &&
-		!regexp.MustCompile(`^https?://10\.`).MatchString(parsedUrl) &&
-		!regexp.MustCompile(`^https?://192\.168\.`).MatchString(parsedUrl) &&
-		!regexp.MustCompile(`^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.`).MatchString(parsedUrl) &&
-		!regexp.MustCompile(`^https?://169\.254\.169\.254(/|:|$)`).MatchString(parsedUrl)
+	return httpRegexp.MatchString(parsedUrl) &&
+		!localhostRegexp.MatchString(parsedUrl) &&
+		!private10Regexp.MatchString(parsedUrl) &&
+		!private192Regexp.MatchString(parsedUrl) &&
+		!private172Regexp.MatchString(parsedUrl) &&
+		!metadata169Regexp.MatchString(parsedUrl)
 }
 
 // sourcesRouter sets up the router for sources-related endpoints.
