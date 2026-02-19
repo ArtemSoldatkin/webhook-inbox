@@ -63,21 +63,21 @@
 
 	function validateEgressUrl(url: string): boolean {
 		try {
-			const parsedURL = new URL(url);
+			const parsedUrl = new URL(url);
 			if (
-				(parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:') ||
-				parsedURL.href.length > 2048
+				(parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') ||
+				parsedUrl.href.length > 2048
 			) {
 				return false;
 			}
 			if (env.VITE_ENV === 'dev') return true;
 			return (
-				/^https?:\/\//.test(parsedURL.href) &&
-				!/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(\/|:|$)/.test(parsedURL.href) &&
-				!/^https?:\/\/10\./.test(parsedURL.href) &&
-				!/^https?:\/\/192\.168\./.test(parsedURL.href) &&
-				!/^https?:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./.test(parsedURL.href) &&
-				!/^https?:\/\/169\.254\.169\.254(\/|:|$)/.test(parsedURL.href)
+				/^https?:\/\//.test(parsedUrl.href) &&
+				!/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(\/|:|$)/.test(parsedUrl.href) &&
+				!/^https?:\/\/10\./.test(parsedUrl.href) &&
+				!/^https?:\/\/192\.168\./.test(parsedUrl.href) &&
+				!/^https?:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./.test(parsedUrl.href) &&
+				!/^https?:\/\/169\.254\.169\.254(\/|:|$)/.test(parsedUrl.href)
 			);
 		} catch {
 			return false;

@@ -3,6 +3,7 @@ package routev1
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"time"
@@ -173,17 +174,24 @@ func createSource(svc *service.Service) http.HandlerFunc {
 }
 
 // validateEgressUrl checks if the provided egress URL is valid and does not point to local or private network addresses.
-func validateEgressUrl(url, env string) bool {
-	if env == "dev" {
-		return regexp.MustCompile(`^https?://`).MatchString(url)
+func validateEgressUrl(egressUrl, env string) bool {
+	parsedUrlRaw, err := url.Parse(egressUrl)
+	if err != nil {
+		return false
 	}
-	return len(url) > 2048 &&
-		regexp.MustCompile(`^https?://`).MatchString(url) &&
-		!regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(/|:|$)`).MatchString(url) &&
-		!regexp.MustCompile(`^https?://10\.`).MatchString(url) &&
-		!regexp.MustCompile(`^https?://192\.168\.`).MatchString(url) &&
-		!regexp.MustCompile(`^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.`).MatchString(url) &&
-		!regexp.MustCompile(`^https?://169\.254\.169\.254(/|:|$)`).MatchString(url)
+	parsedUrl := parsedUrlRaw.String()
+	if len(parsedUrl) > 2048 || (parsedUrlRaw.Scheme != "http" && parsedUrlRaw.Scheme != "https") {
+		return false
+	}
+	if env == "dev" {
+		return true
+	}
+	return regexp.MustCompile(`^https?://`).MatchString(parsedUrl) &&
+		!regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(/|:|$)`).MatchString(parsedUrl) &&
+		!regexp.MustCompile(`^https?://10\.`).MatchString(parsedUrl) &&
+		!regexp.MustCompile(`^https?://192\.168\.`).MatchString(parsedUrl) &&
+		!regexp.MustCompile(`^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.`).MatchString(parsedUrl) &&
+		!regexp.MustCompile(`^https?://169\.254\.169\.254(/|:|$)`).MatchString(parsedUrl)
 }
 
 // sourcesRouter sets up the router for sources-related endpoints.
