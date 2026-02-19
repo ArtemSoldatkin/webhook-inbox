@@ -10,7 +10,8 @@ BEGIN
             egress_url !~* '^https?://10\.' AND
             egress_url !~* '^https?://192\.168\.' AND
             egress_url !~* '^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.' AND
-            egress_url !~* '^https?://169\.254\.169\.254(/|:|$)'
+            egress_url !~* '^https?://169\.254\.169\.254(/|:|$)' AND
+            CHAR_LENGTH(egress_url) <= 2048
         );
   END IF;
 END
