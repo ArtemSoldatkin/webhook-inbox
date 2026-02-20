@@ -17,6 +17,8 @@
 	let loading = false;
 	let error: string | null = null;
 
+	$: isBodyAllowed = method !== 'GET';
+
 	async function testWebhook() {
 		loading = true;
 		error = null;
@@ -24,7 +26,6 @@
 			const webhookURL = `/api/ingest/${publicID}`;
 			const params = new URLSearchParams(queryParams).toString();
 			const urlWithParams = params ? `${webhookURL}?${params}` : webhookURL;
-			const isBodyAllowed = method !== 'GET';
 			const response = await fetch(urlWithParams, {
 				method,
 				headers: {
@@ -65,7 +66,7 @@
 		Query Parameters (optional):
 		<InputMap bind:json={queryParams} disabled={loading} />
 	</label>
-	{#if method !== 'GET'}<label>
+	{#if isBodyAllowed}<label>
 			Body (optional):
 			<BodyInput bind:body bind:contentType />
 		</label>
