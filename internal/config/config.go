@@ -16,9 +16,9 @@ type Config struct {
 	DBHost    	string
 	DBPort		int
 	DBName		string
-	ApiProtocol string
-	ApiHost 	string
-	ApiPort 	int
+	APIProtocol string
+	APIHost 	string
+	APIPort 	int
 }
 
 // getIntEnv retrieves an integer environment variable or returns a default value.
@@ -59,8 +59,8 @@ func LoadConfig() Config {
 		DBHost: dbHost,
 		DBPort: dbPort,
 		DBName: dbName,
-		ApiProtocol: apiProtocol,
-		ApiHost: apiHost,
-		ApiPort: apiPort,
+		APIProtocol: apiProtocol,
+		APIHost: apiHost,
+		APIPort: apiPort,
 	}
 }
