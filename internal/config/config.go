@@ -49,7 +49,10 @@ func LoadConfig() Config {
 	if env != "dev" && env != "uat" && env != "prod" {
 		logrus.Fatal("ENV environment variable must be set to 'dev', 'uat' or 'prod'")
 	}
-	if apiProtocol == "" || apiHost == "" {
+	if apiProtocol != "http" && apiProtocol != "https" {
+		logrus.Fatal("API_PROTOCOL environment variable must be set to 'http' or 'https'")
+	}
+	if apiHost == "" {
 		logrus.Fatal("API_PROTOCOL and API_HOST environment variables must be set")
 	}
 	return Config{
