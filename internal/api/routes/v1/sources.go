@@ -2,6 +2,7 @@ package routev1
 
 import (
 	"encoding/json"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -182,25 +183,42 @@ func createSource(svc *service.Service) http.HandlerFunc {
 	}
 }
 
+
+// NOTE: This SSRF protection is primarily for defense-in-depth. Since this is an internal tool
+// with no user input, the risk is low. If the tool becomes public or user-facing, keep/enhance this check.
 // validateEgressUrl checks if the provided egress URL is valid and does not point to local or private network addresses.
 func validateEgressUrl(egressUrl, env string) bool {
-	parsedUrlRaw, err := url.Parse(egressUrl)
+	parsedUrl, err := url.Parse(egressUrl)
 	if err != nil {
 		return false
 	}
-	parsedUrl := parsedUrlRaw.String()
-	if len(parsedUrl) > 2048 || (parsedUrlRaw.Scheme != "http" && parsedUrlRaw.Scheme != "https") {
+	if len(parsedUrl.String()) > 2048 || (parsedUrl.Scheme != "http" && parsedUrl.Scheme != "https") {
 		return false
 	}
 	if env == "dev" {
 		return true
 	}
-	return httpRegexp.MatchString(parsedUrl) &&
-		!localhostRegexp.MatchString(parsedUrl) &&
-		!private10Regexp.MatchString(parsedUrl) &&
-		!private192Regexp.MatchString(parsedUrl) &&
-		!private172Regexp.MatchString(parsedUrl) &&
-		!metadata169Regexp.MatchString(parsedUrl)
+	host := parsedUrl.Hostname()
+    ips, err := net.LookupIP(host)
+    if err != nil {
+        return false
+    }
+	for _, ip := range ips {
+        if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+            return false
+        }
+        // Block IPv4-mapped IPv6 loopback
+        if ip.To4() == nil && ip.String() == "::1" {
+            return false
+        }
+        // Block IPv4-mapped IPv6 for 127.0.0.0/8
+        if ip.To4() == nil && len(ip) == net.IPv6len && ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0 &&
+            ip[4] == 0 && ip[5] == 0 && ip[6] == 0 && ip[7] == 0 && ip[8] == 0 && ip[9] == 0 && ip[10] == 0xff && ip[11] == 0xff &&
+            ip[12] == 127 {
+            return false
+        }
+    }
+    return true
 }
 
 // sourcesRouter sets up the router for sources-related endpoints.
