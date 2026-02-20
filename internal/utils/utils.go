@@ -29,7 +29,7 @@ func MergeHeaders(staticHeaders map[string]string, rawHeaders map[string][]strin
 	return headers
 }
 
-// GenerateIngressURL generates the ingress URL for a given source ID.
-func GenerateIngressURL(sourceID string) string {
-	return fmt.Sprintf("http://localhost:3001/ingest/%s", sourceID) // TODO: make this dynamic based on config
+// GenerateIngressURL generates an ingress URL for a source based on the API protocol, host, port, and source ID.
+func GenerateIngressURL(apiProtocol, apiHost string, apiPort int, sourceID string) string {
+	return fmt.Sprintf("%s://%s:%d/ingest/%s", apiProtocol, apiHost, apiPort, sourceID)
 }

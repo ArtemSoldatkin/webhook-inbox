@@ -65,7 +65,7 @@ func main() {
 
 	r.Mount("/api/v1", routev1.V1Router(service))
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", config.ApiPort), r)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", config.APIPort), r)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to start server")
 	}

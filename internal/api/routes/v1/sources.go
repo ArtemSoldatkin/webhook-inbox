@@ -53,7 +53,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			sourceDTOs[i] = dtov1.SourceDTO{
 				ID:             source.ID,
 				PublicID:       source.PublicID.String(),
-				IngressUrl:     utils.GenerateIngressURL(source.PublicID.String()),
+				IngressUrl:     utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
 				EgressUrl:      source.EgressUrl,
 				StaticHeaders:  staticHeaders,
 				Status:         source.Status,
@@ -110,7 +110,7 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 		sourceDTO := dtov1.SourceDTO{
 				ID:             source.ID,
 				PublicID:       source.PublicID.String(),
-				IngressUrl:     utils.GenerateIngressURL(source.PublicID.String()),
+				IngressUrl:     utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
 				EgressUrl:      source.EgressUrl,
 				StaticHeaders:  staticHeaders,
 				Status:         source.Status,
