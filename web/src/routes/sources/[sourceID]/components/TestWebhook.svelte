@@ -17,6 +17,8 @@
 	let loading = false;
 	let error: string | null = null;
 
+	$: isBodyAllowed = method !== 'GET';
+
 	async function testWebhook() {
 		loading = true;
 		error = null;
@@ -28,9 +30,10 @@
 				method,
 				headers: {
 					...staticHeaders,
-					...headers
+					...headers,
+					...(isBodyAllowed && { 'Content-Type': contentType })
 				},
-				...(method === 'GET' ? {} : { body })
+				...(isBodyAllowed && { body })
 			});
 			if (!response.ok) {
 				throw new Error(`Failed to test webhook: ${response.statusText}`);
@@ -63,10 +66,10 @@
 		Query Parameters (optional):
 		<InputMap bind:json={queryParams} disabled={loading} />
 	</label>
-	{#if method!=="GET"}<label>
-		Body (optional):
-		<BodyInput bind:body={body} bind:contentType={contentType} />
-	</label>
+	{#if isBodyAllowed}<label>
+			Body (optional):
+			<BodyInput bind:body bind:contentType />
+		</label>
 	{/if}
 	{#if error}
 		<div class="error">{error}</div>
