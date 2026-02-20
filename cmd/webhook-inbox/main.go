@@ -58,7 +58,7 @@ func main() {
 	)
 	defer dbPool.Close()
 	queries := db.New(dbPool)
-	service := service.NewService(queries)
+	service := service.NewService(queries, &config)
 
 	go deliveryengine.Start(service, 300 * time.Millisecond) // TODO make this configurable
 	go deliveryengine.StartRecoveryEngine(service, 5 * time.Minute) // TODO make this configurable
