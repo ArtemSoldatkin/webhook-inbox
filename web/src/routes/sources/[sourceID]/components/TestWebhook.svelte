@@ -24,13 +24,15 @@
 			const webhookURL = `/api/ingest/${publicID}`;
 			const params = new URLSearchParams(queryParams).toString();
 			const urlWithParams = params ? `${webhookURL}?${params}` : webhookURL;
+			const isBodyAllowed = method !== 'GET';
 			const response = await fetch(urlWithParams, {
 				method,
 				headers: {
 					...staticHeaders,
-					...headers
+					...headers,
+					...(isBodyAllowed && { 'Content-Type': contentType })
 				},
-				...(method === 'GET' ? {} : { body })
+				...(isBodyAllowed && { body })
 			});
 			if (!response.ok) {
 				throw new Error(`Failed to test webhook: ${response.statusText}`);
@@ -63,10 +65,10 @@
 		Query Parameters (optional):
 		<InputMap bind:json={queryParams} disabled={loading} />
 	</label>
-	{#if method!=="GET"}<label>
-		Body (optional):
-		<BodyInput bind:body={body} bind:contentType={contentType} />
-	</label>
+	{#if method !== 'GET'}<label>
+			Body (optional):
+			<BodyInput bind:body bind:contentType />
+		</label>
 	{/if}
 	{#if error}
 		<div class="error">{error}</div>
