@@ -136,7 +136,8 @@ SELECT
     error_message,
     started_at,
     finished_at,
-    created_at
+    created_at,
+    next_attempt_at
 FROM
     delivery_attempts
 WHERE

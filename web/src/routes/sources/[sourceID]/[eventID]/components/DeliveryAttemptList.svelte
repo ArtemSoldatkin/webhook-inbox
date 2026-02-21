@@ -55,6 +55,10 @@
 					Finished at: {attempt.FinishedAt ? new Date(attempt.FinishedAt).toLocaleString() : 'N/A'}
 				</p>
 				<p>Created at: {new Date(attempt.CreatedAt).toLocaleString()}</p>
+				<p>
+					Next attempt at:{' '}
+					{attempt.NextAttemptAt ? new Date(attempt.NextAttemptAt).toLocaleString() : 'N/A'}
+				</p>
 			</section>
 		{/each}
 	{/if}
