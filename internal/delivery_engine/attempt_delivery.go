@@ -48,11 +48,13 @@ func finalizeDeliveryAttempt(ctx context.Context, svc *service.Service, delivery
 
 // scheduleRetry creates a new delivery attempt with an incremented attempt number and a state of "pending" to schedule a retry for a failed delivery attempt.
 func scheduleRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow) (int64, error) {
-	// TODO implement retry scheduling logic, e.g. using exponential backoff
+	attemptNumber := delivery.AttemptNumber + 1
+	backoffDuration := time.Duration(1<<attemptNumber) * time.Second
 	return svc.CreateDeliveryAttempt(ctx, db.CreateDeliveryAttemptParams{
 				EventID: delivery.EventID,
-				AttemptNumber: delivery.AttemptNumber + 1,
+				AttemptNumber: attemptNumber,
 				State: "pending",
+				NextAttemptAt: pgtype.Timestamptz{Time: time.Now().Add(backoffDuration), Valid: true},
 			})
 }
 
@@ -179,7 +181,6 @@ func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Servic
 	}
 }
 
-// TODO add delay before retrying failed deliveries
 // attemptDelivery processes a single delivery attempt by retrieving the associated event and source, merging headers, and sending the HTTP request to the configured egress URL.
 func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.ListPendingDeliveryAttemptsRow) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // TODO make timeout configurable

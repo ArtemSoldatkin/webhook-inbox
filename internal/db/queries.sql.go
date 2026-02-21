@@ -21,7 +21,8 @@ INSERT INTO delivery_attempts (
     error_type,
     error_message,
     started_at,
-    finished_at
+    finished_at,
+    next_attempt_at
 ) VALUES (
     $1,
     $2,
@@ -30,7 +31,8 @@ INSERT INTO delivery_attempts (
     $5,
     $6,
     $7,
-    $8
+    $8,
+    $9
 )
 RETURNING id
 `
@@ -44,6 +46,7 @@ type CreateDeliveryAttemptParams struct {
 	ErrorMessage  pgtype.Text
 	StartedAt     pgtype.Timestamptz
 	FinishedAt    pgtype.Timestamptz
+	NextAttemptAt pgtype.Timestamptz
 }
 
 func (q *Queries) CreateDeliveryAttempt(ctx context.Context, arg CreateDeliveryAttemptParams) (int64, error) {
@@ -56,6 +59,7 @@ func (q *Queries) CreateDeliveryAttempt(ctx context.Context, arg CreateDeliveryA
 		arg.ErrorMessage,
 		arg.StartedAt,
 		arg.FinishedAt,
+		arg.NextAttemptAt,
 	)
 	var id int64
 	err := row.Scan(&id)
@@ -283,15 +287,28 @@ ORDER BY
     created_at DESC
 `
 
-func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64) ([]DeliveryAttempt, error) {
+type ListDeliveryAttemptsByEventRow struct {
+	ID            int64
+	EventID       int64
+	AttemptNumber int32
+	State         string
+	StatusCode    pgtype.Int4
+	ErrorType     pgtype.Text
+	ErrorMessage  pgtype.Text
+	StartedAt     pgtype.Timestamptz
+	FinishedAt    pgtype.Timestamptz
+	CreatedAt     pgtype.Timestamptz
+}
+
+func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64) ([]ListDeliveryAttemptsByEventRow, error) {
 	rows, err := q.db.Query(ctx, listDeliveryAttemptsByEvent, eventID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DeliveryAttempt
+	var items []ListDeliveryAttemptsByEventRow
 	for rows.Next() {
-		var i DeliveryAttempt
+		var i ListDeliveryAttemptsByEventRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.EventID,

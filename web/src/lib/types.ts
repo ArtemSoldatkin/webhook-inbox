@@ -36,4 +36,5 @@ export interface DeliveryAttemptDTO {
 	StartedAt: Date | null;
 	FinishedAt: Date | null;
 	CreatedAt: Date;
+	NextAttemptAt: Date | null;
 }

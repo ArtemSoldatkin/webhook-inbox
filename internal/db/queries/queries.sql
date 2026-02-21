@@ -136,7 +136,8 @@ SELECT
     error_message,
     started_at,
     finished_at,
-    created_at
+    created_at,
+    next_attempt_at
 FROM
     delivery_attempts
 WHERE
@@ -153,7 +154,8 @@ INSERT INTO delivery_attempts (
     error_type,
     error_message,
     started_at,
-    finished_at
+    finished_at,
+    next_attempt_at
 ) VALUES (
     $1,
     $2,
@@ -162,7 +164,8 @@ INSERT INTO delivery_attempts (
     $5,
     $6,
     $7,
-    $8
+    $8,
+    $9
 )
 RETURNING id;
 
@@ -180,6 +183,7 @@ INNER JOIN sources
 WHERE
     delivery_attempts.state = 'pending'
     AND sources.status = 'active'
+    AND COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
 ORDER BY
     delivery_attempts.created_at ASC
 FOR UPDATE SKIP LOCKED;
