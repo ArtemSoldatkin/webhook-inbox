@@ -21,6 +21,7 @@ type DeliveryAttempt struct {
 	StartedAt     pgtype.Timestamptz
 	FinishedAt    pgtype.Timestamptz
 	CreatedAt     pgtype.Timestamptz
+	NextAttemptAt pgtype.Timestamptz
 }
 
 type Event struct {
