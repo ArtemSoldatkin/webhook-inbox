@@ -5,11 +5,11 @@
 
 <section>
 	<h3>Request body</h3>
-	{#if contentType === 'application/json'}
+	{#if contentType.startsWith('application/json')}
 		<pre>{atob(body)}</pre>
-	{:else if contentType === 'application/x-www-form-urlencoded'}
+	{:else if contentType.startsWith('application/x-www-form-urlencoded')}
 		<pre>{atob(body)}</pre>
-	{:else if contentType === 'text/plain'}
+	{:else if contentType.startsWith('text/plain')}
 		<pre>{atob(body)}</pre>
 	{:else}
 		<p>Unsupported content type: {contentType}</p>
