@@ -1,7 +1,7 @@
 <script lang="ts">
-	import DisplayMap from '$lib/components/DisplayMap.svelte';
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import type { EventDTO } from '$lib/types';
+	import BodyView from './BodyView.svelte';
 
 	export let sourceID: string;
 
@@ -49,7 +49,7 @@
 						<p>Method: {event.Method}</p>
 						<DisplayMapOfStringArrays title="Query Parameters" data={event.QueryParams} />
 						<DisplayMapOfStringArrays title="Raw Headers" data={event.RawHeaders} />
-						<DisplayMap data={event.Body} />
+						<BodyView body={event.Body} contentType={event.BodyContentType} />
 					</section>
 				</li>
 			{/each}

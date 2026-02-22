@@ -2,6 +2,7 @@ package routev1
 
 import (
 	"encoding/json"
+	"io"
 	"net"
 	"net/http"
 	"net/netip"
@@ -52,7 +53,7 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		bodyBytes, err := json.Marshal(r.Body)
+		bodyBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to read request body")
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
