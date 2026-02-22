@@ -20,7 +20,7 @@ export interface EventDTO {
 	Method: string;
 	QueryParams: Record<string, string[]>;
 	RawHeaders: Record<string, string[]>;
-	Body: Record<string, string>;
+	Body: string; // Base64-encoded string
 	BodyContentType: string;
 	ReceivedAt: Date;
 }

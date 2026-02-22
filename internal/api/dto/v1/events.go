@@ -12,7 +12,7 @@ type EventDTO struct {
 	RemoteAddress   string
 	QueryParams     map[string][]string
 	RawHeaders      map[string][]string
-	Body           	map[string]string
+	Body           	[]byte
 	BodyContentType string
 	ReceivedAt      time.Time
 }

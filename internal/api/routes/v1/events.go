@@ -38,10 +38,6 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				logrus.WithError(err).Error("Failed to unmarshal query params")
 				continue
 			}
-			body, err := utils.JSONBtoType[map[string]string](event.Body); if err != nil {
-				logrus.WithError(err).Error("Failed to unmarshal query params")
-				continue
-			}
 			remoteAddress := ""
 			if event.RemoteAddress != nil {
 				remoteAddress = event.RemoteAddress.String()
@@ -55,7 +51,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				RemoteAddress:   remoteAddress,
 				QueryParams:     queryParams,
 				RawHeaders:      rawHeaders,
-				Body:            body,
+				Body:            event.Body,
 				BodyContentType: event.BodyContentType,
 				ReceivedAt:      event.ReceivedAt.Time,
 			}
@@ -98,11 +94,6 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
 		}
-		body, err := utils.JSONBtoType[map[string]string](event.Body); if err != nil {
-			logrus.WithError(err).Error("Failed to unmarshal query params")
-			http.Error(w, "Failed to get event", http.StatusInternalServerError)
-			return
-		}
 		remoteAddress := ""
 		if event.RemoteAddress != nil {
 			remoteAddress = event.RemoteAddress.String()
@@ -116,7 +107,7 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			RemoteAddress:   remoteAddress,
 			QueryParams:     queryParams,
 			RawHeaders:      rawHeaders,
-			Body:            body,
+			Body:            event.Body,
 			BodyContentType: event.BodyContentType,
 			ReceivedAt:      event.ReceivedAt.Time,
 		}

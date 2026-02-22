@@ -7,7 +7,7 @@ import (
 )
 
 // ListDeliveryAttempts retrieves all delivery attempts for a given event ID from the database.
-func (svc *Service) ListDeliveryAttempts(ctx context.Context, eventID int64) ([]db.DeliveryAttempt, error) {
+func (svc *Service) ListDeliveryAttempts(ctx context.Context, eventID int64) ([]db.ListDeliveryAttemptsByEventRow, error) {
 	return svc.queries.ListDeliveryAttemptsByEvent(ctx, eventID)
 }
 
