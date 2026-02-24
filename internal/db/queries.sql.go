@@ -387,6 +387,7 @@ WHERE
     delivery_attempts.event_id = events.id
     AND delivery_attempts.state = 'pending'
     AND sources.status = 'active'
+    AND COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
 RETURNING
     delivery_attempts.id,
     delivery_attempts.event_id,
