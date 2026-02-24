@@ -1,5 +1,6 @@
 <script lang="ts">
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
+	import { parseEventDTO } from '$lib/dtoParsers';
 	import type { EventDTO } from '$lib/types';
 	import BodyView from './BodyView.svelte';
 
@@ -17,7 +18,8 @@
 			if (!response.ok) {
 				throw new Error(`Failed to fetch events: ${response.statusText}`);
 			}
-			data = await response.json();
+			const rawData = await response.json();
+			data = rawData.map(parseEventDTO);
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching events:', err);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { parseSourceDTO } from '$lib/dtoParsers';
 	import type { SourceDTO } from '$lib/types';
 	import ListEvents from './ListEvents.svelte';
 	import TestWebhook from './TestWebhook.svelte';
@@ -17,7 +18,8 @@
 			if (!response.ok) {
 				throw new Error(`Failed to fetch source: ${response.statusText}`);
 			}
-			data = await response.json();
+			const rawData = await response.json();
+			data = parseSourceDTO(rawData);
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching source:', err);
@@ -56,6 +58,6 @@
 	<section>
 		<h3>Test Webhook</h3>
 		<TestWebhook publicID={data.PublicID} staticHeaders={data.StaticHeaders} />
-		<ListEvents sourceID={sourceID} />
+		<ListEvents {sourceID} />
 	</section>
 {/if}

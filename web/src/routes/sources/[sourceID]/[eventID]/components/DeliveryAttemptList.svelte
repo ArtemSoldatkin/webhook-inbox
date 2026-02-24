@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { parseDeliveryAttemptDTO } from '$lib/dtoParsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 
 	export let sourceID: string;
@@ -16,7 +17,8 @@
 			if (!response.ok) {
 				throw new Error(`Failed to fetch event details: ${response.statusText}`);
 			}
-			data = await response.json();
+			const rawData = await response.json();
+			data = rawData.map(parseDeliveryAttemptDTO);
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching event details:', err);

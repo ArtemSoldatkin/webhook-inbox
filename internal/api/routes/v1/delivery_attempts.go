@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
@@ -26,7 +27,23 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
 			return
 		}
-		response, err := json.Marshal(deliveryAttempts)
+		deliveryAttemptsDTO := make([]dtov1.DeliveryAttemptDTO, len(deliveryAttempts))
+		for i, deliveryAttempt := range deliveryAttempts {
+			deliveryAttemptsDTO[i] = dtov1.DeliveryAttemptDTO{
+				ID: 		  	deliveryAttempt.ID,
+				EventID:       	deliveryAttempt.EventID,
+				AttemptNumber: 	deliveryAttempt.AttemptNumber,
+				State:         	deliveryAttempt.State,
+				StatusCode: 	&deliveryAttempt.StatusCode.Int32,
+				ErrorType:     	&deliveryAttempt.ErrorType.String,
+				ErrorMessage: 	&deliveryAttempt.ErrorMessage.String,
+				StartedAt:     	&deliveryAttempt.StartedAt.Time,
+				FinishedAt:    	&deliveryAttempt.FinishedAt.Time,
+				CreatedAt:     	deliveryAttempt.CreatedAt.Time,
+				NextAttemptAt: 	&deliveryAttempt.NextAttemptAt.Time,
+			}
+		}
+		response, err := json.Marshal(deliveryAttemptsDTO)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal delivery attempts")
 			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
