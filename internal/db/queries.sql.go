@@ -376,7 +376,9 @@ func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Eve
 const listPendingDeliveryAttempts = `-- name: ListPendingDeliveryAttempts :many
 UPDATE delivery_attempts
 SET
-    state = 'in_flight'
+    state = 'in_flight',
+    started_at = NOW(),
+    finished_at = NULL
 FROM
     events
 INNER JOIN sources

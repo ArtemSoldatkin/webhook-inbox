@@ -172,7 +172,9 @@ RETURNING id;
 -- name: ListPendingDeliveryAttempts :many
 UPDATE delivery_attempts
 SET
-    state = 'in_flight'
+    state = 'in_flight',
+    started_at = NOW(),
+    finished_at = NULL
 FROM
     events
 INNER JOIN sources
