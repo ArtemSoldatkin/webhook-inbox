@@ -170,23 +170,24 @@ INSERT INTO delivery_attempts (
 RETURNING id;
 
 -- name: ListPendingDeliveryAttempts :many
-SELECT
-    delivery_attempts.id,
-    delivery_attempts.event_id,
-    delivery_attempts.attempt_number
+UPDATE delivery_attempts
+SET
+    state = 'in_flight',
+    started_at = NOW(),
+    finished_at = NULL
 FROM
-    delivery_attempts
-INNER JOIN events
-    ON delivery_attempts.event_id = events.id
+    events
 INNER JOIN sources
-    ON events.source_id = sources.id
+        ON events.source_id = sources.id
 WHERE
-    delivery_attempts.state = 'pending'
+    delivery_attempts.event_id = events.id
+    AND delivery_attempts.state = 'pending'
     AND sources.status = 'active'
     AND COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
-ORDER BY
-    delivery_attempts.created_at ASC
-FOR UPDATE SKIP LOCKED;
+RETURNING
+    delivery_attempts.id,
+    delivery_attempts.event_id,
+    delivery_attempts.attempt_number;
 
 
 -- name: UpdateDeliveryAttempt :exec

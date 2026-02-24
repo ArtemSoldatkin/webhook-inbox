@@ -16,15 +16,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// markInFlight updates the state of a delivery attempt to "in_flight" and sets the started_at timestamp to the current time.
-func markInFlight(ctx context.Context, svc *service.Service, deliveryID int64) error {
-	return svc.UpdateDeliveryAttempt(ctx, db.UpdateDeliveryAttemptParams{
-		ID: deliveryID,
-		State: "in_flight",
-		StartedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
-	})
-}
-
 // markInPending updates the state of a delivery attempt to "pending" and clears the started_at timestamp.
 func markInPending(ctx context.Context, svc *service.Service, deliveryID int64) error {
 	return svc.UpdateDeliveryAttempt(ctx, db.UpdateDeliveryAttemptParams{
@@ -185,11 +176,6 @@ func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Servic
 func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.ListPendingDeliveryAttemptsRow) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // TODO make timeout configurable
 	defer cancel()
-
-	if err := markInFlight(ctx, svc, delivery.ID); err != nil {
-		logrus.WithError(err).Error("Error updating delivery attempt state to in_flight")
-		return
-	}
 
 	payload, err := loadDeliveryPayload(ctx, svc, delivery)
 	if err != nil {
