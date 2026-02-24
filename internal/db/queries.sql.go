@@ -278,7 +278,8 @@ SELECT
     error_message,
     started_at,
     finished_at,
-    created_at
+    created_at,
+    next_attempt_at
 FROM
     delivery_attempts
 WHERE
@@ -287,28 +288,15 @@ ORDER BY
     created_at DESC
 `
 
-type ListDeliveryAttemptsByEventRow struct {
-	ID            int64
-	EventID       int64
-	AttemptNumber int32
-	State         string
-	StatusCode    pgtype.Int4
-	ErrorType     pgtype.Text
-	ErrorMessage  pgtype.Text
-	StartedAt     pgtype.Timestamptz
-	FinishedAt    pgtype.Timestamptz
-	CreatedAt     pgtype.Timestamptz
-}
-
-func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64) ([]ListDeliveryAttemptsByEventRow, error) {
+func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64) ([]DeliveryAttempt, error) {
 	rows, err := q.db.Query(ctx, listDeliveryAttemptsByEvent, eventID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListDeliveryAttemptsByEventRow
+	var items []DeliveryAttempt
 	for rows.Next() {
-		var i ListDeliveryAttemptsByEventRow
+		var i DeliveryAttempt
 		if err := rows.Scan(
 			&i.ID,
 			&i.EventID,
@@ -320,6 +308,7 @@ func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64
 			&i.StartedAt,
 			&i.FinishedAt,
 			&i.CreatedAt,
+			&i.NextAttemptAt,
 		); err != nil {
 			return nil, err
 		}
@@ -385,22 +374,21 @@ func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Eve
 }
 
 const listPendingDeliveryAttempts = `-- name: ListPendingDeliveryAttempts :many
-SELECT
+UPDATE delivery_attempts
+SET
+    state = 'in_flight'
+FROM
+    events
+INNER JOIN sources
+        ON events.source_id = sources.id
+WHERE
+    delivery_attempts.event_id = events.id
+    AND delivery_attempts.state = 'pending'
+    AND sources.status = 'active'
+RETURNING
     delivery_attempts.id,
     delivery_attempts.event_id,
     delivery_attempts.attempt_number
-FROM
-    delivery_attempts
-INNER JOIN events
-    ON delivery_attempts.event_id = events.id
-INNER JOIN sources
-    ON events.source_id = sources.id
-WHERE
-    delivery_attempts.state = 'pending'
-    AND sources.status = 'active'
-ORDER BY
-    delivery_attempts.created_at ASC
-FOR UPDATE SKIP LOCKED
 `
 
 type ListPendingDeliveryAttemptsRow struct {
