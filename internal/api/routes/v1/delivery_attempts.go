@@ -7,6 +7,7 @@ import (
 
 	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
 )
@@ -34,13 +35,13 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 				EventID:       	deliveryAttempt.EventID,
 				AttemptNumber: 	deliveryAttempt.AttemptNumber,
 				State:         	deliveryAttempt.State,
-				StatusCode: 	&deliveryAttempt.StatusCode.Int32,
-				ErrorType:     	&deliveryAttempt.ErrorType.String,
-				ErrorMessage: 	&deliveryAttempt.ErrorMessage.String,
-				StartedAt:     	&deliveryAttempt.StartedAt.Time,
-				FinishedAt:    	&deliveryAttempt.FinishedAt.Time,
+				StatusCode: 	utils.PtrIfValid(deliveryAttempt.StatusCode.Int32, deliveryAttempt.StatusCode.Valid),
+				ErrorType:     	utils.PtrIfValid(deliveryAttempt.ErrorType.String, deliveryAttempt.ErrorType.Valid),
+				ErrorMessage: 	utils.PtrIfValid(deliveryAttempt.ErrorMessage.String,deliveryAttempt.ErrorMessage.Valid),
+				StartedAt:     	utils.PtrIfValid(deliveryAttempt.StartedAt.Time,deliveryAttempt.StartedAt.Valid),
+				FinishedAt:    	utils.PtrIfValid(deliveryAttempt.FinishedAt.Time,deliveryAttempt.FinishedAt.Valid),
 				CreatedAt:     	deliveryAttempt.CreatedAt.Time,
-				NextAttemptAt: 	&deliveryAttempt.NextAttemptAt.Time,
+				NextAttemptAt: 	utils.PtrIfValid(deliveryAttempt.NextAttemptAt.Time,deliveryAttempt.NextAttemptAt.Valid),
 			}
 		}
 		response, err := json.Marshal(deliveryAttemptsDTO)

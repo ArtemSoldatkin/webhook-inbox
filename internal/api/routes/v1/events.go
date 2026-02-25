@@ -38,9 +38,10 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				logrus.WithError(err).Error("Failed to unmarshal raw headers")
 				continue
 			}
-			remoteAddress := ""
+			var remoteAddress *string
 			if event.RemoteAddress != nil {
-				remoteAddress = event.RemoteAddress.String()
+				str := event.RemoteAddress.String()
+				remoteAddress = &str
 			}
 			eventDTOs[i] = dtov1.EventDTO{
 				ID:              event.ID,
@@ -48,7 +49,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				// DedupHash:       event.DedupHash.String,
 				Method:          event.Method,
 				IngressPath:     event.IngressPath,
-				RemoteAddress:   &remoteAddress,
+				RemoteAddress:   remoteAddress,
 				QueryParams:     queryParams,
 				RawHeaders:      rawHeaders,
 				Body:            event.Body,
@@ -94,9 +95,10 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
 		}
-		remoteAddress := ""
+		var remoteAddress *string
 		if event.RemoteAddress != nil {
-			remoteAddress = event.RemoteAddress.String()
+			str := event.RemoteAddress.String()
+			remoteAddress = &str
 		}
 		eventDTO := dtov1.EventDTO{
 			ID:              event.ID,
@@ -104,7 +106,7 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			// DedupHash:       event.DedupHash.String,
 			Method:          event.Method,
 			IngressPath:     event.IngressPath,
-			RemoteAddress:   &remoteAddress,
+			RemoteAddress:   remoteAddress,
 			QueryParams:     queryParams,
 			RawHeaders:      rawHeaders,
 			Body:            event.Body,
