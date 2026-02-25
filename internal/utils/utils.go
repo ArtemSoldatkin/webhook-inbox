@@ -33,3 +33,12 @@ func MergeHeaders(staticHeaders map[string]string, rawHeaders map[string][]strin
 func GenerateIngressURL(apiProtocol, apiHost string, apiPort int, sourceID string) string {
 	return fmt.Sprintf("%s://%s:%d/ingest/%s", apiProtocol, apiHost, apiPort, sourceID)
 }
+
+// PtrIfValid returns a pointer to the value if the valid flag is true, otherwise it returns nil.
+func PtrIfValid[T any](value T, valid bool) *T {
+	var result *T
+	if valid {
+		result = &value
+	}
+	return result
+}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { parseSourceDTO } from '$lib/dtoParsers';
 	import type { SourceDTO } from '$lib/types';
 	import { onMount } from 'svelte';
 
@@ -14,7 +15,8 @@
 			if (!response.ok) {
 				throw new Error(`Failed to fetch sources: ${response.statusText}`);
 			}
-			data = await response.json();
+			const rawData = await response.json();
+			data = rawData.map(parseSourceDTO);
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching sources:', err);

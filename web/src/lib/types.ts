@@ -7,8 +7,8 @@ export interface SourceDTO {
 	EgressUrl: string;
 	StaticHeaders: Record<string, string>;
 	Status: string;
-	StatusReason: string;
-	Description: string;
+	StatusReason: string | null;
+	Description: string | null;
 	CreatedAt: Date;
 	UpdatedAt: Date;
 	DisableAt: Date | null;
@@ -18,6 +18,8 @@ export interface EventDTO {
 	ID: number;
 	SourceID: number;
 	Method: string;
+	IngressPath: string;
+	RemoteAddress: string | null;
 	QueryParams: Record<string, string[]>;
 	RawHeaders: Record<string, string[]>;
 	Body: string; // Base64-encoded string

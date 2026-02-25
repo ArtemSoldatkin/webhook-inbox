@@ -6,10 +6,10 @@ import "time"
 type EventDTO struct {
 	ID              int64
 	SourceID        int64
-	DedupHash       string
+	// DedupHash       *string
 	Method          string
 	IngressPath     string
-	RemoteAddress   string
+	RemoteAddress   *string
 	QueryParams     map[string][]string
 	RawHeaders      map[string][]string
 	Body           	[]byte

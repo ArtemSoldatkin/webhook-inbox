@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
 )
@@ -26,7 +28,23 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
 			return
 		}
-		response, err := json.Marshal(deliveryAttempts)
+		deliveryAttemptsDTO := make([]dtov1.DeliveryAttemptDTO, len(deliveryAttempts))
+		for i, deliveryAttempt := range deliveryAttempts {
+			deliveryAttemptsDTO[i] = dtov1.DeliveryAttemptDTO{
+				ID: 		  	deliveryAttempt.ID,
+				EventID:       	deliveryAttempt.EventID,
+				AttemptNumber: 	deliveryAttempt.AttemptNumber,
+				State:         	deliveryAttempt.State,
+				StatusCode: 	utils.PtrIfValid(deliveryAttempt.StatusCode.Int32, deliveryAttempt.StatusCode.Valid),
+				ErrorType:     	utils.PtrIfValid(deliveryAttempt.ErrorType.String, deliveryAttempt.ErrorType.Valid),
+				ErrorMessage: 	utils.PtrIfValid(deliveryAttempt.ErrorMessage.String,deliveryAttempt.ErrorMessage.Valid),
+				StartedAt:     	utils.PtrIfValid(deliveryAttempt.StartedAt.Time,deliveryAttempt.StartedAt.Valid),
+				FinishedAt:    	utils.PtrIfValid(deliveryAttempt.FinishedAt.Time,deliveryAttempt.FinishedAt.Valid),
+				CreatedAt:     	deliveryAttempt.CreatedAt.Time,
+				NextAttemptAt: 	utils.PtrIfValid(deliveryAttempt.NextAttemptAt.Time,deliveryAttempt.NextAttemptAt.Valid),
+			}
+		}
+		response, err := json.Marshal(deliveryAttemptsDTO)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal delivery attempts")
 			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)

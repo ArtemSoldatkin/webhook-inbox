@@ -57,8 +57,8 @@ func listSources(svc *service.Service) http.HandlerFunc {
 				EgressUrl:      source.EgressUrl,
 				StaticHeaders:  staticHeaders,
 				Status:         source.Status,
-				StatusReason:   source.StatusReason.String,
-				Description:    source.Description.String,
+				StatusReason:   utils.PtrIfValid(source.StatusReason.String, source.StatusReason.Valid),
+				Description:    utils.PtrIfValid(source.Description.String, source.Description.Valid),
 				CreatedAt:      source.CreatedAt.Time,
 				UpdatedAt:      source.UpdatedAt.Time,
 				DisableAt:      disbaleAt,
@@ -114,8 +114,8 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 				EgressUrl:      source.EgressUrl,
 				StaticHeaders:  staticHeaders,
 				Status:         source.Status,
-				StatusReason:   source.StatusReason.String,
-				Description:    source.Description.String,
+				StatusReason:   utils.PtrIfValid(source.StatusReason.String,source.StatusReason.Valid),
+				Description:    utils.PtrIfValid(source.Description.String,source.Description.Valid),
 				CreatedAt:      source.CreatedAt.Time,
 				UpdatedAt:      source.UpdatedAt.Time,
 				DisableAt:      disbaleAt,
@@ -165,13 +165,24 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			StaticHeaders:  staticHeaders,
 			Description: 	pgtype.Text{String: data.Description, Valid: data.Description != ""},
 		})
-		// TODO repalce return with DTO and generate ingress URL based on public ID
 		if err != nil {
 			logrus.WithError(err).Error("Failed to create source")
 			http.Error(w, "Failed to create source", http.StatusInternalServerError)
 			return
 		}
-		response, err := json.Marshal(source)
+		sourceDTO := dtov1.SourceDTO{
+			ID:             source.ID,
+			PublicID:       source.PublicID.String(),
+			IngressUrl:     utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
+			EgressUrl:      source.EgressUrl,
+			StaticHeaders:  data.StaticHeaders,
+			Status:         source.Status,
+			StatusReason:   utils.PtrIfValid(source.StatusReason.String,source.StatusReason.Valid),
+			Description:    utils.PtrIfValid(source.Description.String,source.Description.Valid),
+			CreatedAt:      source.CreatedAt.Time,
+			UpdatedAt:      source.UpdatedAt.Time,
+		}
+		response, err := json.Marshal(sourceDTO)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal created source")
 			http.Error(w, "Failed to create source", http.StatusInternalServerError)

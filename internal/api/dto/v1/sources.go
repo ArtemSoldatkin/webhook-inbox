@@ -13,8 +13,8 @@ type SourceDTO struct {
 	EgressUrl     string
 	StaticHeaders map[string]string
 	Status        string
-	StatusReason  string
-	Description   string
+	StatusReason  *string
+	Description   *string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DisableAt     *time.Time
