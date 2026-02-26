@@ -28,7 +28,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to list events", http.StatusInternalServerError)
 			return
 		}
-		eventDTOs := []dtov1.EventDTO{}
+		eventDTOs := make([]dtov1.EventDTO, 0, len(events))
 		for _, event := range events {
 			queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams); if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal query params")

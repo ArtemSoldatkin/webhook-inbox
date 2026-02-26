@@ -36,7 +36,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
 			return
 		}
-		sourceDTOs := []dtov1.SourceDTO{}
+		sourceDTOs := make([]dtov1.SourceDTO, 0, len(sources))
 		for _, source := range sources {
 			staticHeaders, err := utils.JSONBtoType[map[string]string](source.StaticHeaders)
 			if err != nil {
