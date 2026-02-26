@@ -36,21 +36,20 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
 			return
 		}
-		sourceDTOs := make([]dtov1.SourceDTO, len(sources))
-		for i, source := range sources {
+		sourceDTOs := make([]dtov1.SourceDTO, 0, len(sources))
+		for _, source := range sources {
 			staticHeaders, err := utils.JSONBtoType[map[string]string](source.StaticHeaders)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal static headers")
-				http.Error(w, "Failed to list sources", http.StatusInternalServerError)
-				return
+				continue
 			}
-			var disbaleAt *time.Time
+			var disableAt *time.Time
 			if source.DisableAt.Valid {
-				disbaleAt = &source.DisableAt.Time
+				disableAt = &source.DisableAt.Time
 			} else {
-				disbaleAt = nil
+				disableAt = nil
 			}
-			sourceDTOs[i] = dtov1.SourceDTO{
+			sourceDTOs = append(sourceDTOs, dtov1.SourceDTO{
 				ID:             source.ID,
 				PublicID:       source.PublicID.String(),
 				IngressUrl:     utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
@@ -61,8 +60,8 @@ func listSources(svc *service.Service) http.HandlerFunc {
 				Description:    utils.PtrIfValid(source.Description.String, source.Description.Valid),
 				CreatedAt:      source.CreatedAt.Time,
 				UpdatedAt:      source.UpdatedAt.Time,
-				DisableAt:      disbaleAt,
-			}
+				DisableAt:      disableAt,
+			})
 		}
 		response, err := json.Marshal(sourceDTOs)
 		if err != nil {
