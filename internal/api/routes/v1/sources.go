@@ -43,11 +43,11 @@ func listSources(svc *service.Service) http.HandlerFunc {
 				logrus.WithError(err).Error("Failed to unmarshal static headers")
 				continue
 			}
-			var disbaleAt *time.Time
+			var disableAt *time.Time
 			if source.DisableAt.Valid {
-				disbaleAt = &source.DisableAt.Time
+				disableAt = &source.DisableAt.Time
 			} else {
-				disbaleAt = nil
+				disableAt = nil
 			}
 			sourceDTOs = append(sourceDTOs, dtov1.SourceDTO{
 				ID:             source.ID,
@@ -60,7 +60,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 				Description:    utils.PtrIfValid(source.Description.String, source.Description.Valid),
 				CreatedAt:      source.CreatedAt.Time,
 				UpdatedAt:      source.UpdatedAt.Time,
-				DisableAt:      disbaleAt,
+				DisableAt:      disableAt,
 			})
 		}
 		response, err := json.Marshal(sourceDTOs)
