@@ -60,8 +60,8 @@ func main() {
 	queries := db.New(dbPool)
 	service := service.NewService(queries, &config)
 
-	go deliveryengine.Start(service, 300 * time.Millisecond) // TODO make this configurable
-	go deliveryengine.StartRecoveryEngine(service, 5 * time.Minute) // TODO make this configurable
+	go deliveryengine.Start(service, time.Duration(config.APIDeliveryIntervalSec) * time.Second)
+	go deliveryengine.StartRecoveryEngine(service, time.Duration(config.APIRecoveryIntervalSec) * time.Second)
 
 	r.Mount("/api/v1", routev1.V1Router(service))
 

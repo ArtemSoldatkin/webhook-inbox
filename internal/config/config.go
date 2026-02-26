@@ -10,15 +10,17 @@ import (
 
 // Config holds the application configuration values.
 type Config struct {
-	Env        string
-	DBUser    	string
-	DBPassword 	string
-	DBHost    	string
-	DBPort		int
-	DBName		string
-	APIProtocol string
-	APIHost 	string
-	APIPort 	int
+	Env        string `env:"ENV,required,allowed:dev|uat|prod"`
+	DBUser    	string `env:"POSTGRES_USER,required"`
+	DBPassword 	string `env:"POSTGRES_PASSWORD,required"`
+	DBHost    	string `env:"POSTGRES_HOST,required"`
+	DBPort		int `env:"POSTGRES_PORT,required"`
+	DBName		string `env:"POSTGRES_DB,required"`
+	APIProtocol string `env:"API_PROTOCOL,required,allowed:http|https"`
+	APIHost 	string `env:"API_HOST,required"`
+	APIPort 	int `env:"API_PORT,required"`
+	APIDeliveryIntervalSec int `env:"API_DELIVERY_INTERVAL_SEC,default:30"`
+	APIRecoveryIntervalSec int `env:"API_RECOVERY_INTERVAL_SEC,default:300"`
 }
 
 // getIntEnv retrieves an integer environment variable or returns a default value.
@@ -37,6 +39,13 @@ func getIntEnv(envVar string, defaultValue int) int {
 
 // LoadConfig loads configuration from environment variables.
 func LoadConfig() Config {
+	var config Config
+	err := loadEnvs(&config)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error loading configuration")
+	}
+	fmt.Println(config)
+
 	env := os.Getenv("ENV")
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPassword := os.Getenv("POSTGRES_PASSWORD")
@@ -55,6 +64,8 @@ func LoadConfig() Config {
 	if apiHost == "" {
 		logrus.Fatal("API_PROTOCOL and API_HOST environment variables must be set")
 	}
+	apiDeliveryIntervalSec := getIntEnv("API_DELIVERY_INTERVAL_SEC", 30)
+	apiRecoveryIntervalSec := getIntEnv("API_RECOVERY_INTERVAL_SEC", 300)
 	return Config{
 		Env: env,
 		DBUser: dbUser,
@@ -65,5 +76,7 @@ func LoadConfig() Config {
 		APIProtocol: apiProtocol,
 		APIHost: apiHost,
 		APIPort: apiPort,
+		APIDeliveryIntervalSec: apiDeliveryIntervalSec,
+		APIRecoveryIntervalSec: apiRecoveryIntervalSec,
 	}
 }
