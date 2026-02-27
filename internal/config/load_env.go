@@ -3,12 +3,14 @@ package config
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"os"
 	"reflect"
 	"strings"
 )
 
+// TODO Verify allowed values
 // loadEnvs is a helper function that uses reflection to load environment variables into a struct based on struct field tags. It checks for required fields, allowed values, and default values as specified in the struct tags.
 func loadEnvs[T any](config *T) error {
 	if reflect.TypeOf(*config).Kind() != reflect.Struct {
@@ -20,46 +22,22 @@ func loadEnvs[T any](config *T) error {
 		if envTag == "" {
 			return fmt.Errorf("missing env tag for field %s", field.Name)
 		}
-		envName, envOptions, err := parseTag(envTag)
+		envName, _, err := parseTag(envTag)
 		if err != nil {
 			return fmt.Errorf("error parsing env tag for field %s: %w", field.Name, err)
 		}
-		envValue := os.Getenv(envName)
-		if envValue == "" {
-			if _, required := envOptions["required"]; required {
-				return fmt.Errorf("environment variable %s is required but not set", envName)
-			}
-			if defaultValue, hasDefault := envOptions["default"]; hasDefault {
-				envValue = defaultValue
-			}
-		} else {
-			if allowedValues, hasAllowed := envOptions["allowed"]; hasAllowed {
-				allowedList := strings.Split(allowedValues, "|")
-				isValid := false
-				for _, allowed := range allowedList {
-					if envValue == allowed {
-						isValid = true
-						break
-					}
+		configValue := reflect.ValueOf(config).Elem().Field(i)
+		switch configValue.Kind() {
+			case reflect.Int:
+				if err := setIntField(configValue, envName, field.Name, nil); err != nil {
+					return err
 				}
-				if !isValid {
-					return fmt.Errorf("invalid value for environment variable %s: %s (allowed: %s)", envName, envValue, allowedValues)
+			case reflect.String:
+				if err := setStringField(configValue, envName, field.Name, nil); err != nil {
+					return err
 				}
-			} else {
-				configValue := reflect.ValueOf(config).Elem().Field(i)
-				if configValue.Kind() == reflect.Int {
-					var intValue int
-					_, err := fmt.Sscanf(envValue, "%d", &intValue)
-					if err != nil {
-						return fmt.Errorf("invalid integer value for environment variable %s: %s", envName, envValue)
-					}
-					configValue.SetInt(int64(intValue))
-				} else if configValue.Kind() == reflect.String {
-					configValue.SetString(envValue)
-				} else {
-					return fmt.Errorf("unsupported field type for environment variable %s: %s", envName, configValue.Kind())
-				}
-			}
+			default:
+				return fmt.Errorf("unsupported field type %s for field %s", configValue.Kind(), reflect.TypeOf(*config).Field(i).Name)
 		}
 	}
 	return nil
@@ -82,4 +60,42 @@ func parseTag(tag string) (string, map[string]string, error) {
 		}
 	}
 	return envVar, optionMap, nil
+}
+
+// getEnvWithDefault retrieves the value of an environment variable, returning a default value if the variable is not set and a default is specified. It also checks if the variable is required and returns an error if it is not set.
+func getEnvWithDefault(envName string, envOptions map[string]string) (string, error) {
+	envValue := os.Getenv(envName)
+	if envValue == "" {
+		if defaultValue, hasDefault := envOptions["default"]; hasDefault {
+			return defaultValue, nil
+		}
+		if _, hasRequired := envOptions["required"]; hasRequired {
+			return "", fmt.Errorf("environment variable %s is required but not set", envName)
+		}
+	}
+	return envValue, nil
+}
+
+// setIntField is a helper function that sets an integer field in the config struct based on the environment variable value. It retrieves the environment variable, checks for errors, converts it to an integer, and sets the field value.
+func setIntField(configValue reflect.Value, envName string, fieldName string, envOptions map[string]string) error {
+	envValue, err := getEnvWithDefault(envName, envOptions)
+	if err != nil {
+		return fmt.Errorf("error getting environment variable %s for field %s: %w", envName, fieldName, err)
+	}
+	valueInt, err := strconv.Atoi(envValue)
+	if err != nil {
+		return fmt.Errorf("environment variable %s has invalid value for field %s: %w", envName, fieldName, err)
+	}
+	configValue.SetInt(int64(valueInt))
+	return nil
+}
+
+// setStringField is a helper function that sets a string field in the config struct based on the environment variable value. It retrieves the environment variable, checks for errors, and sets the field value.
+func setStringField(configValue reflect.Value, envName string, fieldName string, envOptions map[string]string) error {
+	envValue, err := getEnvWithDefault(envName, envOptions)
+	if err != nil {
+		return fmt.Errorf("error getting environment variable %s for field %s: %w", envName, fieldName, err)
+	}
+	configValue.SetString(envValue)
+	return nil
 }
