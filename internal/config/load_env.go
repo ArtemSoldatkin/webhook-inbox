@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-// TODO Verify allowed values
 // loadEnvs is a helper function that uses reflection to load environment variables into a struct based on struct field tags. It checks for required fields, allowed values, and default values as specified in the struct tags.
 func loadEnvs[T any](config *T) error {
 	if reflect.TypeOf(*config).Kind() != reflect.Struct {
@@ -22,18 +21,18 @@ func loadEnvs[T any](config *T) error {
 		if envTag == "" {
 			return fmt.Errorf("missing env tag for field %s", field.Name)
 		}
-		envName, _, err := parseTag(envTag)
+		envName, envOptions, err := parseTag(envTag)
 		if err != nil {
 			return fmt.Errorf("error parsing env tag for field %s: %w", field.Name, err)
 		}
 		configValue := reflect.ValueOf(config).Elem().Field(i)
 		switch configValue.Kind() {
 			case reflect.Int:
-				if err := setIntField(configValue, envName, field.Name, nil); err != nil {
+				if err := setIntField(configValue, envName, field.Name, envOptions); err != nil {
 					return err
 				}
 			case reflect.String:
-				if err := setStringField(configValue, envName, field.Name, nil); err != nil {
+				if err := setStringField(configValue, envName, field.Name, envOptions); err != nil {
 					return err
 				}
 			default:
@@ -86,6 +85,9 @@ func setIntField(configValue reflect.Value, envName string, fieldName string, en
 	if err != nil {
 		return fmt.Errorf("environment variable %s has invalid value for field %s: %w", envName, fieldName, err)
 	}
+	if !isIntValueWithinBoundary(valueInt, envOptions) {
+		return fmt.Errorf("environment variable %s has value out of boundary for field %s: value '%d' is not within specified boundaries", envName, fieldName, valueInt)
+	}
 	configValue.SetInt(int64(valueInt))
 	return nil
 }
@@ -96,6 +98,55 @@ func setStringField(configValue reflect.Value, envName string, fieldName string,
 	if err != nil {
 		return fmt.Errorf("error getting environment variable %s for field %s: %w", envName, fieldName, err)
 	}
+	if !isStringValueAllowed(envValue, envOptions) {
+		return fmt.Errorf("environment variable %s has invalid value for field %s: value '%s' is not allowed", envName, fieldName, envValue)
+	}
 	configValue.SetString(envValue)
 	return nil
+}
+
+// isIntValueWithinBoundary checks if an integer value is within the specified minimum and maximum boundaries defined in the environment variable options. It returns true if the value is within the boundaries or if no boundaries are specified, and false otherwise.
+func isIntValueWithinBoundary(value int, envOptions map[string]string) bool {
+	minValueStr, hasMin := envOptions["min"]
+	maxValueStr, hasMax := envOptions["max"]
+	if hasMin && hasMax {
+		minValue, err := strconv.Atoi(minValueStr)
+		if err != nil {
+			return false
+		}
+		maxValue, err := strconv.Atoi(maxValueStr)
+		if err != nil {
+			return false
+		}
+		return value >= minValue && value <= maxValue
+	}
+	if hasMin {
+		minValue, err := strconv.Atoi(minValueStr)
+		if err != nil {
+			return false
+		}
+		return value >= minValue
+	}
+	if hasMax {
+		maxValue, err := strconv.Atoi(maxValueStr)
+		if err != nil {
+			return false
+		}
+		return value <= maxValue
+	}
+	return true
+}
+
+// isStringValueAllowed checks if a string value is allowed based on the "allowed" option in the environment variable options. It returns true if the value is allowed or if there are no allowed values specified, and false otherwise.
+func isStringValueAllowed(value string, envOptions map[string]string) bool {
+	if allowedValues, hasAllowed := envOptions["allowed"]; hasAllowed {
+		allowedList := strings.Split(allowedValues, "|")
+		for _, allowed := range allowedList {
+			if value == allowed {
+				return true
+			}
+		}
+		return false
+	}
+	return true
 }

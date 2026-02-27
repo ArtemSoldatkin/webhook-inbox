@@ -2,8 +2,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,8 +16,8 @@ type Config struct {
 	APIProtocol string `env:"API_PROTOCOL,required,allowed:http|https"`
 	APIHost 	string `env:"API_HOST,required"`
 	APIPort 	int `env:"API_PORT,required"`
-	APIDeliveryIntervalSec int `env:"API_DELIVERY_INTERVAL_SEC,default:30"`
-	APIRecoveryIntervalSec int `env:"API_RECOVERY_INTERVAL_SEC,default:300"`
+	APIDeliveryIntervalSec int `env:"API_DELIVERY_INTERVAL_SEC,default:30,min:10,max:60"`
+	APIRecoveryIntervalSec int `env:"API_RECOVERY_INTERVAL_SEC,default:300,mim:300,max:3600"`
 }
 
 // LoadConfig loads configuration from environment variables.
@@ -29,6 +27,5 @@ func LoadConfig() Config {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error loading configuration")
 	}
-	fmt.Println(config)
 	return config
 }
