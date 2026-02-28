@@ -40,7 +40,11 @@ func finalizeDeliveryAttempt(ctx context.Context, svc *service.Service, delivery
 // scheduleRetry creates a new delivery attempt with an incremented attempt number and a state of "pending" to schedule a retry for a failed delivery attempt.
 func scheduleRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow) (int64, error) {
 	attemptNumber := delivery.AttemptNumber + 1
-	backoffDuration := time.Duration(1<<attemptNumber) * time.Second
+	backoffDuration := min(time.Duration(svc.Config.APIDeliveryRetryBackoffMaxSec)*time.Second,
+		time.Duration(svc.Config.APIDeliveryRetryBackoffBaseSec) +
+		time.Duration(1<<attemptNumber) *
+		time.Second,
+	)
 	return svc.CreateDeliveryAttempt(ctx, db.CreateDeliveryAttemptParams{
 				EventID: delivery.EventID,
 				AttemptNumber: attemptNumber,
@@ -161,7 +165,7 @@ func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Servic
 
 	if result.DeliveryState == "failed" {
 		logrus.Warnf("Delivery attempt for event ID %d failed with status code %d: %s", delivery.EventID, result.StatusCode, result.ErrorMessage)
-		if delivery.AttemptNumber < 3 {
+		if delivery.AttemptNumber < int32(svc.Config.APIDeliveryMaxRetries) {
 			deliveryAttemptID, err := scheduleRetry(ctx, svc, delivery)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to schedule retry for delivery attempt")
@@ -174,7 +178,10 @@ func handleDeliveryFinalizationAndRetry(ctx context.Context, svc *service.Servic
 
 // attemptDelivery processes a single delivery attempt by retrieving the associated event and source, merging headers, and sending the HTTP request to the configured egress URL.
 func attemptDelivery(svc *service.Service, httpClient *http.Client, delivery db.ListPendingDeliveryAttemptsRow) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // TODO make timeout configurable
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		time.Duration(svc.Config.APIDeliveryTimeoutSec)*time.Second,
+	)
 	defer cancel()
 
 	payload, err := loadDeliveryPayload(ctx, svc, delivery)

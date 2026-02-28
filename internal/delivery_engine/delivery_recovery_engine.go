@@ -10,7 +10,10 @@ import (
 
 // RecoverStuckDeliveryAttempts identifies and resets delivery attempts that have been in-flight for too long, allowing them to be retried by the delivery engine.
 func recoverStuckDeliveryAttempts(svc *service.Service) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second) // TODO make timeout configurable
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		time.Duration(svc.Config.APIRecoveryTimeoutSec)*time.Second,
+	)
 	defer cancel()
 
 	return svc.RecoverStuckDeliveryAttempts(ctx)
