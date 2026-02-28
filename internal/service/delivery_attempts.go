@@ -6,6 +6,15 @@ import (
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 )
 
+// This file contains service methods related to managing delivery attempts,
+// including listing attempts for an event, creating new attempts,
+// updating attempt status, and recovering stuck attempts.
+type PendingDeliveryAttempt struct {
+	ID            int64
+	EventID       int64
+	AttemptNumber int32
+}
+
 // ListDeliveryAttempts retrieves all delivery attempts for a given event ID from the database.
 func (svc *Service) ListDeliveryAttempts(ctx context.Context, eventID int64) ([]db.DeliveryAttempt, error) {
 	return svc.queries.ListDeliveryAttemptsByEvent(ctx, eventID)
@@ -16,9 +25,48 @@ func (svc *Service) CreateDeliveryAttempt(ctx context.Context, delivery db.Creat
 	return svc.queries.CreateDeliveryAttempt(ctx, delivery)
 }
 
-// ListPendingDeliveryAttempts retrieves all delivery attempts that are currently pending and need to be processed by the delivery engine.
-func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context) ([]db.ListPendingDeliveryAttemptsRow, error) {
-	return svc.queries.ListPendingDeliveryAttempts(ctx)
+// ListPendingDeliveryAttempts retrieves a list of pending delivery attempts that are ready to be processed by the delivery engine,
+// marking them as in-flight to prevent multiple workers from processing the same attempt concurrently.
+func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context, nDeliveries int32) ([]PendingDeliveryAttempt, error) {
+	tx, err := svc.BeginTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	queries := db.New(tx)
+
+	deliveryAttemptIds, err := queries.SelectPendingDeliveryAttemptIDs(
+		ctx,
+		nDeliveries,
+	)
+	if err != nil {
+		tx.Rollback(ctx)
+		return nil, err
+	}
+
+	rows, err := queries.UpdateDeliveryAttemptsToInFlight(
+		ctx,
+		deliveryAttemptIds,
+	)
+	if err != nil {
+		tx.Rollback(ctx)
+		return nil, err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	pendingDeliveryAttempts := make([]PendingDeliveryAttempt, len(rows))
+	for i, row := range rows {
+		pendingDeliveryAttempts[i] = PendingDeliveryAttempt{
+			ID:            row.ID,
+			EventID:       row.EventID,
+			AttemptNumber: row.AttemptNumber,
+		}
+	}
+	return pendingDeliveryAttempts, nil
 }
 
 // UpdateDeliveryAttempt updates the status and other relevant fields of a delivery attempt in the database after it has been processed by the delivery engine.
