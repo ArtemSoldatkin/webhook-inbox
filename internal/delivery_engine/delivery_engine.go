@@ -17,10 +17,10 @@ func Start(svc *service.Service, pollInterval time.Duration) {
 	ctx := context.Background()
 	ticker := time.NewTicker(pollInterval)
 	httpClient := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: time.Duration(svc.Config.APIDeliveryRequestTimeoutSec) * time.Second,
 	}
 	defer ticker.Stop()
-	semaphore := make(chan struct{}, 10) // TODO make max concurrency configurable
+	semaphore := make(chan struct{}, svc.Config.APIDeliveryMaxConcurrency)
 	for {
 		pendingDeliveries, err := svc.ListPendingDeliveryAttempts(ctx)
 		if err != nil {

@@ -2,68 +2,42 @@
 package config
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/sirupsen/logrus"
 )
 
 // Config holds the application configuration values.
 type Config struct {
-	Env        string
-	DBUser    	string
-	DBPassword 	string
-	DBHost    	string
-	DBPort		int
-	DBName		string
-	APIProtocol string
-	APIHost 	string
-	APIPort 	int
-}
+	Env string `env:"ENV,required,allowed:dev|uat|prod"`
 
-// getIntEnv retrieves an integer environment variable or returns a default value.
-func getIntEnv(envVar string, defaultValue int) int {
-	valueStr := os.Getenv(envVar)
-	if valueStr == "" {
-		return defaultValue
-	}
-	var value int
-	_, err := fmt.Sscanf(valueStr, "%d", &value)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Invalid value for %s", envVar)
-	}
-	return value
+	DBUser     string `env:"POSTGRES_USER,required"`
+	DBPassword string `env:"POSTGRES_PASSWORD,required"`
+	DBHost     string `env:"POSTGRES_HOST,required"`
+	DBPort     int    `env:"POSTGRES_PORT,required"`
+	DBName     string `env:"POSTGRES_DB,required"`
+
+	APIProtocol string `env:"API_PROTOCOL,required,allowed:http|https"`
+	APIHost     string `env:"API_HOST,required"`
+	APIPort     int    `env:"API_PORT,required"`
+
+	APIDeliveryIntervalSec       int `env:"API_DELIVERY_INTERVAL_SEC,default:30,min:10,max:60"`
+	APIDeliveryMaxConcurrency    int `env:"API_DELIVERY_MAX_CONCURRENCY,default:10,min:1,max:100"`
+	APIDeliveryTimeoutSec        int `env:"API_DELIVERY_TIMEOUT_SEC,default:15,min:5,max:60"`
+	APIDeliveryRequestTimeoutSec int `env:"API_DELIVERY_REQUEST_TIMEOUT_SEC,default:15,min:5,max:60"`
+
+	APIDeliveryMaxRetries          int `env:"API_DELIVERY_MAX_RETRIES,default:3,min:0,max:10"`
+	APIDeliveryRetryBackoffBaseSec int `env:"API_DELIVERY_RETRY_BACKOFF_BASE_SEC,default:1,min:1,max:60"`
+	APIDeliveryRetryBackoffMaxSec  int `env:"API_DELIVERY_RETRY_BACKOFF_MAX_SEC,default:60,min:10,max:3600"`
+
+	APIRecoveryIntervalSec int `env:"API_RECOVERY_INTERVAL_SEC,default:300,min:300,max:3600"`
+	APIRecoveryTimeoutSec  int `env:"API_RECOVERY_TIMEOUT_SEC,default:15,min:5,max:60"`
 }
 
 // LoadConfig loads configuration from environment variables.
 func LoadConfig() Config {
-	env := os.Getenv("ENV")
-	dbUser := os.Getenv("POSTGRES_USER")
-	dbPassword := os.Getenv("POSTGRES_PASSWORD")
-	dbHost := os.Getenv("POSTGRES_HOST")
-	dbPort := getIntEnv("POSTGRES_PORT", 5432)
-	dbName := os.Getenv("POSTGRES_DB")
-	apiProtocol := os.Getenv("API_PROTOCOL")
-	apiHost := os.Getenv("API_HOST")
-	apiPort := getIntEnv("API_PORT", 3000)
-	if env != "dev" && env != "uat" && env != "prod" {
-		logrus.Fatal("ENV environment variable must be set to 'dev', 'uat' or 'prod'")
+	var config Config
+	err := loadEnvs(&config)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error loading configuration")
 	}
-	if apiProtocol != "http" && apiProtocol != "https" {
-		logrus.Fatal("API_PROTOCOL environment variable must be set to 'http' or 'https'")
-	}
-	if apiHost == "" {
-		logrus.Fatal("API_PROTOCOL and API_HOST environment variables must be set")
-	}
-	return Config{
-		Env: env,
-		DBUser: dbUser,
-		DBPassword: dbPassword,
-		DBHost: dbHost,
-		DBPort: dbPort,
-		DBName: dbName,
-		APIProtocol: apiProtocol,
-		APIHost: apiHost,
-		APIPort: apiPort,
-	}
+	return config
 }
