@@ -40,8 +40,9 @@ func finalizeDeliveryAttempt(ctx context.Context, svc *service.Service, delivery
 // scheduleRetry creates a new delivery attempt with an incremented attempt number and a state of "pending" to schedule a retry for a failed delivery attempt.
 func scheduleRetry(ctx context.Context, svc *service.Service, delivery db.ListPendingDeliveryAttemptsRow) (int64, error) {
 	attemptNumber := delivery.AttemptNumber + 1
-	backoffDuration := min(time.Duration(svc.Config.APIDeliveryRetryBackoffMaxSec)*time.Second,
-		time.Duration(svc.Config.APIDeliveryRetryBackoffBaseSec) +
+	backoffDuration := min(
+		time.Duration(svc.Config.APIDeliveryRetryBackoffMaxSec)*time.Second,
+		time.Duration(svc.Config.APIDeliveryRetryBackoffBaseSec)*time.Second +
 		time.Duration(1<<attemptNumber) *
 		time.Second,
 	)
