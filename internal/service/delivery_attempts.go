@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // This file contains service methods related to managing delivery attempts,
@@ -17,8 +19,23 @@ type PendingDeliveryAttempt struct {
 }
 
 // ListDeliveryAttempts retrieves all delivery attempts for a given event ID from the database.
-func (svc *Service) ListDeliveryAttempts(ctx context.Context, eventID int64) ([]db.DeliveryAttempt, error) {
-	return svc.queries.ListDeliveryAttemptsByEvent(ctx, eventID)
+func (svc *Service) ListDeliveryAttempts(
+	ctx context.Context,
+	eventID int64,
+	cursor *time.Time,
+	pageSize int,
+) ([]db.DeliveryAttempt, error) {
+	var cursorValue pgtype.Timestamp
+	if cursor != nil {
+		cursorValue = pgtype.Timestamp{Time: *cursor, Valid: true}
+	} else {
+		cursorValue = pgtype.Timestamp{Valid: false}
+	}
+	return svc.queries.ListDeliveryAttemptsByEvent(ctx, db.ListDeliveryAttemptsByEventParams{
+		EventID:  eventID,
+		Cursor:   cursorValue,
+		PageSize: int32(pageSize),
+	})
 }
 
 // CreateDeliveryAttempt inserts a new delivery attempt into the database and returns its ID.

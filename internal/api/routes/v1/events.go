@@ -30,12 +30,6 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Invalid pagination parameters", http.StatusBadRequest)
 			return
 		}
-		logrus.
-			WithFields(logrus.Fields{
-				"limit":  pageSize,
-				"cursor": cursor,
-			}).
-			Info("Listing events with pagination")
 		sourceIDRaw := chi.URLParam(r, "sourceID")
 		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
 		if err != nil {
@@ -80,9 +74,13 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				ReceivedAt:      event.ReceivedAt.Time,
 			})
 		}
-		paginatedResponse := api.ToPaginatedResponse(eventDTOs, pageSize, func(e dtov1.EventDTO) *time.Time {
-			return &e.ReceivedAt
-		})
+		paginatedResponse := api.ToPaginatedResponse(
+			eventDTOs,
+			pageSize,
+			func(e dtov1.EventDTO) *time.Time {
+				return &e.ReceivedAt
+			},
+		)
 		response, err := json.Marshal(paginatedResponse)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal events")

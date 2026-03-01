@@ -19,7 +19,7 @@ func (svc *Service) ListEvents(ctx context.Context, sourceID int64, cursor *time
 	return svc.queries.ListEventsBySource(ctx, db.ListEventsBySourceParams{
 		SourceID: sourceID,
 		Cursor:   cursorValue,
-		Pagesize: int32(pageSize),
+		PageSize: int32(pageSize),
 	})
 }
 

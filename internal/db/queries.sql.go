@@ -269,27 +269,36 @@ func (q *Queries) GetSourceByPublicID(ctx context.Context, publicID pgtype.UUID)
 
 const listDeliveryAttemptsByEvent = `-- name: ListDeliveryAttemptsByEvent :many
 SELECT
-    id,
-    event_id,
-    attempt_number,
-    state,
-    status_code,
-    error_type,
-    error_message,
-    started_at,
-    finished_at,
-    created_at,
-    next_attempt_at
+    id
+    , event_id
+    , attempt_number
+    , state
+    , status_code
+    , error_type
+    , error_message
+    , started_at
+    , finished_at
+    , created_at
+    , next_attempt_at
 FROM
     delivery_attempts
 WHERE
-    event_id = $1
+    event_id = $1 AND
+    ($2::timestamp IS NULL OR created_at <= $2)
 ORDER BY
     created_at DESC
+LIMIT
+    $3+ 1
 `
 
-func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64) ([]DeliveryAttempt, error) {
-	rows, err := q.db.Query(ctx, listDeliveryAttemptsByEvent, eventID)
+type ListDeliveryAttemptsByEventParams struct {
+	EventID  int64
+	Cursor   pgtype.Timestamp
+	PageSize int32
+}
+
+func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliveryAttemptsByEventParams) ([]DeliveryAttempt, error) {
+	rows, err := q.db.Query(ctx, listDeliveryAttemptsByEvent, arg.EventID, arg.Cursor, arg.PageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -347,11 +356,11 @@ LIMIT
 type ListEventsBySourceParams struct {
 	SourceID int64
 	Cursor   pgtype.Timestamp
-	Pagesize int32
+	PageSize int32
 }
 
 func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySourceParams) ([]Event, error) {
-	rows, err := q.db.Query(ctx, listEventsBySource, arg.SourceID, arg.Cursor, arg.Pagesize)
+	rows, err := q.db.Query(ctx, listEventsBySource, arg.SourceID, arg.Cursor, arg.PageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -384,24 +393,33 @@ func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySource
 
 const listSources = `-- name: ListSources :many
 SELECT
-    id,
-    public_id,
-    egress_url,
-    static_headers,
-    status,
-    status_reason,
-    description,
-    created_at,
-    updated_at,
-    disable_at
+    id
+    , public_id
+    , egress_url
+    , static_headers
+    , status
+    , status_reason
+    , description
+    , created_at
+    , updated_at
+    , disable_at
 FROM
     sources
+WHERE
+    ($1::timestamp IS NULL OR updated_at <= $1)
 ORDER BY
-    created_at DESC
+    updated_at DESC
+LIMIT
+    $2+ 1
 `
 
-func (q *Queries) ListSources(ctx context.Context) ([]Source, error) {
-	rows, err := q.db.Query(ctx, listSources)
+type ListSourcesParams struct {
+	Cursor   pgtype.Timestamp
+	PageSize int32
+}
+
+func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Source, error) {
+	rows, err := q.db.Query(ctx, listSources, arg.Cursor, arg.PageSize)
 	if err != nil {
 		return nil, err
 	}

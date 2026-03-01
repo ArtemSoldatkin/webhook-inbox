@@ -1,19 +1,23 @@
 -- name: ListSources :many
 SELECT
-    id,
-    public_id,
-    egress_url,
-    static_headers,
-    status,
-    status_reason,
-    description,
-    created_at,
-    updated_at,
-    disable_at
+    id
+    , public_id
+    , egress_url
+    , static_headers
+    , status
+    , status_reason
+    , description
+    , created_at
+    , updated_at
+    , disable_at
 FROM
     sources
+WHERE
+    (@cursor::timestamp IS NULL OR updated_at <= @cursor)
 ORDER BY
-    created_at DESC;
+    updated_at DESC
+LIMIT
+    @page_size + 1;
 
 -- name: GetSourceByID :one
 SELECT
@@ -82,7 +86,7 @@ WHERE
 ORDER BY
     received_at DESC
 LIMIT
-    @pageSize + 1;
+    @page_size + 1;
 
 
 -- name: GetEventByID :one
@@ -130,23 +134,26 @@ RETURNING id;
 
 -- name: ListDeliveryAttemptsByEvent :many
 SELECT
-    id,
-    event_id,
-    attempt_number,
-    state,
-    status_code,
-    error_type,
-    error_message,
-    started_at,
-    finished_at,
-    created_at,
-    next_attempt_at
+    id
+    , event_id
+    , attempt_number
+    , state
+    , status_code
+    , error_type
+    , error_message
+    , started_at
+    , finished_at
+    , created_at
+    , next_attempt_at
 FROM
     delivery_attempts
 WHERE
-    event_id = $1
+    event_id = @event_id AND
+    (@cursor::timestamp IS NULL OR created_at <= @cursor)
 ORDER BY
-    created_at DESC;
+    created_at DESC
+LIMIT
+    @page_size + 1;
 
 -- name: CreateDeliveryAttempt :one
 INSERT INTO delivery_attempts (

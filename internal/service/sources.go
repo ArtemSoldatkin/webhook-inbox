@@ -2,14 +2,28 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // ListSources retrieves all sources from the database.
-func (svc *Service) ListSources(ctx context.Context) ([]db.Source, error) {
-	return svc.queries.ListSources(ctx)
+func (svc *Service) ListSources(
+	ctx context.Context,
+	cursor *time.Time,
+	pageSize int,
+) ([]db.Source, error) {
+	var cursorValue pgtype.Timestamp
+	if cursor != nil {
+		cursorValue = pgtype.Timestamp{Time: *cursor, Valid: true}
+	} else {
+		cursorValue = pgtype.Timestamp{Valid: false}
+	}
+	return svc.queries.ListSources(ctx, db.ListSourcesParams{
+		Cursor:   cursorValue,
+		PageSize: int32(pageSize),
+	})
 }
 
 // GetSourceByID retrieves a source by its ID from the database.
