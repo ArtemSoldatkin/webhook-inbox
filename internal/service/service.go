@@ -22,6 +22,7 @@ func NewService(dbPool *pgxpool.Pool, config *config.Config) *Service {
 	queries := db.New(dbPool)
 
 	return &Service{
+		dbPool:  dbPool,
 		queries: queries,
 		Config:  config,
 	}
@@ -29,15 +30,6 @@ func NewService(dbPool *pgxpool.Pool, config *config.Config) *Service {
 
 // BeginTx starts a new database transaction and returns it.
 // The caller is responsible for committing or rolling back the transaction and releasing the connection.
-func (s *Service) BeginTx(ctx context.Context) (pgx.Tx, error) {
-	conn, err := s.dbPool.Acquire(ctx)
-	if err != nil {
-		return nil, err
-	}
-	tx, err := conn.Begin(ctx)
-	if err != nil {
-		conn.Release()
-		return nil, err
-	}
-	return tx, nil
+func (s *Service) BeginTx(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error) {
+	return s.dbPool.BeginTx(ctx, opts)
 }

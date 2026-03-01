@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
+	"github.com/jackc/pgx/v5"
 )
 
 // This file contains service methods related to managing delivery attempts,
@@ -28,11 +29,13 @@ func (svc *Service) CreateDeliveryAttempt(ctx context.Context, delivery db.Creat
 // ListPendingDeliveryAttempts retrieves a list of pending delivery attempts that are ready to be processed by the delivery engine,
 // marking them as in-flight to prevent multiple workers from processing the same attempt concurrently.
 func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context, nDeliveries int32) ([]PendingDeliveryAttempt, error) {
-	tx, err := svc.BeginTx(ctx)
+	tx, err := svc.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	queries := db.New(tx)
 
@@ -41,7 +44,6 @@ func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context, nDeliveries
 		nDeliveries,
 	)
 	if err != nil {
-		tx.Rollback(ctx)
 		return nil, err
 	}
 
@@ -50,7 +52,6 @@ func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context, nDeliveries
 		deliveryAttemptIds,
 	)
 	if err != nil {
-		tx.Rollback(ctx)
 		return nil, err
 	}
 

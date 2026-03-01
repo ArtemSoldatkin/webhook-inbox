@@ -188,7 +188,7 @@ WHERE
     COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
 ORDER BY
     delivery_attempts.created_at ASC
-FOR UPDATE SKIP LOCKED
+FOR UPDATE OF delivery_attempts SKIP LOCKED
 LIMIT
     $1;
 
