@@ -63,23 +63,26 @@ RETURNING *;
 
 -- name: ListEventsBySource :many
 SELECT
-    id,
-    source_id,
-    dedup_hash,
-    method,
-    ingress_path,
-    remote_address,
-    query_params,
-    raw_headers,
-    body,
-    body_content_type,
-    received_at
+    id
+    , source_id
+    , dedup_hash
+    , method
+    , ingress_path
+    , remote_address
+    , query_params
+    , raw_headers
+    , body
+    , body_content_type
+    , received_at
 FROM
     events
 WHERE
-    source_id = $1
+    source_id = @source_id AND
+    (@cursor::timestamp IS NULL OR received_at <= @cursor)
 ORDER BY
-    received_at DESC;
+    received_at DESC
+LIMIT
+    @pageSize + 1;
 
 
 -- name: GetEventByID :one

@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
+	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
@@ -15,6 +17,25 @@ import (
 // listEvents handles GET requests to list all events.
 func listEvents(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		pageSize, cursor, err := api.ParsePaginationParams(
+			r.URL.Query(),
+			svc.Config.APIDefaultPageSize,
+			svc.Config.APIMinPageSize,
+			svc.Config.APIMaxPageSize,
+		)
+		if err != nil {
+			logrus.
+				WithError(err).
+				Error("Invalid pagination parameters")
+			http.Error(w, "Invalid pagination parameters", http.StatusBadRequest)
+			return
+		}
+		logrus.
+			WithFields(logrus.Fields{
+				"limit":  pageSize,
+				"cursor": cursor,
+			}).
+			Info("Listing events with pagination")
 		sourceIDRaw := chi.URLParam(r, "sourceID")
 		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
 		if err != nil {
@@ -22,7 +43,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Invalid source ID", http.StatusBadRequest)
 			return
 		}
-		events, err := svc.ListEvents(r.Context(), sourceID)
+		events, err := svc.ListEvents(r.Context(), sourceID, cursor, pageSize)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list events")
 			http.Error(w, "Failed to list events", http.StatusInternalServerError)
@@ -30,11 +51,13 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 		}
 		eventDTOs := make([]dtov1.EventDTO, 0, len(events))
 		for _, event := range events {
-			queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams); if err != nil {
+			queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams)
+			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal query params")
 				continue
 			}
-			rawHeaders, err := utils.JSONBtoType[map[string][]string](event.RawHeaders); if err != nil {
+			rawHeaders, err := utils.JSONBtoType[map[string][]string](event.RawHeaders)
+			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal raw headers")
 				continue
 			}
@@ -44,8 +67,8 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				remoteAddress = &str
 			}
 			eventDTOs = append(eventDTOs, dtov1.EventDTO{
-				ID:              event.ID,
-				SourceID:        event.SourceID,
+				ID:       event.ID,
+				SourceID: event.SourceID,
 				// DedupHash:       event.DedupHash.String,
 				Method:          event.Method,
 				IngressPath:     event.IngressPath,
@@ -57,7 +80,10 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				ReceivedAt:      event.ReceivedAt.Time,
 			})
 		}
-		response, err := json.Marshal(eventDTOs)
+		paginatedResponse := api.ToPaginatedResponse(eventDTOs, pageSize, func(e dtov1.EventDTO) *time.Time {
+			return &e.ReceivedAt
+		})
+		response, err := json.Marshal(paginatedResponse)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal events")
 			http.Error(w, "Failed to list events", http.StatusInternalServerError)
@@ -85,12 +111,14 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
 		}
-		queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams); if err != nil {
+		queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams)
+		if err != nil {
 			logrus.WithError(err).Error("Failed to unmarshal query params")
 			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
 		}
-		rawHeaders, err := utils.JSONBtoType[map[string][]string](event.RawHeaders); if err != nil {
+		rawHeaders, err := utils.JSONBtoType[map[string][]string](event.RawHeaders)
+		if err != nil {
 			logrus.WithError(err).Error("Failed to unmarshal raw headers")
 			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
@@ -101,8 +129,8 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			remoteAddress = &str
 		}
 		eventDTO := dtov1.EventDTO{
-			ID:              event.ID,
-			SourceID:        event.SourceID,
+			ID:       event.ID,
+			SourceID: event.SourceID,
 			// DedupHash:       event.DedupHash.String,
 			Method:          event.Method,
 			IngressPath:     event.IngressPath,
@@ -128,7 +156,7 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 // eventsRouter sets up the router for events-related endpoints.
 func eventsRouter(svc *service.Service) chi.Router {
 	r := chi.NewRouter()
-	r.Mount("/{eventID}/delivery_attempts", deliveryAttemptsRouter(svc))
+	r.Mount("/{eventID}/delivery-attempts", deliveryAttemptsRouter(svc))
 	r.Get("/{eventID}", getEvent(svc))
 	r.Get("/", listEvents(svc))
 	return r

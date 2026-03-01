@@ -13,7 +13,7 @@
 		loading = true;
 		error = null;
 		try {
-			const response = await fetch(`/api/sources/${sourceID}/events/${eventID}/delivery_attempts`);
+			const response = await fetch(`/api/sources/${sourceID}/events/${eventID}/delivery-attempts`);
 			if (!response.ok) {
 				throw new Error(`Failed to fetch event details: ${response.statusText}`);
 			}

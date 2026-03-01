@@ -19,6 +19,10 @@ type Config struct {
 	APIHost     string `env:"API_HOST,required"`
 	APIPort     int    `env:"API_PORT,required"`
 
+	APIDefaultPageSize int `env:"API_DEFAULT_PAGE_SIZE,default:20,min:1,max:100"`
+	APIMinPageSize     int `env:"API_MIN_PAGE_SIZE,default:1,min:1,max:100"`
+	APIMaxPageSize     int `env:"API_MAX_PAGE_SIZE,default:100,min:1,max:100"`
+
 	APIDeliveryIntervalSec       int `env:"API_DELIVERY_INTERVAL_SEC,default:30,min:10,max:60"`
 	APIDeliveryMaxConcurrency    int `env:"API_DELIVERY_MAX_CONCURRENCY,default:10,min:1,max:100"`
 	APIDeliveryTimeoutSec        int `env:"API_DELIVERY_TIMEOUT_SEC,default:15,min:5,max:60"`
@@ -37,7 +41,15 @@ func LoadConfig() Config {
 	var config Config
 	err := loadEnvs(&config)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error loading configuration")
+		logrus.
+			WithError(err).
+			Fatal("Error loading configuration")
+	}
+	if config.APIMinPageSize > config.APIMaxPageSize {
+		logrus.Fatal("API_MIN_PAGE_SIZE cannot be greater than API_MAX_PAGE_SIZE")
+	}
+	if config.APIDeliveryRetryBackoffBaseSec > config.APIDeliveryRetryBackoffMaxSec {
+		logrus.Fatal("API_DELIVERY_RETRY_BACKOFF_BASE_SEC cannot be greater than API_DELIVERY_RETRY_BACKOFF_MAX_SEC")
 	}
 	return config
 }

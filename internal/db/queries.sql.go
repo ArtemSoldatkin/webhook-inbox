@@ -322,27 +322,36 @@ func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64
 
 const listEventsBySource = `-- name: ListEventsBySource :many
 SELECT
-    id,
-    source_id,
-    dedup_hash,
-    method,
-    ingress_path,
-    remote_address,
-    query_params,
-    raw_headers,
-    body,
-    body_content_type,
-    received_at
+    id
+    , source_id
+    , dedup_hash
+    , method
+    , ingress_path
+    , remote_address
+    , query_params
+    , raw_headers
+    , body
+    , body_content_type
+    , received_at
 FROM
     events
 WHERE
-    source_id = $1
+    source_id = $1 AND
+    ($2::timestamp IS NULL OR received_at <= $2)
 ORDER BY
     received_at DESC
+LIMIT
+    $3+ 1
 `
 
-func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Event, error) {
-	rows, err := q.db.Query(ctx, listEventsBySource, sourceID)
+type ListEventsBySourceParams struct {
+	SourceID int64
+	Cursor   pgtype.Timestamp
+	Pagesize int32
+}
+
+func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySourceParams) ([]Event, error) {
+	rows, err := q.db.Query(ctx, listEventsBySource, arg.SourceID, arg.Cursor, arg.Pagesize)
 	if err != nil {
 		return nil, err
 	}
@@ -456,7 +465,7 @@ WHERE
     COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
 ORDER BY
     delivery_attempts.created_at ASC
-FOR UPDATE SKIP LOCKED
+FOR UPDATE OF delivery_attempts SKIP LOCKED
 LIMIT
     $1
 `
