@@ -11,7 +11,6 @@ import (
 
 	routev1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/routes/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/config"
-	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	deliveryengine "github.com/ArtemSoldatkin/webhook-inbox/internal/delivery_engine"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/sirupsen/logrus"
@@ -28,17 +27,16 @@ func createDatabasePool(user string, password string, url string, port int, db s
 
 // LogrusLogger is a middleware that logs incoming HTTP requests using logrus, including the method, path, and duration of the request.
 func LogrusLogger(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        start := time.Now()
-        next.ServeHTTP(w, r)
-        logrus.WithFields(logrus.Fields{
-            "method": r.Method,
-            "path":   r.URL.Path,
-            "duration": time.Since(start),
-        }).Info("Handled request")
-    })
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		logrus.WithFields(logrus.Fields{
+			"method":   r.Method,
+			"path":     r.URL.Path,
+			"duration": time.Since(start),
+		}).Info("Handled request")
+	})
 }
-
 
 // main is the entry point of the application.
 func main() {
@@ -57,11 +55,10 @@ func main() {
 		config.DBName,
 	)
 	defer dbPool.Close()
-	queries := db.New(dbPool)
-	service := service.NewService(queries, &config)
+	service := service.NewService(dbPool, &config)
 
-	go deliveryengine.Start(service, time.Duration(config.APIDeliveryIntervalSec) * time.Second)
-	go deliveryengine.StartRecoveryEngine(service, time.Duration(config.APIRecoveryIntervalSec) * time.Second)
+	go deliveryengine.Start(service, time.Duration(config.APIDeliveryIntervalSec)*time.Second)
+	go deliveryengine.StartRecoveryEngine(service, time.Duration(config.APIRecoveryIntervalSec)*time.Second)
 
 	r.Mount("/api/v1", routev1.V1Router(service))
 

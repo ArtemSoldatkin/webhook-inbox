@@ -373,53 +373,6 @@ func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Eve
 	return items, nil
 }
 
-const listPendingDeliveryAttempts = `-- name: ListPendingDeliveryAttempts :many
-UPDATE delivery_attempts
-SET
-    state = 'in_flight',
-    started_at = NOW(),
-    finished_at = NULL
-FROM
-    events
-INNER JOIN sources
-        ON events.source_id = sources.id
-WHERE
-    delivery_attempts.event_id = events.id
-    AND delivery_attempts.state = 'pending'
-    AND sources.status = 'active'
-    AND COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
-RETURNING
-    delivery_attempts.id,
-    delivery_attempts.event_id,
-    delivery_attempts.attempt_number
-`
-
-type ListPendingDeliveryAttemptsRow struct {
-	ID            int64
-	EventID       int64
-	AttemptNumber int32
-}
-
-func (q *Queries) ListPendingDeliveryAttempts(ctx context.Context) ([]ListPendingDeliveryAttemptsRow, error) {
-	rows, err := q.db.Query(ctx, listPendingDeliveryAttempts)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListPendingDeliveryAttemptsRow
-	for rows.Next() {
-		var i ListPendingDeliveryAttemptsRow
-		if err := rows.Scan(&i.ID, &i.EventID, &i.AttemptNumber); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listSources = `-- name: ListSources :many
 SELECT
     id,
@@ -485,6 +438,49 @@ func (q *Queries) RecoverStuckDeliveryAttempts(ctx context.Context) error {
 	return err
 }
 
+const selectPendingDeliveryAttemptIDs = `-- name: SelectPendingDeliveryAttemptIDs :many
+SELECT
+    delivery_attempts.id
+FROM
+    delivery_attempts
+INNER JOIN events
+    ON
+        delivery_attempts.event_id = events.id
+INNER JOIN sources
+    ON
+        events.source_id = sources.id
+WHERE
+    delivery_attempts.event_id = events.id AND
+    delivery_attempts.state = 'pending' AND
+    sources.status = 'active' AND
+    COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
+ORDER BY
+    delivery_attempts.created_at ASC
+FOR UPDATE SKIP LOCKED
+LIMIT
+    $1
+`
+
+func (q *Queries) SelectPendingDeliveryAttemptIDs(ctx context.Context, limit int32) ([]int64, error) {
+	rows, err := q.db.Query(ctx, selectPendingDeliveryAttemptIDs, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateDeliveryAttempt = `-- name: UpdateDeliveryAttempt :exec
 UPDATE delivery_attempts
 SET
@@ -526,4 +522,44 @@ func (q *Queries) UpdateDeliveryAttempt(ctx context.Context, arg UpdateDeliveryA
 		arg.ID,
 	)
 	return err
+}
+
+const updateDeliveryAttemptsToInFlight = `-- name: UpdateDeliveryAttemptsToInFlight :many
+UPDATE delivery_attempts
+SET
+    state = 'in_flight'
+    , started_at = NOW()
+    , finished_at = NULL
+WHERE
+    id = ANY($1::bigint[])
+RETURNING
+    id
+    , event_id
+    , attempt_number
+`
+
+type UpdateDeliveryAttemptsToInFlightRow struct {
+	ID            int64
+	EventID       int64
+	AttemptNumber int32
+}
+
+func (q *Queries) UpdateDeliveryAttemptsToInFlight(ctx context.Context, dollar_1 []int64) ([]UpdateDeliveryAttemptsToInFlightRow, error) {
+	rows, err := q.db.Query(ctx, updateDeliveryAttemptsToInFlight, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []UpdateDeliveryAttemptsToInFlightRow
+	for rows.Next() {
+		var i UpdateDeliveryAttemptsToInFlightRow
+		if err := rows.Scan(&i.ID, &i.EventID, &i.AttemptNumber); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

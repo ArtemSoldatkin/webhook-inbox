@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/sirupsen/logrus"
 )
@@ -22,14 +21,17 @@ func Start(svc *service.Service, pollInterval time.Duration) {
 	defer ticker.Stop()
 	semaphore := make(chan struct{}, svc.Config.APIDeliveryMaxConcurrency)
 	for {
-		pendingDeliveries, err := svc.ListPendingDeliveryAttempts(ctx)
+		pendingDeliveries, err := svc.ListPendingDeliveryAttempts(
+			ctx,
+			int32(svc.Config.APIDeliveryMaxConcurrency),
+		)
 		if err != nil {
 			logrus.WithError(err).Error("Error listing pending deliveries")
 			continue
 		}
 		for _, delivery := range pendingDeliveries {
 			semaphore <- struct{}{}
-			go func(delivery db.ListPendingDeliveryAttemptsRow) {
+			go func(delivery service.PendingDeliveryAttempt) {
 				defer func() { <-semaphore }()
 				attemptDelivery(svc, httpClient, delivery)
 			}(delivery)
