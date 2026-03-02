@@ -42,7 +42,7 @@ export interface DeliveryAttemptDTO {
 }
 
 export interface PaginatedResponse<T> {
-	Data: T[];
-	NextCursor: string | null;
-	HasNext: boolean;
+	data: T[];
+	nextCursor: string | null;
+	hasNext: boolean;
 }

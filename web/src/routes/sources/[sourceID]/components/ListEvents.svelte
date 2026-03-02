@@ -1,25 +1,33 @@
 <script lang="ts">
+	import { fetchPaginatedData } from '$lib/api';
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
+	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import { parseEventDTO } from '$lib/dtoParsers';
 	import type { EventDTO } from '$lib/types';
 	import BodyView from './BodyView.svelte';
 
 	export let sourceID: string;
 
-	let data: EventDTO[] | null = null;
+	let data: EventDTO[] = [];
 	let loading = false;
 	let error: string | null = null;
+
+	let pageSize: number = 1;
+	let nextCursor: string | null = null;
+	let hasNext: boolean = false;
 
 	async function fetchEvents() {
 		loading = true;
 		error = null;
 		try {
-			const response = await fetch(`/api/sources/${sourceID}/events`);
-			if (!response.ok) {
-				throw new Error(`Failed to fetch events: ${response.statusText}`);
-			}
-			const rawData = await response.json();
-			data = rawData.map(parseEventDTO);
+			const result = await fetchPaginatedData(
+				`/api/sources/${sourceID}/events`,
+				pageSize,
+				nextCursor
+			);
+			data = [...data, ...result.data.map(parseEventDTO)];
+			nextCursor = result.nextCursor;
+			hasNext = result.hasNext;
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching events:', err);
@@ -56,7 +64,11 @@
 				</li>
 			{/each}
 		</ul>
+		{#if hasNext}
+			<button on:click={fetchEvents}>Load More</button>
+		{/if}
 	{/if}
 {:else}
 	<p>No events found for this source.</p>
 {/if}
+<PageSizeSelector bind:pageSize />
