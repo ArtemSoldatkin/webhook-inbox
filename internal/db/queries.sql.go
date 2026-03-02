@@ -284,7 +284,7 @@ FROM
     delivery_attempts
 WHERE
     event_id = $1 AND
-    ($2::timestamp IS NULL OR created_at <= $2)
+    ($2::timestamptz IS NULL OR created_at <= $2)
 ORDER BY
     created_at DESC
 LIMIT
@@ -293,7 +293,7 @@ LIMIT
 
 type ListDeliveryAttemptsByEventParams struct {
 	EventID  int64
-	Cursor   pgtype.Timestamp
+	Cursor   pgtype.Timestamptz
 	PageSize int32
 }
 
@@ -346,7 +346,7 @@ FROM
     events
 WHERE
     source_id = $1 AND
-    ($2::timestamp IS NULL OR received_at <= $2)
+    ($2::timestamptz IS NULL OR received_at <= $2)
 ORDER BY
     received_at DESC
 LIMIT
@@ -355,7 +355,7 @@ LIMIT
 
 type ListEventsBySourceParams struct {
 	SourceID int64
-	Cursor   pgtype.Timestamp
+	Cursor   pgtype.Timestamptz
 	PageSize int32
 }
 
@@ -406,7 +406,7 @@ SELECT
 FROM
     sources
 WHERE
-    ($1::timestamp IS NULL OR updated_at <= $1)
+    ($1::timestamptz IS NULL OR updated_at <= $1)
 ORDER BY
     updated_at DESC
 LIMIT
@@ -414,7 +414,7 @@ LIMIT
 `
 
 type ListSourcesParams struct {
-	Cursor   pgtype.Timestamp
+	Cursor   pgtype.Timestamptz
 	PageSize int32
 }
 

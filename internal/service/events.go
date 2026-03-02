@@ -10,11 +10,11 @@ import (
 
 // ListEvents retrieves all events for a given source ID from the database.
 func (svc *Service) ListEvents(ctx context.Context, sourceID int64, cursor *time.Time, pageSize int) ([]db.Event, error) {
-	var cursorValue pgtype.Timestamp
+	var cursorValue pgtype.Timestamptz
 	if cursor != nil {
-		cursorValue = pgtype.Timestamp{Time: *cursor, Valid: true}
+		cursorValue = pgtype.Timestamptz{Time: *cursor, Valid: true}
 	} else {
-		cursorValue = pgtype.Timestamp{Valid: false}
+		cursorValue = pgtype.Timestamptz{Valid: false}
 	}
 	return svc.queries.ListEventsBySource(ctx, db.ListEventsBySourceParams{
 		SourceID: sourceID,

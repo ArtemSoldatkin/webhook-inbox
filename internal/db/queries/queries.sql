@@ -13,7 +13,7 @@ SELECT
 FROM
     sources
 WHERE
-    (@cursor::timestamp IS NULL OR updated_at <= @cursor)
+    (@cursor::timestamptz IS NULL OR updated_at <= @cursor)
 ORDER BY
     updated_at DESC
 LIMIT
@@ -82,7 +82,7 @@ FROM
     events
 WHERE
     source_id = @source_id AND
-    (@cursor::timestamp IS NULL OR received_at <= @cursor)
+    (@cursor::timestamptz IS NULL OR received_at <= @cursor)
 ORDER BY
     received_at DESC
 LIMIT
@@ -149,7 +149,7 @@ FROM
     delivery_attempts
 WHERE
     event_id = @event_id AND
-    (@cursor::timestamp IS NULL OR created_at <= @cursor)
+    (@cursor::timestamptz IS NULL OR created_at <= @cursor)
 ORDER BY
     created_at DESC
 LIMIT

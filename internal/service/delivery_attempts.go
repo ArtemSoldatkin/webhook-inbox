@@ -25,11 +25,11 @@ func (svc *Service) ListDeliveryAttempts(
 	cursor *time.Time,
 	pageSize int,
 ) ([]db.DeliveryAttempt, error) {
-	var cursorValue pgtype.Timestamp
+	var cursorValue pgtype.Timestamptz
 	if cursor != nil {
-		cursorValue = pgtype.Timestamp{Time: *cursor, Valid: true}
+		cursorValue = pgtype.Timestamptz{Time: *cursor, Valid: true}
 	} else {
-		cursorValue = pgtype.Timestamp{Valid: false}
+		cursorValue = pgtype.Timestamptz{Valid: false}
 	}
 	return svc.queries.ListDeliveryAttemptsByEvent(ctx, db.ListDeliveryAttemptsByEventParams{
 		EventID:  eventID,

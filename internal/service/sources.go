@@ -14,11 +14,11 @@ func (svc *Service) ListSources(
 	cursor *time.Time,
 	pageSize int,
 ) ([]db.Source, error) {
-	var cursorValue pgtype.Timestamp
+	var cursorValue pgtype.Timestamptz
 	if cursor != nil {
-		cursorValue = pgtype.Timestamp{Time: *cursor, Valid: true}
+		cursorValue = pgtype.Timestamptz{Time: *cursor, Valid: true}
 	} else {
-		cursorValue = pgtype.Timestamp{Valid: false}
+		cursorValue = pgtype.Timestamptz{Valid: false}
 	}
 	return svc.queries.ListSources(ctx, db.ListSourcesParams{
 		Cursor:   cursorValue,
