@@ -55,7 +55,9 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			staticHeaders, err := utils.JSONBtoType[map[string]string](source.StaticHeaders)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal static headers")
-				continue
+				staticHeaders = map[string]string{
+					"__error": "Webhook Inbox Error - Failed to parse",
+				}
 			}
 			var disableAt *time.Time
 			if source.DisableAt.Valid {

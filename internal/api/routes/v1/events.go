@@ -48,12 +48,16 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal query params")
-				continue
+				queryParams = map[string][]string{
+					"__error": {"Webhook Inbox Error - Failed to parse"},
+				}
 			}
 			rawHeaders, err := utils.JSONBtoType[map[string][]string](event.RawHeaders)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal raw headers")
-				continue
+				rawHeaders = map[string][]string{
+					"__error": {"Webhook Inbox Error - Failed to parse"},
+				}
 			}
 			var remoteAddress *string
 			if event.RemoteAddress != nil {
