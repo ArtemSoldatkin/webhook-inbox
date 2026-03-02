@@ -29,12 +29,19 @@
 		}
 	}
 
+	async function resetAndFetchSources() {
+		data = [];
+		nextCursor = null;
+		hasNext = false;
+		await fetchSources();
+	}
+
 	onMount(() => {
 		fetchSources();
 	});
 </script>
 
-<button on:click={fetchSources}>Refresh Sources</button>
+<button on:click={resetAndFetchSources} disabled={loading}>Refresh Sources</button>
 {#if loading}
 	<p>Loading sources...</p>
 {:else if error}

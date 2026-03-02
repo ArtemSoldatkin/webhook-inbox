@@ -36,12 +36,19 @@
 		}
 	}
 
+	async function resetAndFetchEvents() {
+		data = [];
+		nextCursor = null;
+		hasNext = false;
+		await fetchEvents();
+	}
+
 	$: if (sourceID) {
-		fetchEvents();
+		resetAndFetchEvents();
 	}
 </script>
 
-<button on:click={fetchEvents}>Refresh Events</button>
+<button on:click={resetAndFetchEvents} disabled={loading}>Refresh Events</button>
 {#if loading}
 	<p>Loading events...</p>
 {:else if error}

@@ -35,11 +35,19 @@
 		}
 	}
 
+	async function resetAndFetchDeliveryAttempts() {
+		data = [];
+		nextCursor = null;
+		hasNext = false;
+		await fetchDeliveryAttempts();
+	}
+
 	$: if (sourceID && eventID) {
-		fetchDeliveryAttempts();
+		resetAndFetchDeliveryAttempts();
 	}
 </script>
 
+<button on:click={resetAndFetchDeliveryAttempts} disabled={loading}>Refresh Events</button>
 <h3>Delivery Attempts</h3>
 {#if loading}
 	<p>Loading event details...</p>
