@@ -76,12 +76,16 @@ func getIntQueryParam(query url.Values, key string, defaultValue int) (value int
 	return value, nil
 }
 
+// getTimeQueryParam retrieves a time query parameter in RFC3339 format.
 func getTimeQueryParam(query url.Values, key string) (value *time.Time, err error) {
 	valueStr := query.Get(key)
 	if valueStr == "" {
 		return nil, nil
 	}
-	parsedTime, err := time.Parse(time.RFC3339, valueStr)
+	parsedTime, err := time.Parse(time.RFC3339Nano, valueStr)
+	if err != nil {
+		parsedTime, err = time.Parse(time.RFC3339, valueStr)
+	}
 	if err != nil {
 		return nil, fmt.Errorf(
 			"invalid %s parameter",
