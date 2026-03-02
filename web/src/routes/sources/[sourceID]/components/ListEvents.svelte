@@ -12,7 +12,7 @@
 	let loading = false;
 	let error: string | null = null;
 
-	let pageSize: number = 1;
+	let pageSize: number = 20;
 	let nextCursor: string | null = null;
 	let hasNext: boolean = false;
 
@@ -65,7 +65,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button on:click={fetchEvents}>Load More</button>
+			<button on:click={fetchEvents} disabled={loading}>Load More</button>
 		{/if}
 	{/if}
 {:else}
