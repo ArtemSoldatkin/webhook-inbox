@@ -79,12 +79,18 @@ func listSources(svc *service.Service) http.HandlerFunc {
 				DisableAt:     disableAt,
 			})
 		}
+		var nextCursor api.Cursor
+		if len(sourceDTOs) > 0 {
+			lastSource := sourceDTOs[len(sourceDTOs)-1]
+			nextCursor = api.NewCursor(
+				&lastSource.UpdatedAt,
+				&lastSource.ID,
+			)
+		}
 		paginatedResponse := api.ToPaginatedResponse(
 			sourceDTOs,
 			pageSize,
-			func(e dtov1.SourceDTO) *time.Time {
-				return &e.UpdatedAt
-			},
+			nextCursor,
 		)
 		response, err := json.Marshal(paginatedResponse)
 		if err != nil {

@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"time"
 
+	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -11,17 +11,13 @@ import (
 // ListSources retrieves all sources from the database.
 func (svc *Service) ListSources(
 	ctx context.Context,
-	cursor *time.Time,
+	cursor api.Cursor,
 	pageSize int,
 ) ([]db.Source, error) {
-	var cursorValue pgtype.Timestamptz
-	if cursor != nil {
-		cursorValue = pgtype.Timestamptz{Time: *cursor, Valid: true}
-	} else {
-		cursorValue = pgtype.Timestamptz{Valid: false}
-	}
+	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListSources(ctx, db.ListSourcesParams{
-		Cursor:   cursorValue,
+		CursorTs: cursorTS,
+		CursorID: cursorID,
 		PageSize: int32(pageSize),
 	})
 }

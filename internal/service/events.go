@@ -2,23 +2,23 @@ package service
 
 import (
 	"context"
-	"time"
 
+	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // ListEvents retrieves all events for a given source ID from the database.
-func (svc *Service) ListEvents(ctx context.Context, sourceID int64, cursor *time.Time, pageSize int) ([]db.Event, error) {
-	var cursorValue pgtype.Timestamptz
-	if cursor != nil {
-		cursorValue = pgtype.Timestamptz{Time: *cursor, Valid: true}
-	} else {
-		cursorValue = pgtype.Timestamptz{Valid: false}
-	}
+func (svc *Service) ListEvents(
+	ctx context.Context,
+	sourceID int64,
+	cursor api.Cursor,
+	pageSize int,
+) ([]db.Event, error) {
+	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListEventsBySource(ctx, db.ListEventsBySourceParams{
 		SourceID: sourceID,
-		Cursor:   cursorValue,
+		CursorTs: cursorTS,
+		CursorID: cursorID,
 		PageSize: int32(pageSize),
 	})
 }

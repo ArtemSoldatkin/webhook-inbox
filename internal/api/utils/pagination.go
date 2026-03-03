@@ -5,23 +5,27 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
-	"time"
 )
 
 // PaginatedResponse represents a standard structure for paginated API responses.
 type PaginatedResponse[T any] struct {
-	Data       []T        `json:"data"`
-	NextCursor *time.Time `json:"nextCursor,omitempty"`
-	HasNext    bool       `json:"hasNext"`
+	Data       []T     `json:"data"`
+	NextCursor *string `json:"nextCursor,omitempty"`
+	HasNext    bool    `json:"hasNext"`
 }
 
 // ToPaginatedResponse converts a slice of data into a PaginatedResponse, determining if there is a next page based on the provided page size and cursor function.
-func ToPaginatedResponse[T any](data []T, pageSize int, getCursor func(T) *time.Time) PaginatedResponse[T] {
+func ToPaginatedResponse[T any](
+	data []T,
+	pageSize int,
+	cursor Cursor,
+) PaginatedResponse[T] {
 	hasNext := len(data) > pageSize
-	var nextCursor *time.Time
+	var nextCursor *string
 	if hasNext {
-		nextCursor = getCursor(data[pageSize])
 		data = data[:pageSize]
+		cursorStr := cursor.ToString()
+		nextCursor = &cursorStr
 	}
 	return PaginatedResponse[T]{
 		Data:       data,
@@ -38,24 +42,23 @@ func ParsePaginationParams(
 	maxPageSize int,
 ) (
 	pageSize int,
-	cursor *time.Time,
+	cursor Cursor,
 	err error,
 ) {
 	pageSize, err = getIntQueryParam(query, "limit", defaultPageSize)
 	if err != nil {
-		return 0, nil, err
+		return 0, cursor, err
 	}
 	if pageSize < minPageSize || pageSize > maxPageSize {
-		return 0, nil, fmt.Errorf(
+		return 0, cursor, fmt.Errorf(
 			"limit parameter must be between %d and %d",
 			minPageSize,
 			maxPageSize,
 		)
 	}
-
-	cursor, err = getTimeQueryParam(query, "cursor")
-	if err != nil {
-		return 0, nil, err
+	cursorStr := query.Get("cursor")
+	if err := cursor.FromString(cursorStr); err != nil {
+		return 0, cursor, fmt.Errorf("invalid cursor parameter: %w", err)
 	}
 	return pageSize, cursor, nil
 }
@@ -74,23 +77,4 @@ func getIntQueryParam(query url.Values, key string, defaultValue int) (value int
 		)
 	}
 	return value, nil
-}
-
-// getTimeQueryParam retrieves a time query parameter in RFC3339 format.
-func getTimeQueryParam(query url.Values, key string) (value *time.Time, err error) {
-	valueStr := query.Get(key)
-	if valueStr == "" {
-		return nil, nil
-	}
-	parsedTime, err := time.Parse(time.RFC3339Nano, valueStr)
-	if err != nil {
-		parsedTime, err = time.Parse(time.RFC3339, valueStr)
-	}
-	if err != nil {
-		return nil, fmt.Errorf(
-			"invalid %s parameter",
-			key,
-		)
-	}
-	return &parsedTime, nil
 }

@@ -2,11 +2,10 @@ package service
 
 import (
 	"context"
-	"time"
 
+	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // This file contains service methods related to managing delivery attempts,
@@ -22,18 +21,14 @@ type PendingDeliveryAttempt struct {
 func (svc *Service) ListDeliveryAttempts(
 	ctx context.Context,
 	eventID int64,
-	cursor *time.Time,
+	cursor api.Cursor,
 	pageSize int,
 ) ([]db.DeliveryAttempt, error) {
-	var cursorValue pgtype.Timestamptz
-	if cursor != nil {
-		cursorValue = pgtype.Timestamptz{Time: *cursor, Valid: true}
-	} else {
-		cursorValue = pgtype.Timestamptz{Valid: false}
-	}
+	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListDeliveryAttemptsByEvent(ctx, db.ListDeliveryAttemptsByEventParams{
 		EventID:  eventID,
-		Cursor:   cursorValue,
+		CursorTs: cursorTS,
+		CursorID: cursorID,
 		PageSize: int32(pageSize),
 	})
 }

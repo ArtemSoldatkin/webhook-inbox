@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
@@ -78,12 +77,18 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 				ReceivedAt:      event.ReceivedAt.Time,
 			})
 		}
+		var nextCursor api.Cursor
+		if len(eventDTOs) > 0 {
+			lastEvent := eventDTOs[len(eventDTOs)-1]
+			nextCursor = api.NewCursor(
+				&lastEvent.ReceivedAt,
+				&lastEvent.ID,
+			)
+		}
 		paginatedResponse := api.ToPaginatedResponse(
 			eventDTOs,
 			pageSize,
-			func(e dtov1.EventDTO) *time.Time {
-				return &e.ReceivedAt
-			},
+			nextCursor,
 		)
 		response, err := json.Marshal(paginatedResponse)
 		if err != nil {

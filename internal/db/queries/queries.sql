@@ -13,11 +13,19 @@ SELECT
 FROM
     sources
 WHERE
-    (@cursor::timestamptz IS NULL OR updated_at <= @cursor)
+    @cursor_ts IS NULL OR
+    (
+        updated_at < @cursor_ts OR
+        (
+            updated_at = @cursor_ts AND
+            id < @cursor_id
+        )
+    )
 ORDER BY
-    updated_at DESC
+    updated_at DESC,
+    id DESC
 LIMIT
-    @page_size + 1;
+    @page_size;
 
 -- name: GetSourceByID :one
 SELECT
@@ -82,11 +90,18 @@ FROM
     events
 WHERE
     source_id = @source_id AND
-    (@cursor::timestamptz IS NULL OR received_at <= @cursor)
+    (
+        @cursor_ts IS NULL OR
+        received_at < @cursor_ts OR
+        (
+            received_at = @cursor_ts AND
+            id < @cursor_id
+        )
+    )
 ORDER BY
     received_at DESC
 LIMIT
-    @page_size + 1;
+    @page_size;
 
 
 -- name: GetEventByID :one
@@ -149,11 +164,19 @@ FROM
     delivery_attempts
 WHERE
     event_id = @event_id AND
-    (@cursor::timestamptz IS NULL OR created_at <= @cursor)
+    (
+        @cursor_ts IS NULL OR
+        created_at < @cursor_ts OR
+        (
+            created_at = @cursor_ts AND
+            id < @cursor_id
+        )
+    )
 ORDER BY
-    created_at DESC
+    created_at DESC,
+    id DESC
 LIMIT
-    @page_size + 1;
+    @page_size;
 
 -- name: CreateDeliveryAttempt :one
 INSERT INTO delivery_attempts (
