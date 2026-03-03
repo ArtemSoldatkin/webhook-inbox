@@ -100,6 +100,7 @@ func parseCursorID(s string) (*int64, error) {
 	if err != nil {
 		return nil, fmt.Errorf(
 			"invalid cursor id parameter - %s",
+			s,
 		)
 	}
 	return &id, nil

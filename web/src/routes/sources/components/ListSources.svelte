@@ -39,6 +39,10 @@
 	onMount(() => {
 		fetchSources();
 	});
+
+	$: if (pageSize) {
+		resetAndFetchSources();
+	}
 </script>
 
 <button on:click={resetAndFetchSources} disabled={loading}>Refresh Sources</button>

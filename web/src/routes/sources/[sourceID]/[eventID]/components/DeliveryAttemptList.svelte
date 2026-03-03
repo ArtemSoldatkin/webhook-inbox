@@ -42,7 +42,7 @@
 		await fetchDeliveryAttempts();
 	}
 
-	$: if (sourceID && eventID) {
+	$: if (sourceID && eventID && pageSize) {
 		resetAndFetchDeliveryAttempts();
 	}
 </script>

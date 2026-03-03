@@ -43,7 +43,7 @@
 		await fetchEvents();
 	}
 
-	$: if (sourceID) {
+	$: if (sourceID && pageSize) {
 		resetAndFetchEvents();
 	}
 </script>

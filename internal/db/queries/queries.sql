@@ -22,8 +22,8 @@ WHERE
         )
     )
 ORDER BY
-    updated_at DESC,
-    id DESC
+    updated_at DESC
+    , id DESC
 LIMIT
     @page_size;
 
@@ -100,6 +100,7 @@ WHERE
     )
 ORDER BY
     received_at DESC
+    , id DESC
 LIMIT
     @page_size;
 
@@ -173,8 +174,8 @@ WHERE
         )
     )
 ORDER BY
-    created_at DESC,
-    id DESC
+    created_at DESC
+    , id DESC
 LIMIT
     @page_size;
 
