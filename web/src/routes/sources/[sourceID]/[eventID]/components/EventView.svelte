@@ -41,12 +41,12 @@
 	<p class="error">Error: {error}</p>
 {:else if data}
 	<section>
-		<h2>Event ID: {data.ID}</h2>
-		<p>Source ID: {data.SourceID}</p>
-		<p>Method: {data.Method}</p>
-		<DisplayMapOfStringArrays title="Query Parameters" data={data.QueryParams} />
-		<DisplayMapOfStringArrays title="Raw Headers" data={data.RawHeaders} />
-		<BodyView body={data.Body} contentType={data.BodyContentType} />
+		<h2>Event ID: {data.id}</h2>
+		<p>Source ID: {data.source_id}</p>
+		<p>Method: {data.method}</p>
+		<DisplayMapOfStringArrays title="Query Parameters" data={data.query_params ?? {}} />
+		<DisplayMapOfStringArrays title="Raw Headers" data={data.raw_headers ?? {}} />
+		<BodyView body={data.body} contentType={data.body_content_type} />
 	</section>
 	<DeliveryAttemptList {sourceID} {eventID} />
 {:else}

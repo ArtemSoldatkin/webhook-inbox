@@ -10,8 +10,8 @@ import (
 // PaginatedResponse represents a standard structure for paginated API responses.
 type PaginatedResponse[T any] struct {
 	Data       []T     `json:"data"`
-	NextCursor *string `json:"nextCursor,omitempty"`
-	HasNext    bool    `json:"hasNext"`
+	NextCursor *string `json:"next_cursor,omitempty"`
+	HasNext    bool    `json:"has_next"`
 }
 
 // ToPaginatedResponse converts a slice of data into a PaginatedResponse, determining if there is a next page based on the provided page size and cursor function.

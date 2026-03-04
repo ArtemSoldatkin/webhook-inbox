@@ -1,48 +1,48 @@
 export type ContentType = 'application/json' | 'application/x-www-form-urlencoded' | 'text/plain';
 
 export interface SourceDTO {
-	ID: number;
-	PublicID: string;
-	IngressUrl: string;
-	EgressUrl: string;
-	StaticHeaders: Record<string, string>;
-	Status: string;
-	StatusReason: string | null;
-	Description: string | null;
-	CreatedAt: Date;
-	UpdatedAt: Date;
-	DisableAt: Date | null;
+	id: number;
+	public_id: string;
+	ingress_url: string;
+	egress_url: string;
+	static_headers?: Record<string, string>;
+	status: string;
+	status_reason?: string;
+	description?: string;
+	created_at: Date;
+	updated_at: Date;
+	disable_at?: Date;
 }
 
 export interface EventDTO {
-	ID: number;
-	SourceID: number;
-	Method: string;
-	IngressPath: string;
-	RemoteAddress: string | null;
-	QueryParams: Record<string, string[]>;
-	RawHeaders: Record<string, string[]>;
-	Body: string; // Base64-encoded string
-	BodyContentType: string;
-	ReceivedAt: Date;
+	id: number;
+	source_id: number;
+	method: string;
+	ingress_path: string;
+	remote_address?: string;
+	query_params?: Record<string, string[]>;
+	raw_headers?: Record<string, string[]>;
+	body: string; // Base64-encoded string
+	body_content_type: string;
+	received_at: Date;
 }
 
 export interface DeliveryAttemptDTO {
-	ID: number;
-	EventID: number;
-	AttemptNumber: number;
-	State: string;
-	StatusCode: number | null;
-	ErrorType: string | null;
-	ErrorMessage: string | null;
-	StartedAt: Date | null;
-	FinishedAt: Date | null;
-	CreatedAt: Date;
-	NextAttemptAt: Date | null;
+	id: number;
+	event_id: number;
+	attempt_number: number;
+	state: string;
+	status_code?: number;
+	error_type?: string;
+	error_message?: string;
+	started_at?: Date;
+	finished_at?: Date;
+	created_at: Date;
+	next_attempt_at?: Date;
 }
 
 export interface PaginatedResponse<T> {
 	data: T[];
-	nextCursor: string | null;
-	hasNext: boolean;
+	next_cursor: string | null;
+	has_next: boolean;
 }

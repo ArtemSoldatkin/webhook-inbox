@@ -26,8 +26,8 @@
 				nextCursor
 			);
 			data = [...data, ...result.data.map(parseEventDTO)];
-			nextCursor = result.nextCursor;
-			hasNext = result.hasNext;
+			nextCursor = result.next_cursor;
+			hasNext = result.has_next;
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching events:', err);
@@ -61,12 +61,12 @@
 			{#each data as event}
 				<li>
 					<section>
-						<h3><a href={`/sources/${event.SourceID}/${event.ID}`}>Event ID: {event.ID}</a></h3>
-						<p>Source ID: {event.SourceID}</p>
-						<p>Method: {event.Method}</p>
-						<DisplayMapOfStringArrays title="Query Parameters" data={event.QueryParams} />
-						<DisplayMapOfStringArrays title="Raw Headers" data={event.RawHeaders} />
-						<BodyView body={event.Body} contentType={event.BodyContentType} />
+						<h3><a href={`/sources/${event.source_id}/${event.id}`}>Event ID: {event.id}</a></h3>
+						<p>Source ID: {event.source_id}</p>
+						<p>Method: {event.method}</p>
+						<DisplayMapOfStringArrays title="Query Parameters" data={event.query_params ?? {}} />
+						<DisplayMapOfStringArrays title="Raw Headers" data={event.raw_headers ?? {}} />
+						<BodyView body={event.body} contentType={event.body_content_type} />
 					</section>
 				</li>
 			{/each}

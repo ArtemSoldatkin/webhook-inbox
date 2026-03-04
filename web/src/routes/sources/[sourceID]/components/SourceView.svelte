@@ -39,25 +39,25 @@
 	<p class="error">Error: {error}</p>
 {:else if data}
 	<section>
-		<h2>{data.ID}</h2>
-		<p>{data.Description}</p>
-		<p>{data.IngressUrl}</p>
-		<p>{data.EgressUrl}</p>
+		<h2>{data.id}</h2>
+		<p>{data.description}</p>
+		<p>{data.ingress_url}</p>
+		<p>{data.egress_url}</p>
 		<p>Static headers:</p>
-		{#each Object.entries(data.StaticHeaders) as [key, value]}
+		{#each Object.entries(data.static_headers ?? {}) as [key, value]}
 			<p>{key}: {value}</p>
 		{/each}
-		<p>{data.Status}</p>
-		<p>{data.StatusReason}</p>
-		<p>Created at: {new Date(data.CreatedAt).toLocaleString()}</p>
-		<p>Updated at: {new Date(data.UpdatedAt).toLocaleString()}</p>
+		<p>{data.status}</p>
+		<p>{data.status_reason}</p>
+		<p>Created at: {new Date(data.created_at).toLocaleString()}</p>
+		<p>Updated at: {new Date(data.updated_at).toLocaleString()}</p>
 		<p>
-			Disabled at: {data.DisableAt ? new Date(data.DisableAt).toLocaleString() : 'N/A'}
+			Disabled at: {data.disable_at ? new Date(data.disable_at).toLocaleString() : 'N/A'}
 		</p>
 	</section>
 	<section>
 		<h3>Test Webhook</h3>
-		<TestWebhook publicID={data.PublicID} staticHeaders={data.StaticHeaders} />
+		<TestWebhook publicID={data.public_id} staticHeaders={data.static_headers} />
 		<ListEvents {sourceID} />
 	</section>
 {/if}

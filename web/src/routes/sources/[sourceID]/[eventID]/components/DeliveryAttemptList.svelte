@@ -25,8 +25,8 @@
 				nextCursor
 			);
 			data = [...data, ...result.data.map(parseDeliveryAttemptDTO)];
-			nextCursor = result.nextCursor;
-			hasNext = result.hasNext;
+			nextCursor = result.next_cursor;
+			hasNext = result.has_next;
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching event details:', err);
@@ -61,25 +61,27 @@
 			{#each data as attempt}
 				<li>
 					<section>
-						<h3>Attempt ID: {attempt.ID}</h3>
-						<p>Event ID: {attempt.EventID}</p>
-						<p>Attempt Number: {attempt.AttemptNumber}</p>
-						<p>Delivery State: {attempt.State}</p>
-						<p>Status code: {attempt.StatusCode}</p>
-						<p>Error Type: {attempt.ErrorType}</p>
-						<p>Error Message: {attempt.ErrorMessage}</p>
+						<h3>Attempt ID: {attempt.id}</h3>
+						<p>Event ID: {attempt.event_id}</p>
+						<p>Attempt Number: {attempt.attempt_number}</p>
+						<p>Delivery State: {attempt.state}</p>
+						<p>Status code: {attempt.status_code}</p>
+						<p>Error Type: {attempt.error_type}</p>
+						<p>Error Message: {attempt.error_message}</p>
 						<p>
-							Started at: {attempt.StartedAt ? new Date(attempt.StartedAt).toLocaleString() : 'N/A'}
-						</p>
-						<p>
-							Finished at: {attempt.FinishedAt
-								? new Date(attempt.FinishedAt).toLocaleString()
+							Started at: {attempt.started_at
+								? new Date(attempt.started_at).toLocaleString()
 								: 'N/A'}
 						</p>
-						<p>Created at: {new Date(attempt.CreatedAt).toLocaleString()}</p>
+						<p>
+							Finished at: {attempt.finished_at
+								? new Date(attempt.finished_at).toLocaleString()
+								: 'N/A'}
+						</p>
+						<p>Created at: {new Date(attempt.created_at).toLocaleString()}</p>
 						<p>
 							Next attempt at:{' '}
-							{attempt.NextAttemptAt ? new Date(attempt.NextAttemptAt).toLocaleString() : 'N/A'}
+							{attempt.next_attempt_at ? new Date(attempt.next_attempt_at).toLocaleString() : 'N/A'}
 						</p>
 					</section>
 				</li>
