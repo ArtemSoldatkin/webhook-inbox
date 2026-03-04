@@ -19,20 +19,20 @@ import (
 // markInPending updates the state of a delivery attempt to "pending" and clears the started_at timestamp.
 func markInPending(ctx context.Context, svc *service.Service, deliveryID int64) error {
 	return svc.UpdateDeliveryAttempt(ctx, db.UpdateDeliveryAttemptParams{
-		ID:    deliveryID,
-		State: "pending",
+		DeliveryAttemptID: deliveryID,
+		State:             "pending",
 	})
 }
 
 // finalizeDeliveryAttempt updates the delivery attempt with the final result of the delivery, including the status code, error type, and error message if applicable, and sets the finished_at timestamp to the current time.
 func finalizeDeliveryAttempt(ctx context.Context, svc *service.Service, deliveryID int64, result *DeliveryResult) error {
 	return svc.UpdateDeliveryAttempt(ctx, db.UpdateDeliveryAttemptParams{
-		ID:           deliveryID,
-		State:        result.DeliveryState,
-		StatusCode:   pgtype.Int4{Int32: int32(result.StatusCode), Valid: true},
-		ErrorType:    pgtype.Text{String: result.ErrorType, Valid: result.ErrorType != ""},
-		ErrorMessage: pgtype.Text{String: result.ErrorMessage, Valid: result.ErrorMessage != ""},
-		FinishedAt:   pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		DeliveryAttemptID: deliveryID,
+		State:             result.DeliveryState,
+		StatusCode:        pgtype.Int4{Int32: int32(result.StatusCode), Valid: true},
+		ErrorType:         pgtype.Text{String: result.ErrorType, Valid: result.ErrorType != ""},
+		ErrorMessage:      pgtype.Text{String: result.ErrorMessage, Valid: result.ErrorMessage != ""},
+		FinishedAt:        pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 }
 

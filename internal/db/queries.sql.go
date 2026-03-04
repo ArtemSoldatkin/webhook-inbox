@@ -14,25 +14,25 @@ import (
 
 const createDeliveryAttempt = `-- name: CreateDeliveryAttempt :one
 INSERT INTO delivery_attempts (
-    event_id,
-    attempt_number,
-    state,
-    status_code,
-    error_type,
-    error_message,
-    started_at,
-    finished_at,
-    next_attempt_at
+    event_id
+    , attempt_number
+    , state
+    , status_code
+    , error_type
+    , error_message
+    , started_at
+    , finished_at
+    , next_attempt_at
 ) VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8,
-    $9
+    $1
+    , $2
+    , $3
+    , $4
+    , $5
+    , $6
+    , $7
+    , $8
+    , $9
 )
 RETURNING id
 `
@@ -68,25 +68,25 @@ func (q *Queries) CreateDeliveryAttempt(ctx context.Context, arg CreateDeliveryA
 
 const createEvent = `-- name: CreateEvent :one
 INSERT INTO events (
-    source_id,
-    dedup_hash,
-    method,
-    ingress_path,
-    remote_address,
-    query_params,
-    raw_headers,
-    body,
-    body_content_type
+    source_id
+    , dedup_hash
+    , method
+    , ingress_path
+    , remote_address
+    , query_params
+    , raw_headers
+    , body
+    , body_content_type
 ) VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8,
-    $9
+    $1
+    , $2
+    , $3
+    , $4
+    , $5
+    , $6
+    , $7
+    , $8
+    , $9
 )
 RETURNING id
 `
@@ -122,13 +122,13 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (int64
 
 const createSource = `-- name: CreateSource :one
 INSERT INTO sources (
-    egress_url,
-    static_headers,
-    description
+    egress_url
+    , static_headers
+    , description
 ) VALUES (
-    $1,
-    $2,
-    $3
+    $1
+    , $2
+    , $3
 )
 RETURNING id, public_id, egress_url, static_headers, status, status_reason, description, created_at, updated_at, disable_at
 `
@@ -159,25 +159,25 @@ func (q *Queries) CreateSource(ctx context.Context, arg CreateSourceParams) (Sou
 
 const getEventByID = `-- name: GetEventByID :one
 SELECT
-    id,
-    source_id,
-    dedup_hash,
-    method,
-    ingress_path,
-    remote_address,
-    query_params,
-    raw_headers,
-    body,
-    body_content_type,
-    received_at
+    id
+    , source_id
+    , dedup_hash
+    , method
+    , ingress_path
+    , remote_address
+    , query_params
+    , raw_headers
+    , body
+    , body_content_type
+    , received_at
 FROM
     events
 WHERE
     id = $1
 `
 
-func (q *Queries) GetEventByID(ctx context.Context, id int64) (Event, error) {
-	row := q.db.QueryRow(ctx, getEventByID, id)
+func (q *Queries) GetEventByID(ctx context.Context, eventID int64) (Event, error) {
+	row := q.db.QueryRow(ctx, getEventByID, eventID)
 	var i Event
 	err := row.Scan(
 		&i.ID,
@@ -197,24 +197,24 @@ func (q *Queries) GetEventByID(ctx context.Context, id int64) (Event, error) {
 
 const getSourceByID = `-- name: GetSourceByID :one
 SELECT
-    id,
-    public_id,
-    egress_url,
-    static_headers,
-    status,
-    status_reason,
-    description,
-    created_at,
-    updated_at,
-    disable_at
+    id
+    , public_id
+    , egress_url
+    , static_headers
+    , status
+    , status_reason
+    , description
+    , created_at
+    , updated_at
+    , disable_at
 FROM
     sources
 WHERE
     id = $1
 `
 
-func (q *Queries) GetSourceByID(ctx context.Context, id int64) (Source, error) {
-	row := q.db.QueryRow(ctx, getSourceByID, id)
+func (q *Queries) GetSourceByID(ctx context.Context, sourceID int64) (Source, error) {
+	row := q.db.QueryRow(ctx, getSourceByID, sourceID)
 	var i Source
 	err := row.Scan(
 		&i.ID,
@@ -233,16 +233,16 @@ func (q *Queries) GetSourceByID(ctx context.Context, id int64) (Source, error) {
 
 const getSourceByPublicID = `-- name: GetSourceByPublicID :one
 SELECT
-    id,
-    public_id,
-    egress_url,
-    static_headers,
-    status,
-    status_reason,
-    description,
-    created_at,
-    updated_at,
-    disable_at
+    id
+    , public_id
+    , egress_url
+    , static_headers
+    , status
+    , status_reason
+    , description
+    , created_at
+    , updated_at
+    , disable_at
 FROM
     sources
 WHERE
@@ -489,12 +489,12 @@ func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Sou
 const recoverStuckDeliveryAttempts = `-- name: RecoverStuckDeliveryAttempts :exec
 UPDATE delivery_attempts
 SET
-    state = 'pending',
-    started_at = NULL,
-    finished_at = NULL
+    state = 'pending'
+    , started_at = NULL
+    , finished_at = NULL
 WHERE
-    state = 'in_flight'
-    AND started_at < NOW() - INTERVAL '15 minutes'
+    state = 'in_flight' AND
+    started_at < NOW() - INTERVAL '15 minutes'
 `
 
 func (q *Queries) RecoverStuckDeliveryAttempts(ctx context.Context) error {
@@ -548,31 +548,31 @@ func (q *Queries) SelectPendingDeliveryAttemptIDs(ctx context.Context, limit int
 const updateDeliveryAttempt = `-- name: UpdateDeliveryAttempt :exec
 UPDATE delivery_attempts
 SET
-    state = $1,
-    status_code = $2,
-    error_type = $3,
-    error_message = $4,
-    started_at = CASE
+    state = $1
+    , status_code = $2
+    , error_type = $3
+    , error_message = $4
+    , started_at = CASE
         WHEN $1 = 'pending' THEN NULL
         ELSE COALESCE(started_at, $5)
-    END,
-    finished_at = CASE
+    END
+    , finished_at = CASE
         WHEN $1 IN ('pending', 'in_flight') THEN NULL
         ELSE COALESCE(finished_at, $6)
     END
 WHERE
-    id = $7
-    AND state IN ('pending', 'in_flight')
+    id = $7 AND
+    state IN ('pending', 'in_flight')
 `
 
 type UpdateDeliveryAttemptParams struct {
-	State        string
-	StatusCode   pgtype.Int4
-	ErrorType    pgtype.Text
-	ErrorMessage pgtype.Text
-	StartedAt    pgtype.Timestamptz
-	FinishedAt   pgtype.Timestamptz
-	ID           int64
+	State             string
+	StatusCode        pgtype.Int4
+	ErrorType         pgtype.Text
+	ErrorMessage      pgtype.Text
+	StartedAt         pgtype.Timestamptz
+	FinishedAt        pgtype.Timestamptz
+	DeliveryAttemptID int64
 }
 
 func (q *Queries) UpdateDeliveryAttempt(ctx context.Context, arg UpdateDeliveryAttemptParams) error {
@@ -583,7 +583,7 @@ func (q *Queries) UpdateDeliveryAttempt(ctx context.Context, arg UpdateDeliveryA
 		arg.ErrorMessage,
 		arg.StartedAt,
 		arg.FinishedAt,
-		arg.ID,
+		arg.DeliveryAttemptID,
 	)
 	return err
 }
