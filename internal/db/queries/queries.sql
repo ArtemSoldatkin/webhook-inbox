@@ -29,47 +29,47 @@ LIMIT
 
 -- name: GetSourceByID :one
 SELECT
-    id,
-    public_id,
-    egress_url,
-    static_headers,
-    status,
-    status_reason,
-    description,
-    created_at,
-    updated_at,
-    disable_at
+    id
+    , public_id
+    , egress_url
+    , static_headers
+    , status
+    , status_reason
+    , description
+    , created_at
+    , updated_at
+    , disable_at
 FROM
     sources
 WHERE
-    id = $1;
+    id = @source_id;
 
 -- name: GetSourceByPublicID :one
 SELECT
-    id,
-    public_id,
-    egress_url,
-    static_headers,
-    status,
-    status_reason,
-    description,
-    created_at,
-    updated_at,
-    disable_at
+    id
+    , public_id
+    , egress_url
+    , static_headers
+    , status
+    , status_reason
+    , description
+    , created_at
+    , updated_at
+    , disable_at
 FROM
     sources
 WHERE
-    public_id = $1;
+    public_id = @public_id;
 
 -- name: CreateSource :one
 INSERT INTO sources (
-    egress_url,
-    static_headers,
-    description
+    egress_url
+    , static_headers
+    , description
 ) VALUES (
-    $1,
-    $2,
-    $3
+    @egress_url
+    , @static_headers
+    , @description
 )
 RETURNING *;
 
@@ -107,44 +107,44 @@ LIMIT
 
 -- name: GetEventByID :one
 SELECT
-    id,
-    source_id,
-    dedup_hash,
-    method,
-    ingress_path,
-    remote_address,
-    query_params,
-    raw_headers,
-    body,
-    body_content_type,
-    received_at
+    id
+    , source_id
+    , dedup_hash
+    , method
+    , ingress_path
+    , remote_address
+    , query_params
+    , raw_headers
+    , body
+    , body_content_type
+    , received_at
 FROM
     events
 WHERE
-    id = $1;
+    id = @event_id;
 
 
 -- name: CreateEvent :one
 INSERT INTO events (
-    source_id,
-    dedup_hash,
-    method,
-    ingress_path,
-    remote_address,
-    query_params,
-    raw_headers,
-    body,
-    body_content_type
+    source_id
+    , dedup_hash
+    , method
+    , ingress_path
+    , remote_address
+    , query_params
+    , raw_headers
+    , body
+    , body_content_type
 ) VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8,
-    $9
+    @source_id
+    , @dedup_hash
+    , @method
+    , @ingress_path
+    , @remote_address
+    , @query_params
+    , @raw_headers
+    , @body
+    , @body_content_type
 )
 RETURNING id;
 
@@ -181,25 +181,25 @@ LIMIT
 
 -- name: CreateDeliveryAttempt :one
 INSERT INTO delivery_attempts (
-    event_id,
-    attempt_number,
-    state,
-    status_code,
-    error_type,
-    error_message,
-    started_at,
-    finished_at,
-    next_attempt_at
+    event_id
+    , attempt_number
+    , state
+    , status_code
+    , error_type
+    , error_message
+    , started_at
+    , finished_at
+    , next_attempt_at
 ) VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8,
-    $9
+    @event_id
+    , @attempt_number
+    , @state
+    , @status_code
+    , @error_type
+    , @error_message
+    , @started_at
+    , @finished_at
+    , @next_attempt_at
 )
 RETURNING id;
 
@@ -243,28 +243,28 @@ RETURNING
 -- name: UpdateDeliveryAttempt :exec
 UPDATE delivery_attempts
 SET
-    state = $1,
-    status_code = $2,
-    error_type = $3,
-    error_message = $4,
-    started_at = CASE
-        WHEN $1 = 'pending' THEN NULL
-        ELSE COALESCE(started_at, $5)
-    END,
-    finished_at = CASE
-        WHEN $1 IN ('pending', 'in_flight') THEN NULL
-        ELSE COALESCE(finished_at, $6)
+    state = @state
+    , status_code = @status_code
+    , error_type = @error_type
+    , error_message = @error_message
+    , started_at = CASE
+        WHEN @state = 'pending' THEN NULL
+        ELSE COALESCE(started_at, @started_at)
+    END
+    , finished_at = CASE
+        WHEN @state IN ('pending', 'in_flight') THEN NULL
+        ELSE COALESCE(finished_at, @finished_at)
     END
 WHERE
-    id = $7
-    AND state IN ('pending', 'in_flight');
+    id = @delivery_attempt_id AND
+    state IN ('pending', 'in_flight');
 
 -- name: RecoverStuckDeliveryAttempts :exec
 UPDATE delivery_attempts
 SET
-    state = 'pending',
-    started_at = NULL,
-    finished_at = NULL
+    state = 'pending'
+    , started_at = NULL
+    , finished_at = NULL
 WHERE
-    state = 'in_flight'
-    AND started_at < NOW() - INTERVAL '15 minutes';
+    state = 'in_flight' AND
+    started_at < NOW() - INTERVAL '15 minutes';
