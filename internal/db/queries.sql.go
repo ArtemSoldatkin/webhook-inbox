@@ -296,7 +296,7 @@ ORDER BY
     created_at DESC
     , id DESC
 LIMIT
-    $4
+    $4+ 1
 `
 
 type ListDeliveryAttemptsByEventParams struct {
@@ -372,7 +372,7 @@ ORDER BY
     received_at DESC
     , id DESC
 LIMIT
-    $4
+    $4+ 1
 `
 
 type ListEventsBySourceParams struct {
@@ -446,7 +446,7 @@ ORDER BY
     updated_at DESC
     , id DESC
 LIMIT
-    $3
+    $3+ 1
 `
 
 type ListSourcesParams struct {

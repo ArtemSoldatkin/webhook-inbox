@@ -78,7 +78,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			})
 		}
 		var nextCursor api.Cursor
-		if len(eventDTOs) > 0 {
+		if len(eventDTOs) > pageSize {
 			lastEvent := eventDTOs[len(eventDTOs)-1]
 			nextCursor = api.NewCursor(
 				&lastEvent.ReceivedAt,

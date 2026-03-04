@@ -59,7 +59,7 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			}
 		}
 		var nextCursor api.Cursor
-		if len(deliveryAttemptsDTO) > 0 {
+		if len(deliveryAttemptsDTO) > pageSize {
 			lastAttempt := deliveryAttemptsDTO[len(deliveryAttemptsDTO)-1]
 			nextCursor = api.NewCursor(
 				&lastAttempt.CreatedAt,

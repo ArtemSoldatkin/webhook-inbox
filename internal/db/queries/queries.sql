@@ -25,7 +25,7 @@ ORDER BY
     updated_at DESC
     , id DESC
 LIMIT
-    @page_size;
+    @page_size + 1;
 
 -- name: GetSourceByID :one
 SELECT
@@ -102,7 +102,7 @@ ORDER BY
     received_at DESC
     , id DESC
 LIMIT
-    @page_size;
+    @page_size + 1;
 
 
 -- name: GetEventByID :one
@@ -177,7 +177,7 @@ ORDER BY
     created_at DESC
     , id DESC
 LIMIT
-    @page_size;
+    @page_size + 1;
 
 -- name: CreateDeliveryAttempt :one
 INSERT INTO delivery_attempts (

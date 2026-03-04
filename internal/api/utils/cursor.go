@@ -29,6 +29,11 @@ func (c *Cursor) ToString() string {
 
 // FromString decodes a base64 string into a Cursor, parsing the timestamp and ID components.
 func (c *Cursor) FromString(s string) error {
+	if s == "" {
+		c.Timestamp = nil
+		c.ID = nil
+		return nil
+	}
 	decoded, err := base64.URLEncoding.DecodeString(s)
 	if err != nil {
 		return err
