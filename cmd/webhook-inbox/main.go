@@ -40,13 +40,17 @@ func LogrusLogger(next http.Handler) http.Handler {
 
 // main is the entry point of the application.
 func main() {
+	logrus.Info("Starting webhook inbox server...")
+	logrus.Info("Loading configuration...")
 	config := config.LoadConfig()
+
 	r := chi.NewRouter()
 	r.Use(LogrusLogger)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
 
+	logrus.Info("Connecting to database...")
 	dbPool := createDatabasePool(
 		config.DBUser,
 		config.DBPassword,
@@ -57,11 +61,15 @@ func main() {
 	defer dbPool.Close()
 	service := service.NewService(dbPool, &config)
 
+	logrus.WithField("interval_sec", config.APIDeliveryIntervalSec).Info("Starting delivery engine...")
 	go deliveryengine.Start(service, time.Duration(config.APIDeliveryIntervalSec)*time.Second)
+
+	logrus.WithField("interval_sec", config.APIRecoveryIntervalSec).Info("Starting delivery recovery engine...")
 	go deliveryengine.StartRecoveryEngine(service, time.Duration(config.APIRecoveryIntervalSec)*time.Second)
 
 	r.Mount("/api/v1", routev1.V1Router(service))
 
+	logrus.WithField("port", config.APIPort).Info("Starting server...")
 	err := http.ListenAndServe(fmt.Sprintf(":%d", config.APIPort), r)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to start server")

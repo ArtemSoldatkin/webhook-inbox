@@ -21,10 +21,11 @@ func recoverStuckDeliveryAttempts(svc *service.Service) error {
 
 // StartRecoveryEngine initializes and starts the delivery recovery engine, which periodically checks for stuck delivery attempts and resets them for retrying.
 func StartRecoveryEngine(svc *service.Service, interval time.Duration) {
-	logrus.Info("Starting delivery recovery engine...")
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+
 	for {
+		logrus.Debug("Checking for stuck delivery attempts to recover...")
 		if err := recoverStuckDeliveryAttempts(svc); err != nil {
 			logrus.WithError(err).Error("Error recovering stuck delivery attempts")
 		}

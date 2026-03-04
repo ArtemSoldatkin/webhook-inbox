@@ -17,12 +17,19 @@ import (
 func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		eventIDRaw := chi.URLParam(r, "eventID")
+
+		logrus.WithFields(logrus.Fields{
+			"event_id": eventIDRaw,
+			"query":    r.URL.RawQuery,
+		}).Debug("Received listDeliveryAttempts request")
+
 		eventID, err := strconv.ParseInt(eventIDRaw, 10, 64)
 		if err != nil {
 			logrus.WithError(err).Error("Invalid event ID")
 			http.Error(w, "Invalid event ID", http.StatusBadRequest)
 			return
 		}
+
 		pageSize, cursor, err := api.ParsePaginationParams(
 			r.URL.Query(),
 			svc.Config.APIDefaultPageSize,
@@ -36,12 +43,14 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Invalid pagination parameters", http.StatusBadRequest)
 			return
 		}
+
 		deliveryAttempts, err := svc.ListDeliveryAttempts(r.Context(), eventID, cursor, pageSize)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list delivery attempts")
 			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
 			return
 		}
+
 		deliveryAttemptsDTO := make([]dtov1.DeliveryAttemptDTO, len(deliveryAttempts))
 		for i, deliveryAttempt := range deliveryAttempts {
 			deliveryAttemptsDTO[i] = dtov1.DeliveryAttemptDTO{
@@ -58,6 +67,12 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 				NextAttemptAt: utils.PtrIfValid(deliveryAttempt.NextAttemptAt.Time, deliveryAttempt.NextAttemptAt.Valid),
 			}
 		}
+
+		logrus.WithFields(logrus.Fields{
+			"event_id":       eventID,
+			"returned_count": len(deliveryAttemptsDTO),
+		}).Debug("Returning delivery attempts")
+
 		var nextCursor api.Cursor
 		if len(deliveryAttemptsDTO) > pageSize {
 			lastAttempt := deliveryAttemptsDTO[len(deliveryAttemptsDTO)-1]
@@ -66,17 +81,20 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 				&lastAttempt.ID,
 			)
 		}
+
 		paginatedResponse := api.ToPaginatedResponse(
 			deliveryAttemptsDTO,
 			pageSize,
 			nextCursor,
 		)
+
 		response, err := json.Marshal(paginatedResponse)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal delivery attempts")
 			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
 			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(response)

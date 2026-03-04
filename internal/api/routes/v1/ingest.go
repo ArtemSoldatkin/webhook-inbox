@@ -18,56 +18,68 @@ import (
 func ingestEvent(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		publicID := chi.URLParam(r, "public_id")
+		logrus.WithFields(logrus.Fields{
+			"public_id": publicID,
+			"method":    r.Method,
+			"path":      r.URL.Path,
+			"query":     r.URL.RawQuery,
+		}).Debug("Received ingestEvent request")
 		if publicID == "" {
 			http.Error(w, "public_id is required", http.StatusBadRequest)
 			return
 		}
-		logrus.Infof("Received event for public_id: %s", publicID)
+
 		source, err := svc.GetSourceByPublicID(r.Context(), publicID)
 		if err != nil {
 			logrus.WithError(err).Errorf("Failed to retrieve source for public_id: %s", publicID)
 			http.Error(w, "Source not found", http.StatusNotFound)
 			return
 		}
+
 		host, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
 			logrus.WithError(err).Errorf("Failed to split host and port from remote address: %s", r.RemoteAddr)
 			http.Error(w, "Invalid remote address", http.StatusBadRequest)
 			return
 		}
+
 		remoteAddress, err := netip.ParseAddr(host)
 		if err != nil {
 			logrus.WithError(err).Errorf("Failed to parse remote address: %s", r.RemoteAddr)
 			http.Error(w, "Invalid remote address", http.StatusBadRequest)
 			return
 		}
+
 		headerBytes, err := json.Marshal(r.Header)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal headers")
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+
 		queryParams, err := json.Marshal(r.URL.Query())
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal query parameters")
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+
 		bodyBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to read request body")
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+
 		eventID, err := svc.CreateEvent(r.Context(), db.CreateEventParams{
-			SourceID: source.ID,
-			DedupHash: pgtype.Text{String: "", Valid: false}, // TODO replace with actual deduplication logic
-			Method: r.Method,
-			IngressPath: r.URL.Path,
-			RemoteAddress: &remoteAddress,
-			QueryParams: queryParams,
-			RawHeaders: headerBytes,
-			Body: bodyBytes,
+			SourceID:        source.ID,
+			DedupHash:       pgtype.Text{String: "", Valid: false}, // TODO replace with actual deduplication logic
+			Method:          r.Method,
+			IngressPath:     r.URL.Path,
+			RemoteAddress:   &remoteAddress,
+			QueryParams:     queryParams,
+			RawHeaders:      headerBytes,
+			Body:            bodyBytes,
 			BodyContentType: r.Header.Get("Content-Type"),
 		})
 		if err != nil {
@@ -75,21 +87,31 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		logrus.Infof("Successfully ingested event with ID: %d", eventID)
+		logrus.WithFields(logrus.Fields{
+			"event_id":   eventID,
+			"body_bytes": len(bodyBytes),
+		}).Info("Created event")
+
 		deliveryAttemptID, err := svc.CreateDeliveryAttempt(r.Context(), db.CreateDeliveryAttemptParams{
-			EventID: eventID,
+			EventID:       eventID,
 			AttemptNumber: 1,
-			State: "pending",
+			State:         "pending",
 		})
 		if err != nil {
 			logrus.WithError(err).Error("Failed to create delivery attempt")
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		logrus.Infof("Created initial delivery attempt with ID: %d for event ID: %d", deliveryAttemptID, eventID)
+		logrus.WithFields(logrus.Fields{
+			"event_id":            eventID,
+			"delivery_attempt_id": deliveryAttemptID,
+			"query":               r.URL.RawQuery,
+		}).Info("Created initial delivery attempt")
+
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("OK"))
-	}}
+	}
+}
 
 // ingestRouter sets up the router for event ingestion endpoints.
 func ingestRouter(svc *service.Service) chi.Router {
