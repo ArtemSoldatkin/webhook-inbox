@@ -154,11 +154,11 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 			staticHeaders = make(map[string]string)
 		}
 
-		var disbaleAt *time.Time
+		var disableAt *time.Time
 		if source.DisableAt.Valid {
-			disbaleAt = &source.DisableAt.Time
+			disableAt = &source.DisableAt.Time
 		} else {
-			disbaleAt = nil
+			disableAt = nil
 		}
 
 		sourceDTO := dtov1.SourceDTO{
@@ -172,7 +172,7 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 			Description:   utils.PtrIfValid(source.Description.String, source.Description.Valid),
 			CreatedAt:     source.CreatedAt.Time,
 			UpdatedAt:     source.UpdatedAt.Time,
-			DisableAt:     disbaleAt,
+			DisableAt:     disableAt,
 		}
 
 		response, err := json.Marshal(sourceDTO)
@@ -211,9 +211,8 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"egress_url":     data.EgressUrl,
-			"static_headers": data.StaticHeaders,
-			"description":    data.Description,
+			"egress_url":  data.EgressUrl,
+			"description": data.Description,
 		}).Debug("Create source request data")
 
 		staticHeaders, staticHeadersErr := json.Marshal(data.StaticHeaders)
