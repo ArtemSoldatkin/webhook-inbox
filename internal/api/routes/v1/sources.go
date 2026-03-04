@@ -10,6 +10,7 @@ import (
 	"time"
 
 	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
+	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
@@ -19,18 +20,31 @@ import (
 )
 
 var (
-	httpRegexp = regexp.MustCompile(`^https?://`)
-	localhostRegexp = regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(/|:|$)`)
-	private10Regexp = regexp.MustCompile(`^https?://10\.`)
-	private192Regexp = regexp.MustCompile(`^https?://192\.168\.`)
-	private172Regexp = regexp.MustCompile(`^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.`)
+	httpRegexp        = regexp.MustCompile(`^https?://`)
+	localhostRegexp   = regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)(/|:|$)`)
+	private10Regexp   = regexp.MustCompile(`^https?://10\.`)
+	private192Regexp  = regexp.MustCompile(`^https?://192\.168\.`)
+	private172Regexp  = regexp.MustCompile(`^https?://172\.(1[6-9]|2[0-9]|3[0-1])\.`)
 	metadata169Regexp = regexp.MustCompile(`^https?://169\.254\.169\.254(/|:|$)`)
 )
 
 // listSources handles GET requests to list all sources.
 func listSources(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sources, err := svc.ListSources(r.Context())
+		pageSize, cursor, err := api.ParsePaginationParams(
+			r.URL.Query(),
+			svc.Config.APIDefaultPageSize,
+			svc.Config.APIMinPageSize,
+			svc.Config.APIMaxPageSize,
+		)
+		if err != nil {
+			logrus.
+				WithError(err).
+				Error("Invalid pagination parameters")
+			http.Error(w, "Invalid pagination parameters", http.StatusBadRequest)
+			return
+		}
+		sources, err := svc.ListSources(r.Context(), cursor, pageSize)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list sources")
 			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
@@ -41,7 +55,9 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			staticHeaders, err := utils.JSONBtoType[map[string]string](source.StaticHeaders)
 			if err != nil {
 				logrus.WithError(err).Error("Failed to unmarshal static headers")
-				continue
+				staticHeaders = map[string]string{
+					"__error": "Webhook Inbox Error - Failed to parse",
+				}
 			}
 			var disableAt *time.Time
 			if source.DisableAt.Valid {
@@ -50,20 +66,33 @@ func listSources(svc *service.Service) http.HandlerFunc {
 				disableAt = nil
 			}
 			sourceDTOs = append(sourceDTOs, dtov1.SourceDTO{
-				ID:             source.ID,
-				PublicID:       source.PublicID.String(),
-				IngressUrl:     utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
-				EgressUrl:      source.EgressUrl,
-				StaticHeaders:  staticHeaders,
-				Status:         source.Status,
-				StatusReason:   utils.PtrIfValid(source.StatusReason.String, source.StatusReason.Valid),
-				Description:    utils.PtrIfValid(source.Description.String, source.Description.Valid),
-				CreatedAt:      source.CreatedAt.Time,
-				UpdatedAt:      source.UpdatedAt.Time,
-				DisableAt:      disableAt,
+				ID:            source.ID,
+				PublicID:      source.PublicID.String(),
+				IngressUrl:    utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
+				EgressUrl:     source.EgressUrl,
+				StaticHeaders: staticHeaders,
+				Status:        source.Status,
+				StatusReason:  utils.PtrIfValid(source.StatusReason.String, source.StatusReason.Valid),
+				Description:   utils.PtrIfValid(source.Description.String, source.Description.Valid),
+				CreatedAt:     source.CreatedAt.Time,
+				UpdatedAt:     source.UpdatedAt.Time,
+				DisableAt:     disableAt,
 			})
 		}
-		response, err := json.Marshal(sourceDTOs)
+		var nextCursor api.Cursor
+		if len(sourceDTOs) > pageSize {
+			lastSource := sourceDTOs[len(sourceDTOs)-1]
+			nextCursor = api.NewCursor(
+				&lastSource.UpdatedAt,
+				&lastSource.ID,
+			)
+		}
+		paginatedResponse := api.ToPaginatedResponse(
+			sourceDTOs,
+			pageSize,
+			nextCursor,
+		)
+		response, err := json.Marshal(paginatedResponse)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal sources")
 			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
@@ -107,18 +136,18 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 			disbaleAt = nil
 		}
 		sourceDTO := dtov1.SourceDTO{
-				ID:             source.ID,
-				PublicID:       source.PublicID.String(),
-				IngressUrl:     utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
-				EgressUrl:      source.EgressUrl,
-				StaticHeaders:  staticHeaders,
-				Status:         source.Status,
-				StatusReason:   utils.PtrIfValid(source.StatusReason.String,source.StatusReason.Valid),
-				Description:    utils.PtrIfValid(source.Description.String,source.Description.Valid),
-				CreatedAt:      source.CreatedAt.Time,
-				UpdatedAt:      source.UpdatedAt.Time,
-				DisableAt:      disbaleAt,
-			}
+			ID:            source.ID,
+			PublicID:      source.PublicID.String(),
+			IngressUrl:    utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
+			EgressUrl:     source.EgressUrl,
+			StaticHeaders: staticHeaders,
+			Status:        source.Status,
+			StatusReason:  utils.PtrIfValid(source.StatusReason.String, source.StatusReason.Valid),
+			Description:   utils.PtrIfValid(source.Description.String, source.Description.Valid),
+			CreatedAt:     source.CreatedAt.Time,
+			UpdatedAt:     source.UpdatedAt.Time,
+			DisableAt:     disbaleAt,
+		}
 		response, err := json.Marshal(sourceDTO)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal source")
@@ -133,10 +162,10 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 
 // CreateSourceData defines the parameters required to create a new source.
 type CreateSourceData struct {
-	IngressUrl           string         `json:"IngressUrl"`
-	EgressUrl            string         `json:"EgressUrl"`
-	StaticHeaders map[string]string 	`json:"StaticHeaders,omitempty"`
-	Description   string            	`json:"Description,omitempty"`
+	IngressUrl    string            `json:"IngressUrl"`
+	EgressUrl     string            `json:"EgressUrl"`
+	StaticHeaders map[string]string `json:"StaticHeaders,omitempty"`
+	Description   string            `json:"Description,omitempty"`
 }
 
 // createSource handles POST requests to create a new source.
@@ -160,9 +189,9 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			return
 		}
 		source, err := svc.CreateSource(r.Context(), db.CreateSourceParams{
-			EgressUrl:		data.EgressUrl,
-			StaticHeaders:  staticHeaders,
-			Description: 	pgtype.Text{String: data.Description, Valid: data.Description != ""},
+			EgressUrl:     data.EgressUrl,
+			StaticHeaders: staticHeaders,
+			Description:   pgtype.Text{String: data.Description, Valid: data.Description != ""},
 		})
 		if err != nil {
 			logrus.WithError(err).Error("Failed to create source")
@@ -170,16 +199,16 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			return
 		}
 		sourceDTO := dtov1.SourceDTO{
-			ID:             source.ID,
-			PublicID:       source.PublicID.String(),
-			IngressUrl:     utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
-			EgressUrl:      source.EgressUrl,
-			StaticHeaders:  data.StaticHeaders,
-			Status:         source.Status,
-			StatusReason:   utils.PtrIfValid(source.StatusReason.String,source.StatusReason.Valid),
-			Description:    utils.PtrIfValid(source.Description.String,source.Description.Valid),
-			CreatedAt:      source.CreatedAt.Time,
-			UpdatedAt:      source.UpdatedAt.Time,
+			ID:            source.ID,
+			PublicID:      source.PublicID.String(),
+			IngressUrl:    utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
+			EgressUrl:     source.EgressUrl,
+			StaticHeaders: data.StaticHeaders,
+			Status:        source.Status,
+			StatusReason:  utils.PtrIfValid(source.StatusReason.String, source.StatusReason.Valid),
+			Description:   utils.PtrIfValid(source.Description.String, source.Description.Valid),
+			CreatedAt:     source.CreatedAt.Time,
+			UpdatedAt:     source.UpdatedAt.Time,
 		}
 		response, err := json.Marshal(sourceDTO)
 		if err != nil {
@@ -192,7 +221,6 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		w.Write(response)
 	}
 }
-
 
 // NOTE: This SSRF protection is primarily for defense-in-depth. Since this is an internal tool
 // with no user input, the risk is low. If the tool becomes public or user-facing, keep/enhance this check.
@@ -209,26 +237,26 @@ func validateEgressUrl(egressUrl, env string) bool {
 		return true
 	}
 	host := parsedUrl.Hostname()
-    ips, err := net.LookupIP(host)
-    if err != nil {
-        return false
-    }
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return false
+	}
 	for _, ip := range ips {
-        if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
-            return false
-        }
-        // Block IPv4-mapped IPv6 loopback
-        if ip.To4() == nil && ip.String() == "::1" {
-            return false
-        }
-        // Block IPv4-mapped IPv6 for 127.0.0.0/8
-        if ip.To4() == nil && len(ip) == net.IPv6len && ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0 &&
-            ip[4] == 0 && ip[5] == 0 && ip[6] == 0 && ip[7] == 0 && ip[8] == 0 && ip[9] == 0 && ip[10] == 0xff && ip[11] == 0xff &&
-            ip[12] == 127 {
-            return false
-        }
-    }
-    return true
+		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+			return false
+		}
+		// Block IPv4-mapped IPv6 loopback
+		if ip.To4() == nil && ip.String() == "::1" {
+			return false
+		}
+		// Block IPv4-mapped IPv6 for 127.0.0.0/8
+		if ip.To4() == nil && len(ip) == net.IPv6len && ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0 &&
+			ip[4] == 0 && ip[5] == 0 && ip[6] == 0 && ip[7] == 0 && ip[8] == 0 && ip[9] == 0 && ip[10] == 0xff && ip[11] == 0xff &&
+			ip[12] == 127 {
+			return false
+		}
+	}
+	return true
 }
 
 // sourcesRouter sets up the router for sources-related endpoints.

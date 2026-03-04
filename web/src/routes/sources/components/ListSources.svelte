@@ -1,22 +1,26 @@
 <script lang="ts">
+	import { fetchPaginatedData } from '$lib/api';
+	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import { parseSourceDTO } from '$lib/dtoParsers';
 	import type { SourceDTO } from '$lib/types';
 	import { onMount } from 'svelte';
 
-	let data: SourceDTO[] | null = null;
+	let data: SourceDTO[] = [];
 	let loading = false;
 	let error: string | null = null;
+
+	let pageSize: number = 20;
+	let nextCursor: string | null = null;
+	let hasNext: boolean = false;
 
 	async function fetchSources() {
 		loading = true;
 		error = null;
 		try {
-			const response = await fetch('/api/sources');
-			if (!response.ok) {
-				throw new Error(`Failed to fetch sources: ${response.statusText}`);
-			}
-			const rawData = await response.json();
-			data = rawData.map(parseSourceDTO);
+			const result = await fetchPaginatedData('/api/sources', pageSize, nextCursor);
+			data = [...data, ...result.data.map(parseSourceDTO)];
+			nextCursor = result.nextCursor;
+			hasNext = result.hasNext;
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching sources:', err);
@@ -25,12 +29,23 @@
 		}
 	}
 
+	async function resetAndFetchSources() {
+		data = [];
+		nextCursor = null;
+		hasNext = false;
+		await fetchSources();
+	}
+
 	onMount(() => {
 		fetchSources();
 	});
+
+	$: if (pageSize) {
+		resetAndFetchSources();
+	}
 </script>
 
-<button on:click={fetchSources}>Refresh Sources</button>
+<button on:click={resetAndFetchSources} disabled={loading}>Refresh Sources</button>
 {#if loading}
 	<p>Loading sources...</p>
 {:else if error}
@@ -60,9 +75,13 @@
 				</li>
 			{/each}
 		</ul>
+		{#if hasNext}
+			<button on:click={fetchSources} disabled={loading}>Load More</button>
+		{/if}
 	{:else}
 		<p>No sources found.</p>
 	{/if}
 {:else}
 	<p>No sources found.</p>
 {/if}
+<PageSizeSelector bind:pageSize />

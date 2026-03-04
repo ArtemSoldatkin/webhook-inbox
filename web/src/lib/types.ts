@@ -40,3 +40,9 @@ export interface DeliveryAttemptDTO {
 	CreatedAt: Date;
 	NextAttemptAt: Date | null;
 }
+
+export interface PaginatedResponse<T> {
+	data: T[];
+	nextCursor: string | null;
+	hasNext: boolean;
+}

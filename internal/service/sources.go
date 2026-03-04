@@ -3,13 +3,23 @@ package service
 import (
 	"context"
 
+	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // ListSources retrieves all sources from the database.
-func (svc *Service) ListSources(ctx context.Context) ([]db.Source, error) {
-	return svc.queries.ListSources(ctx)
+func (svc *Service) ListSources(
+	ctx context.Context,
+	cursor api.Cursor,
+	pageSize int,
+) ([]db.Source, error) {
+	cursorTS, cursorID := cursor.ToDBParams()
+	return svc.queries.ListSources(ctx, db.ListSourcesParams{
+		CursorTs: cursorTS,
+		CursorID: cursorID,
+		PageSize: int32(pageSize),
+	})
 }
 
 // GetSourceByID retrieves a source by its ID from the database.

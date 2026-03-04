@@ -1,19 +1,31 @@
 -- name: ListSources :many
 SELECT
-    id,
-    public_id,
-    egress_url,
-    static_headers,
-    status,
-    status_reason,
-    description,
-    created_at,
-    updated_at,
-    disable_at
+    id
+    , public_id
+    , egress_url
+    , static_headers
+    , status
+    , status_reason
+    , description
+    , created_at
+    , updated_at
+    , disable_at
 FROM
     sources
+WHERE
+    @cursor_ts IS NULL OR
+    (
+        updated_at < @cursor_ts OR
+        (
+            updated_at = @cursor_ts AND
+            id < @cursor_id
+        )
+    )
 ORDER BY
-    created_at DESC;
+    updated_at DESC
+    , id DESC
+LIMIT
+    @page_size + 1;
 
 -- name: GetSourceByID :one
 SELECT
@@ -63,23 +75,34 @@ RETURNING *;
 
 -- name: ListEventsBySource :many
 SELECT
-    id,
-    source_id,
-    dedup_hash,
-    method,
-    ingress_path,
-    remote_address,
-    query_params,
-    raw_headers,
-    body,
-    body_content_type,
-    received_at
+    id
+    , source_id
+    , dedup_hash
+    , method
+    , ingress_path
+    , remote_address
+    , query_params
+    , raw_headers
+    , body
+    , body_content_type
+    , received_at
 FROM
     events
 WHERE
-    source_id = $1
+    source_id = @source_id AND
+    (
+        @cursor_ts IS NULL OR
+        received_at < @cursor_ts OR
+        (
+            received_at = @cursor_ts AND
+            id < @cursor_id
+        )
+    )
 ORDER BY
-    received_at DESC;
+    received_at DESC
+    , id DESC
+LIMIT
+    @page_size + 1;
 
 
 -- name: GetEventByID :one
@@ -127,23 +150,34 @@ RETURNING id;
 
 -- name: ListDeliveryAttemptsByEvent :many
 SELECT
-    id,
-    event_id,
-    attempt_number,
-    state,
-    status_code,
-    error_type,
-    error_message,
-    started_at,
-    finished_at,
-    created_at,
-    next_attempt_at
+    id
+    , event_id
+    , attempt_number
+    , state
+    , status_code
+    , error_type
+    , error_message
+    , started_at
+    , finished_at
+    , created_at
+    , next_attempt_at
 FROM
     delivery_attempts
 WHERE
-    event_id = $1
+    event_id = @event_id AND
+    (
+        @cursor_ts IS NULL OR
+        created_at < @cursor_ts OR
+        (
+            created_at = @cursor_ts AND
+            id < @cursor_id
+        )
+    )
 ORDER BY
-    created_at DESC;
+    created_at DESC
+    , id DESC
+LIMIT
+    @page_size + 1;
 
 -- name: CreateDeliveryAttempt :one
 INSERT INTO delivery_attempts (

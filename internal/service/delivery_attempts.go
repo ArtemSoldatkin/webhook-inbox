@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/jackc/pgx/v5"
 )
@@ -17,8 +18,19 @@ type PendingDeliveryAttempt struct {
 }
 
 // ListDeliveryAttempts retrieves all delivery attempts for a given event ID from the database.
-func (svc *Service) ListDeliveryAttempts(ctx context.Context, eventID int64) ([]db.DeliveryAttempt, error) {
-	return svc.queries.ListDeliveryAttemptsByEvent(ctx, eventID)
+func (svc *Service) ListDeliveryAttempts(
+	ctx context.Context,
+	eventID int64,
+	cursor api.Cursor,
+	pageSize int,
+) ([]db.DeliveryAttempt, error) {
+	cursorTS, cursorID := cursor.ToDBParams()
+	return svc.queries.ListDeliveryAttemptsByEvent(ctx, db.ListDeliveryAttemptsByEventParams{
+		EventID:  eventID,
+		CursorTs: cursorTS,
+		CursorID: cursorID,
+		PageSize: int32(pageSize),
+	})
 }
 
 // CreateDeliveryAttempt inserts a new delivery attempt into the database and returns its ID.

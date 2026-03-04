@@ -269,27 +269,50 @@ func (q *Queries) GetSourceByPublicID(ctx context.Context, publicID pgtype.UUID)
 
 const listDeliveryAttemptsByEvent = `-- name: ListDeliveryAttemptsByEvent :many
 SELECT
-    id,
-    event_id,
-    attempt_number,
-    state,
-    status_code,
-    error_type,
-    error_message,
-    started_at,
-    finished_at,
-    created_at,
-    next_attempt_at
+    id
+    , event_id
+    , attempt_number
+    , state
+    , status_code
+    , error_type
+    , error_message
+    , started_at
+    , finished_at
+    , created_at
+    , next_attempt_at
 FROM
     delivery_attempts
 WHERE
-    event_id = $1
+    event_id = $1 AND
+    (
+        $2 IS NULL OR
+        created_at < $2 OR
+        (
+            created_at = $2 AND
+            id < $3
+        )
+    )
 ORDER BY
     created_at DESC
+    , id DESC
+LIMIT
+    $4+ 1
 `
 
-func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64) ([]DeliveryAttempt, error) {
-	rows, err := q.db.Query(ctx, listDeliveryAttemptsByEvent, eventID)
+type ListDeliveryAttemptsByEventParams struct {
+	EventID  int64
+	CursorTs interface{}
+	CursorID int64
+	PageSize int32
+}
+
+func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliveryAttemptsByEventParams) ([]DeliveryAttempt, error) {
+	rows, err := q.db.Query(ctx, listDeliveryAttemptsByEvent,
+		arg.EventID,
+		arg.CursorTs,
+		arg.CursorID,
+		arg.PageSize,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -322,27 +345,50 @@ func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, eventID int64
 
 const listEventsBySource = `-- name: ListEventsBySource :many
 SELECT
-    id,
-    source_id,
-    dedup_hash,
-    method,
-    ingress_path,
-    remote_address,
-    query_params,
-    raw_headers,
-    body,
-    body_content_type,
-    received_at
+    id
+    , source_id
+    , dedup_hash
+    , method
+    , ingress_path
+    , remote_address
+    , query_params
+    , raw_headers
+    , body
+    , body_content_type
+    , received_at
 FROM
     events
 WHERE
-    source_id = $1
+    source_id = $1 AND
+    (
+        $2 IS NULL OR
+        received_at < $2 OR
+        (
+            received_at = $2 AND
+            id < $3
+        )
+    )
 ORDER BY
     received_at DESC
+    , id DESC
+LIMIT
+    $4+ 1
 `
 
-func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Event, error) {
-	rows, err := q.db.Query(ctx, listEventsBySource, sourceID)
+type ListEventsBySourceParams struct {
+	SourceID int64
+	CursorTs interface{}
+	CursorID int64
+	PageSize int32
+}
+
+func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySourceParams) ([]Event, error) {
+	rows, err := q.db.Query(ctx, listEventsBySource,
+		arg.SourceID,
+		arg.CursorTs,
+		arg.CursorID,
+		arg.PageSize,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -375,24 +421,42 @@ func (q *Queries) ListEventsBySource(ctx context.Context, sourceID int64) ([]Eve
 
 const listSources = `-- name: ListSources :many
 SELECT
-    id,
-    public_id,
-    egress_url,
-    static_headers,
-    status,
-    status_reason,
-    description,
-    created_at,
-    updated_at,
-    disable_at
+    id
+    , public_id
+    , egress_url
+    , static_headers
+    , status
+    , status_reason
+    , description
+    , created_at
+    , updated_at
+    , disable_at
 FROM
     sources
+WHERE
+    $1 IS NULL OR
+    (
+        updated_at < $1 OR
+        (
+            updated_at = $1 AND
+            id < $2
+        )
+    )
 ORDER BY
-    created_at DESC
+    updated_at DESC
+    , id DESC
+LIMIT
+    $3+ 1
 `
 
-func (q *Queries) ListSources(ctx context.Context) ([]Source, error) {
-	rows, err := q.db.Query(ctx, listSources)
+type ListSourcesParams struct {
+	CursorTs interface{}
+	CursorID int64
+	PageSize int32
+}
+
+func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Source, error) {
+	rows, err := q.db.Query(ctx, listSources, arg.CursorTs, arg.CursorID, arg.PageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -456,7 +520,7 @@ WHERE
     COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
 ORDER BY
     delivery_attempts.created_at ASC
-FOR UPDATE SKIP LOCKED
+FOR UPDATE OF delivery_attempts SKIP LOCKED
 LIMIT
     $1
 `
