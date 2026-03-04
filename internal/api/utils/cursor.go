@@ -72,6 +72,12 @@ func (c *Cursor) ToDBParams() (pgtype.Timestamptz, int64) {
 	return ts, id
 }
 
+// String returns the string representation of the Cursor,
+// which is the base64-encoded format used in API responses.
+func (c *Cursor) String() string {
+	return c.ToString()
+}
+
 // NewCursor creates a new Cursor instance from the given timestamp and ID pointers.
 func NewCursor(ts *time.Time, id *int64) Cursor {
 	return Cursor{Timestamp: ts, ID: id}

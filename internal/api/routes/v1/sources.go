@@ -44,12 +44,20 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Invalid pagination parameters", http.StatusBadRequest)
 			return
 		}
+
+		logrus.WithFields(logrus.Fields{
+			"pageSize": pageSize,
+			"cursor":   cursor,
+			"query":    r.URL.RawQuery,
+		}).Debug("Received listSources request")
+
 		sources, err := svc.ListSources(r.Context(), cursor, pageSize)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list sources")
 			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
 			return
 		}
+
 		sourceDTOs := make([]dtov1.SourceDTO, 0, len(sources))
 		for _, source := range sources {
 			staticHeaders, err := utils.JSONBtoType[map[string]string](source.StaticHeaders)
@@ -59,12 +67,14 @@ func listSources(svc *service.Service) http.HandlerFunc {
 					"__error": "Webhook Inbox Error - Failed to parse",
 				}
 			}
+
 			var disableAt *time.Time
 			if source.DisableAt.Valid {
 				disableAt = &source.DisableAt.Time
 			} else {
 				disableAt = nil
 			}
+
 			sourceDTOs = append(sourceDTOs, dtov1.SourceDTO{
 				ID:            source.ID,
 				PublicID:      source.PublicID.String(),
@@ -79,6 +89,9 @@ func listSources(svc *service.Service) http.HandlerFunc {
 				DisableAt:     disableAt,
 			})
 		}
+
+		logrus.WithField("returned_count", len(sourceDTOs)).Debug("Returning sources")
+
 		var nextCursor api.Cursor
 		if len(sourceDTOs) > pageSize {
 			lastSource := sourceDTOs[len(sourceDTOs)-1]
@@ -87,17 +100,20 @@ func listSources(svc *service.Service) http.HandlerFunc {
 				&lastSource.ID,
 			)
 		}
+
 		paginatedResponse := api.ToPaginatedResponse(
 			sourceDTOs,
 			pageSize,
 			nextCursor,
 		)
+
 		response, err := json.Marshal(paginatedResponse)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal sources")
 			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
 			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(response)
@@ -108,18 +124,26 @@ func listSources(svc *service.Service) http.HandlerFunc {
 func getSourceByID(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sourceIDRaw := chi.URLParam(r, "sourceID")
+
+		logrus.WithFields(logrus.Fields{
+			"source_id": sourceIDRaw,
+			"query":     r.URL.RawQuery,
+		}).Debug("Received getSourceByID request")
+
 		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
 		if err != nil {
 			logrus.WithError(err).Error("Invalid source ID")
 			http.Error(w, "Invalid source ID", http.StatusBadRequest)
 			return
 		}
+
 		source, err := svc.GetSourceByID(r.Context(), sourceID)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to get source by ID")
 			http.Error(w, "Failed to get source", http.StatusInternalServerError)
 			return
 		}
+
 		var staticHeaders = make(map[string]string)
 		if err := json.Unmarshal(source.StaticHeaders, &staticHeaders); err != nil {
 			logrus.WithError(err).Error("Failed to unmarshal static headers")
@@ -129,12 +153,14 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 		if staticHeaders == nil {
 			staticHeaders = make(map[string]string)
 		}
-		var disbaleAt *time.Time
+
+		var disableAt *time.Time
 		if source.DisableAt.Valid {
-			disbaleAt = &source.DisableAt.Time
+			disableAt = &source.DisableAt.Time
 		} else {
-			disbaleAt = nil
+			disableAt = nil
 		}
+
 		sourceDTO := dtov1.SourceDTO{
 			ID:            source.ID,
 			PublicID:      source.PublicID.String(),
@@ -146,14 +172,16 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 			Description:   utils.PtrIfValid(source.Description.String, source.Description.Valid),
 			CreatedAt:     source.CreatedAt.Time,
 			UpdatedAt:     source.UpdatedAt.Time,
-			DisableAt:     disbaleAt,
+			DisableAt:     disableAt,
 		}
+
 		response, err := json.Marshal(sourceDTO)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal source")
 			http.Error(w, "Failed to get source", http.StatusInternalServerError)
 			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write(response)
@@ -171,23 +199,35 @@ type CreateSourceData struct {
 // createSource handles POST requests to create a new source.
 func createSource(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logrus.WithFields(logrus.Fields{
+			"query": r.URL.RawQuery,
+		}).Debug("Received createSource request")
+
 		var data CreateSourceData
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			logrus.WithError(err).Error("Failed to decode create source request")
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
+
+		logrus.WithFields(logrus.Fields{
+			"egress_url":  data.EgressUrl,
+			"description": data.Description,
+		}).Debug("Create source request data")
+
 		staticHeaders, staticHeadersErr := json.Marshal(data.StaticHeaders)
 		if staticHeadersErr != nil {
 			logrus.WithError(staticHeadersErr).Error("Failed to marshal static headers")
 			http.Error(w, "Invalid static headers", http.StatusBadRequest)
 			return
 		}
+
 		if !validateEgressUrl(data.EgressUrl, svc.Config.Env) {
 			logrus.WithField("egressUrl", data.EgressUrl).Error("Invalid egress URL")
 			http.Error(w, "Invalid egress URL", http.StatusBadRequest)
 			return
 		}
+
 		source, err := svc.CreateSource(r.Context(), db.CreateSourceParams{
 			EgressUrl:     data.EgressUrl,
 			StaticHeaders: staticHeaders,
@@ -198,6 +238,8 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			http.Error(w, "Failed to create source", http.StatusInternalServerError)
 			return
 		}
+		logrus.WithField("source_id", source.ID).Info("Created new source")
+
 		sourceDTO := dtov1.SourceDTO{
 			ID:            source.ID,
 			PublicID:      source.PublicID.String(),
@@ -210,12 +252,14 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			CreatedAt:     source.CreatedAt.Time,
 			UpdatedAt:     source.UpdatedAt.Time,
 		}
+
 		response, err := json.Marshal(sourceDTO)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal created source")
 			http.Error(w, "Failed to create source", http.StatusInternalServerError)
 			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		w.Write(response)
