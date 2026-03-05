@@ -33,14 +33,18 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 
 		source, err := svc.GetSourceByPublicID(r.Context(), publicID)
 		if err != nil {
-			logrus.WithError(err).Errorf("Failed to retrieve source for public_id: %s", publicID)
+			logrus.
+				WithError(err).
+				Errorf("Failed to retrieve source for public_id: %s", publicID)
 			http.Error(w, "Source not found", http.StatusNotFound)
 			return
 		}
 
 		host, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
-			logrus.WithError(err).Errorf("Failed to split host and port from remote address: %s", r.RemoteAddr)
+			logrus.
+				WithError(err).
+				Errorf("Failed to split host and port from remote address: %s", r.RemoteAddr)
 			http.Error(w, "Invalid remote address", http.StatusBadRequest)
 			return
 		}
@@ -110,11 +114,14 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			"body_bytes": len(bodyBytes),
 		}).Info("Created event")
 
-		deliveryAttemptID, err := svc.CreateDeliveryAttempt(r.Context(), db.CreateDeliveryAttemptParams{
-			EventID:       eventID,
-			AttemptNumber: 1,
-			State:         "pending",
-		})
+		deliveryAttemptID, err := svc.CreateDeliveryAttempt(
+			r.Context(),
+			db.CreateDeliveryAttemptParams{
+				EventID:       eventID,
+				AttemptNumber: 1,
+				State:         "pending",
+			},
+		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to create delivery attempt")
 			http.Error(w, "Internal server error", http.StatusInternalServerError)

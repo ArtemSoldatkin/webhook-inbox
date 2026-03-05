@@ -17,8 +17,22 @@ import (
 )
 
 // createDatabasePool creates a new database connection pool.
-func createDatabasePool(user string, password string, url string, port int, db string) *pgxpool.Pool {
-	pool, err := pgxpool.New(context.Background(), fmt.Sprintf("postgres://%s:%s@%s:%d/%s", user, password, url, port, db))
+func createDatabasePool(
+	user string,
+	password string,
+	url string,
+	port int,
+	db string,
+) *pgxpool.Pool {
+	connectionString := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s",
+		user,
+		password,
+		url,
+		port,
+		db,
+	)
+	pool, err := pgxpool.New(context.Background(), connectionString)
 	if err != nil {
 		logrus.WithError(err).Fatal("Unable to connect to database")
 	}
@@ -61,11 +75,21 @@ func main() {
 	defer dbPool.Close()
 	service := service.NewService(dbPool, &config)
 
-	logrus.WithField("interval_sec", config.APIDeliveryIntervalSec).Info("Starting delivery engine...")
-	go deliveryengine.Start(service, time.Duration(config.APIDeliveryIntervalSec)*time.Second)
+	logrus.
+		WithField("interval_sec", config.APIDeliveryIntervalSec).
+		Info("Starting delivery engine...")
+	go deliveryengine.Start(
+		service,
+		time.Duration(config.APIDeliveryIntervalSec)*time.Second,
+	)
 
-	logrus.WithField("interval_sec", config.APIRecoveryIntervalSec).Info("Starting delivery recovery engine...")
-	go deliveryengine.StartRecoveryEngine(service, time.Duration(config.APIRecoveryIntervalSec)*time.Second)
+	logrus.
+		WithField("interval_sec", config.APIRecoveryIntervalSec).
+		Info("Starting delivery recovery engine...")
+	go deliveryengine.StartRecoveryEngine(
+		service,
+		time.Duration(config.APIRecoveryIntervalSec)*time.Second,
+	)
 
 	r.Mount("/api/v1", routev1.V1Router(service))
 

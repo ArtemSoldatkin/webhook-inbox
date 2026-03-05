@@ -25,26 +25,36 @@ func (svc *Service) ListDeliveryAttempts(
 	pageSize int,
 ) ([]db.DeliveryAttempt, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
-	return svc.queries.ListDeliveryAttemptsByEvent(ctx, db.ListDeliveryAttemptsByEventParams{
-		EventID:  eventID,
-		CursorTs: cursorTS,
-		CursorID: cursorID,
-		PageSize: int32(pageSize),
-	})
+	return svc.queries.ListDeliveryAttemptsByEvent(
+		ctx,
+		db.ListDeliveryAttemptsByEventParams{
+			EventID:  eventID,
+			CursorTs: cursorTS,
+			CursorID: cursorID,
+			PageSize: int32(pageSize),
+		},
+	)
 }
 
 // CreateDeliveryAttempt inserts a new delivery attempt into the database and returns its ID.
-func (svc *Service) CreateDeliveryAttempt(ctx context.Context, delivery db.CreateDeliveryAttemptParams) (int64, error) {
+func (svc *Service) CreateDeliveryAttempt(
+	ctx context.Context,
+	delivery db.CreateDeliveryAttemptParams,
+) (int64, error) {
 	return svc.queries.CreateDeliveryAttempt(ctx, delivery)
 }
 
 // ListPendingDeliveryAttempts retrieves a list of pending delivery attempts that are ready to be processed by the delivery engine,
 // marking them as in-flight to prevent multiple workers from processing the same attempt concurrently.
-func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context, nDeliveries int32) ([]PendingDeliveryAttempt, error) {
+func (svc *Service) ListPendingDeliveryAttempts(
+	ctx context.Context,
+	nDeliveries int32,
+) ([]PendingDeliveryAttempt, error) {
 	tx, err := svc.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
+
 	defer func() {
 		_ = tx.Rollback(ctx)
 	}()
@@ -71,6 +81,7 @@ func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context, nDeliveries
 	if err != nil {
 		return nil, err
 	}
+
 	pendingDeliveryAttempts := make([]PendingDeliveryAttempt, len(rows))
 	for i, row := range rows {
 		pendingDeliveryAttempts[i] = PendingDeliveryAttempt{
@@ -82,12 +93,19 @@ func (svc *Service) ListPendingDeliveryAttempts(ctx context.Context, nDeliveries
 	return pendingDeliveryAttempts, nil
 }
 
-// UpdateDeliveryAttempt updates the status and other relevant fields of a delivery attempt in the database after it has been processed by the delivery engine.
-func (svc *Service) UpdateDeliveryAttempt(ctx context.Context, attempt db.UpdateDeliveryAttemptParams) error {
+// UpdateDeliveryAttempt updates the status
+// and other relevant fields of a delivery attempt in the database
+// after it has been processed by the delivery engine.
+func (svc *Service) UpdateDeliveryAttempt(
+	ctx context.Context,
+	attempt db.UpdateDeliveryAttemptParams,
+) error {
 	return svc.queries.UpdateDeliveryAttempt(ctx, attempt)
 }
 
-// RecoverStuckDeliveryAttempts identifies and resets delivery attempts that have been in-flight for too long, allowing them to be retried by the delivery engine.
+// RecoverStuckDeliveryAttempts identifies
+// and resets delivery attempts that have been in-flight for too long,
+// allowing them to be retried by the delivery engine.
 func (svc *Service) RecoverStuckDeliveryAttempts(ctx context.Context) error {
 	return svc.queries.RecoverStuckDeliveryAttempts(ctx)
 }

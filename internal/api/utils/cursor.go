@@ -23,39 +23,51 @@ func (c *Cursor) ToString() string {
 	if c.Timestamp == nil || c.ID == nil {
 		return ""
 	}
-	raw := fmt.Sprintf("%s|%d", c.Timestamp.UTC().Format(time.RFC3339Nano), *c.ID)
+
+	raw := fmt.Sprintf(
+		"%s|%d",
+		c.Timestamp.UTC().Format(time.RFC3339Nano),
+		*c.ID,
+	)
 	return base64.URLEncoding.EncodeToString([]byte(raw))
 }
 
-// FromString decodes a base64 string into a Cursor, parsing the timestamp and ID components.
+// FromString decodes a base64 string into a Cursor,
+// parsing the timestamp and ID components.
 func (c *Cursor) FromString(s string) error {
 	if s == "" {
 		c.Timestamp = nil
 		c.ID = nil
 		return nil
 	}
+
 	decoded, err := base64.URLEncoding.DecodeString(s)
 	if err != nil {
 		return err
 	}
+
 	parts := strings.SplitN(string(decoded), "|", 2)
 	if len(parts) != 2 {
 		return errors.New("invalid cursor format")
 	}
+
 	ts, err := parseCursorTimestamp(parts[0])
 	if err != nil {
 		return err
 	}
+
 	id, err := parseCursorID(parts[1])
 	if err != nil {
 		return err
 	}
+
 	c.Timestamp = ts
 	c.ID = id
 	return nil
 }
 
-// ToDBParams converts the Cursor into database parameters (pgtype.Timestamptz and int64) for use in SQL queries.
+// ToDBParams converts the Cursor into database parameters
+// (pgtype.Timestamptz and int64) for use in SQL queries.
 func (c *Cursor) ToDBParams() (pgtype.Timestamptz, int64) {
 	var ts pgtype.Timestamptz
 	if c.Timestamp != nil {
@@ -63,12 +75,16 @@ func (c *Cursor) ToDBParams() (pgtype.Timestamptz, int64) {
 	} else {
 		ts = pgtype.Timestamptz{Valid: false}
 	}
+
 	var id int64
 	if c.ID != nil {
 		id = *c.ID
 	} else {
-		id = -1 // Default to -1 if ID is nil, which should be treated as the maximum value for pagination
+		// Default to -1 if ID is nil,
+		// which should be treated as the maximum value for pagination
+		id = -1
 	}
+
 	return ts, id
 }
 
@@ -89,6 +105,7 @@ func parseCursorTimestamp(s string) (*time.Time, error) {
 	if s == "" {
 		return nil, nil
 	}
+
 	parsedTime, err := time.Parse(time.RFC3339Nano, s)
 	if err != nil {
 		parsedTime, err = time.Parse(time.RFC3339, s)
@@ -99,6 +116,7 @@ func parseCursorTimestamp(s string) (*time.Time, error) {
 			s,
 		)
 	}
+
 	return &parsedTime, nil
 }
 
@@ -107,6 +125,7 @@ func parseCursorID(s string) (*int64, error) {
 	if s == "" {
 		return nil, nil
 	}
+
 	id, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -114,5 +133,6 @@ func parseCursorID(s string) (*int64, error) {
 			s,
 		)
 	}
+
 	return &id, nil
 }

@@ -13,12 +13,16 @@ func JSONBtoType[T any](jsonb []byte) (T, error) {
 	return result, err
 }
 
-// MergeMaps merges two maps of string keys and values, with values from the second map taking precedence in case of key conflicts.
-func MergeHeaders(staticHeaders map[string]string, rawHeaders map[string][]string) map[string][]string {
+// MergeHeaders merges static headers and raw headers into a single map of headers.
+func MergeHeaders(
+	staticHeaders map[string]string,
+	rawHeaders map[string][]string,
+) map[string][]string {
 	headers := make(map[string][]string)
 	for key, value := range staticHeaders {
 		headers[key] = []string{value}
 	}
+
 	for key, values := range rawHeaders {
 		if existingValues, exists := headers[key]; exists {
 			headers[key] = append(existingValues, values...)
@@ -26,12 +30,20 @@ func MergeHeaders(staticHeaders map[string]string, rawHeaders map[string][]strin
 			headers[key] = values
 		}
 	}
+
 	return headers
 }
 
-// GenerateIngressURL generates an ingress URL for a source based on the API protocol, host, port, and source ID.
+// GenerateIngressURL generates an ingress URL for a source based on the API protocol,
+// host, port, and source ID.
 func GenerateIngressURL(apiProtocol, apiHost string, apiPort int, sourceID string) string {
-	return fmt.Sprintf("%s://%s:%d/ingest/%s", apiProtocol, apiHost, apiPort, sourceID)
+	return fmt.Sprintf(
+		"%s://%s:%d/ingest/%s",
+		apiProtocol,
+		apiHost,
+		apiPort,
+		sourceID,
+	)
 }
 
 // PtrIfValid returns a pointer to the value if the valid flag is true, otherwise it returns nil.
@@ -40,5 +52,6 @@ func PtrIfValid[T any](value T, valid bool) *T {
 	if valid {
 		result = &value
 	}
+
 	return result
 }

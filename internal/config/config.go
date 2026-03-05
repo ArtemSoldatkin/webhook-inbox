@@ -45,14 +45,19 @@ func LoadConfig() Config {
 			WithError(err).
 			Fatal("Error loading configuration")
 	}
+
 	if config.APIMinPageSize > config.APIMaxPageSize {
 		logrus.Fatal("API_MIN_PAGE_SIZE cannot be greater than API_MAX_PAGE_SIZE")
 	}
-	if config.APIDefaultPageSize < config.APIMinPageSize || config.APIDefaultPageSize > config.APIMaxPageSize {
+
+	if config.APIDefaultPageSize < config.APIMinPageSize ||
+		config.APIDefaultPageSize > config.APIMaxPageSize {
 		logrus.Fatal("API_DEFAULT_PAGE_SIZE must be between API_MIN_PAGE_SIZE and API_MAX_PAGE_SIZE")
 	}
+
 	if config.APIDeliveryRetryBackoffBaseSec > config.APIDeliveryRetryBackoffMaxSec {
 		logrus.Fatal("API_DELIVERY_RETRY_BACKOFF_BASE_SEC cannot be greater than API_DELIVERY_RETRY_BACKOFF_MAX_SEC")
 	}
+
 	return config
 }
