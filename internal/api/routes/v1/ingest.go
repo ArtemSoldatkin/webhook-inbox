@@ -1,6 +1,8 @@
 package routev1
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"net"
@@ -71,11 +73,27 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		method := r.Method
+		ingressPath := r.URL.Path
+
+		dedupHash, err := generateDedupHash(DedupPayload{
+			Method:      method,
+			IngressPath: ingressPath,
+			QueryParams: queryParams,
+			RawHeaders:  headerBytes,
+			Body:        bodyBytes,
+		})
+		if err != nil {
+			logrus.WithError(err).Error("Failed to generate deduplication hash")
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
 		eventID, err := svc.CreateEvent(r.Context(), db.CreateEventParams{
 			SourceID:        source.ID,
-			DedupHash:       pgtype.Text{String: "", Valid: false}, // TODO replace with actual deduplication logic
-			Method:          r.Method,
-			IngressPath:     r.URL.Path,
+			DedupHash:       pgtype.Text{String: dedupHash, Valid: true},
+			Method:          method,
+			IngressPath:     ingressPath,
 			RemoteAddress:   &remoteAddress,
 			QueryParams:     queryParams,
 			RawHeaders:      headerBytes,
@@ -111,6 +129,25 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("OK"))
 	}
+}
+
+// DedupPayload represents the data used to generate a deduplication hash for an event.
+type DedupPayload struct {
+	Method      string `json:"method"`
+	IngressPath string `json:"ingress_path"`
+	QueryParams []byte `json:"query_params"`
+	RawHeaders  []byte `json:"headers"`
+	Body        []byte `json:"body"`
+}
+
+// generateDedupHash generates a SHA-256 hash of the input data for deduplication purposes.
+func generateDedupHash(dedupPayload DedupPayload) (string, error) {
+	dedupData, err := json.Marshal(dedupPayload)
+	if err != nil {
+		return "", err
+	}
+	hash := sha256.Sum256(dedupData)
+	return hex.EncodeToString(hash[:]), nil
 }
 
 // ingestRouter sets up the router for event ingestion endpoints.

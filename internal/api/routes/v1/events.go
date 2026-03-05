@@ -78,9 +78,9 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			}
 
 			eventDTOs = append(eventDTOs, dtov1.EventDTO{
-				ID:       event.ID,
-				SourceID: event.SourceID,
-				// DedupHash:       event.DedupHash.String,
+				ID:              event.ID,
+				SourceID:        event.SourceID,
+				DedupHash:       event.DedupHash.String,
 				Method:          event.Method,
 				IngressPath:     event.IngressPath,
 				RemoteAddress:   remoteAddress,
@@ -170,9 +170,9 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 		}
 
 		eventDTO := dtov1.EventDTO{
-			ID:       event.ID,
-			SourceID: event.SourceID,
-			// DedupHash:       event.DedupHash.String,
+			ID:              event.ID,
+			SourceID:        event.SourceID,
+			DedupHash:       event.DedupHash.String,
 			Method:          event.Method,
 			IngressPath:     event.IngressPath,
 			RemoteAddress:   remoteAddress,
