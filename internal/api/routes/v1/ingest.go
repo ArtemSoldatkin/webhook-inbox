@@ -1,6 +1,8 @@
 package routev1
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"net"
@@ -71,11 +73,17 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		method := r.Method
+		ingressPath := r.URL.Path
+
+		dedupData := []byte(method + ingressPath + string(queryParams) + string(headerBytes) + string(bodyBytes))
+		dedupHash := generateDedupHash(dedupData)
+
 		eventID, err := svc.CreateEvent(r.Context(), db.CreateEventParams{
 			SourceID:        source.ID,
-			DedupHash:       pgtype.Text{String: "", Valid: false}, // TODO replace with actual deduplication logic
-			Method:          r.Method,
-			IngressPath:     r.URL.Path,
+			DedupHash:       pgtype.Text{String: dedupHash, Valid: true},
+			Method:          method,
+			IngressPath:     ingressPath,
 			RemoteAddress:   &remoteAddress,
 			QueryParams:     queryParams,
 			RawHeaders:      headerBytes,
@@ -111,6 +119,12 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("OK"))
 	}
+}
+
+// generateDedupHash generates a SHA-256 hash of the input data for deduplication purposes.
+func generateDedupHash(data []byte) string {
+	hash := sha256.Sum256(data)
+	return hex.EncodeToString(hash[:])
 }
 
 // ingestRouter sets up the router for event ingestion endpoints.

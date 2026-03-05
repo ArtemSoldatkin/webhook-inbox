@@ -17,6 +17,7 @@ export interface SourceDTO {
 export interface EventDTO {
 	id: number;
 	source_id: number;
+	dedup_hash?: string;
 	method: string;
 	ingress_path: string;
 	remote_address?: string;

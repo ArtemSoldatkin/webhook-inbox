@@ -4,9 +4,9 @@ import "time"
 
 // EventDTO represents the data transfer object for an event in the API.
 type EventDTO struct {
-	ID       int64 `json:"id"`
-	SourceID int64 `json:"source_id"`
-	// DedupHash       *string
+	ID              int64               `json:"id"`
+	SourceID        int64               `json:"source_id"`
+	DedupHash       string              `json:"dedup_hash,omitempty"`
 	Method          string              `json:"method"`
 	IngressPath     string              `json:"ingress_path"`
 	RemoteAddress   *string             `json:"remote_address,omitempty"`

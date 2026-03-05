@@ -66,6 +66,7 @@
 							<a href={resolve(`/sources/${event.source_id}/${event.id}`)}>Event ID: {event.id}</a>
 						</h3>
 						<p>Source ID: {event.source_id}</p>
+						<p>Deduplication Hash: {event.dedup_hash ?? ''}</p>
 						<p>Method: {event.method}</p>
 						<DisplayMapOfStringArrays title="Query Parameters" data={event.query_params ?? {}} />
 						<DisplayMapOfStringArrays title="Raw Headers" data={event.raw_headers ?? {}} />

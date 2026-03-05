@@ -43,6 +43,7 @@
 	<section>
 		<h2>Event ID: {data.id}</h2>
 		<p>Source ID: {data.source_id}</p>
+		<p>Deduplication Hash: {data.dedup_hash ?? ''}</p>
 		<p>Method: {data.method}</p>
 		<DisplayMapOfStringArrays title="Query Parameters" data={data.query_params ?? {}} />
 		<DisplayMapOfStringArrays title="Raw Headers" data={data.raw_headers ?? {}} />
