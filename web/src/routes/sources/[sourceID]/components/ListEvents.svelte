@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { fetchPaginatedData } from '$lib/api';
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
@@ -58,10 +59,12 @@
 		<p>No events found for this source.</p>
 	{:else}
 		<ul>
-			{#each data as event}
+			{#each data as event (event.id)}
 				<li>
 					<section>
-						<h3><a href={`/sources/${event.source_id}/${event.id}`}>Event ID: {event.id}</a></h3>
+						<h3>
+							<a href={resolve(`/sources/${event.source_id}/${event.id}`)}>Event ID: {event.id}</a>
+						</h3>
 						<p>Source ID: {event.source_id}</p>
 						<p>Method: {event.method}</p>
 						<DisplayMapOfStringArrays title="Query Parameters" data={event.query_params ?? {}} />

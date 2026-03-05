@@ -22,8 +22,8 @@ export interface EventDTO {
 	remote_address?: string;
 	query_params?: Record<string, string[]>;
 	raw_headers?: Record<string, string[]>;
-	body: string; // Base64-encoded string
-	body_content_type: string;
+	body?: string; // Base64-encoded string
+	body_content_type?: string;
 	received_at: Date;
 }
 
