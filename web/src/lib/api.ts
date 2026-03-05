@@ -16,7 +16,7 @@ export async function fetchPaginatedData<T>(
 	const result = await response.json();
 	return {
 		data: result.data as T[],
-		nextCursor: result.nextCursor ?? null,
-		hasNext: result.hasNext
+		next_cursor: result.next_cursor ?? null,
+		has_next: result.has_next
 	};
 }

@@ -19,8 +19,8 @@
 		try {
 			const result = await fetchPaginatedData('/api/sources', pageSize, nextCursor);
 			data = [...data, ...result.data.map(parseSourceDTO)];
-			nextCursor = result.nextCursor;
-			hasNext = result.hasNext;
+			nextCursor = result.next_cursor;
+			hasNext = result.has_next;
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);
 			console.error('Error fetching sources:', err);
@@ -56,20 +56,22 @@
 			{#each data as source}
 				<li>
 					<section>
-						<h2><a href={`/sources/${source.ID}`}>{source.ID}</a></h2>
-						<p>{source.Description}</p>
-						<p>{source.IngressUrl}</p>
-						<p>{source.EgressUrl}</p>
+						<h2><a href={`/sources/${source.id}`}>{source.id}</a></h2>
+						<p>{source.description}</p>
+						<p>{source.ingress_url}</p>
+						<p>{source.egress_url}</p>
 						<p>Static headers:</p>
-						{#each Object.entries(source.StaticHeaders) as [key, value]}
+						{#each Object.entries(source.static_headers ?? {}) as [key, value]}
 							<p>{key}: {value}</p>
 						{/each}
-						<p>{source.Status}</p>
-						<p>{source.StatusReason}</p>
-						<p>Created at: {new Date(source.CreatedAt).toLocaleString()}</p>
-						<p>Updated at: {new Date(source.UpdatedAt).toLocaleString()}</p>
+						<p>{source.status}</p>
+						<p>{source.status_reason}</p>
+						<p>Created at: {new Date(source.created_at).toLocaleString()}</p>
+						<p>Updated at: {new Date(source.updated_at).toLocaleString()}</p>
 						<p>
-							Disabled at: {source.DisableAt ? new Date(source.DisableAt).toLocaleString() : 'N/A'}
+							Disabled at: {source.disable_at
+								? new Date(source.disable_at).toLocaleString()
+								: 'N/A'}
 						</p>
 					</section>
 				</li>

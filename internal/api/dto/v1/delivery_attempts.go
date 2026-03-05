@@ -4,15 +4,15 @@ import "time"
 
 // DeliveryAttemptDTO represents the data transfer object for a delivery attempt in the API.
 type DeliveryAttemptDTO struct {
-	ID            int64
-	EventID       int64
-	AttemptNumber int32
-	State         string
-	StatusCode    *int32
-	ErrorType     *string
-	ErrorMessage  *string
-	StartedAt     *time.Time
-	FinishedAt    *time.Time
-	CreatedAt     time.Time
-	NextAttemptAt *time.Time
+	ID            int64      `json:"id"`
+	EventID       int64      `json:"event_id"`
+	AttemptNumber int32      `json:"attempt_number"`
+	State         string     `json:"state"`
+	StatusCode    *int32     `json:"status_code,omitempty"`
+	ErrorType     *string    `json:"error_type,omitempty"`
+	ErrorMessage  *string    `json:"error_message,omitempty"`
+	StartedAt     *time.Time `json:"started_at,omitempty"`
+	FinishedAt    *time.Time `json:"finished_at,omitempty"`
+	CreatedAt     time.Time  `json:"created_at"`
+	NextAttemptAt *time.Time `json:"next_attempt_at,omitempty"`
 }

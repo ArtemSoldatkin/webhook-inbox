@@ -5,14 +5,14 @@
 
 	type NewSource = Omit<
 		SourceDTO,
-		| 'ID'
-		| 'PublicID'
-		| 'IngressUrl'
-		| 'Status'
-		| 'StatusReason'
-		| 'CreatedAt'
-		| 'UpdatedAt'
-		| 'DisableAt'
+		| 'id'
+		| 'public_id'
+		| 'ingress_url'
+		| 'status'
+		| 'status_reason'
+		| 'created_at'
+		| 'updated_at'
+		| 'disable_at'
 	>;
 
 	let data = newData();
@@ -20,7 +20,7 @@
 	let error: string | null = null;
 
 	function newData(): NewSource {
-		return { EgressUrl: '', StaticHeaders: {}, Description: '' };
+		return { egress_url: '', static_headers: {}, description: '' };
 	}
 
 	async function createSource() {
@@ -49,7 +49,7 @@
 	}
 
 	function validateInput() {
-		return validateEgressUrl(data.EgressUrl);
+		return validateEgressUrl(data.egress_url);
 	}
 
 	function handleSubmit() {
@@ -90,7 +90,7 @@
 	}
 
 	let egressError: string | null = null;
-	$: if (data.EgressUrl.trim() !== '' && !validateEgressUrl(data.EgressUrl)) {
+	$: if (data.egress_url.trim() !== '' && !validateEgressUrl(data.egress_url)) {
 		egressError = 'Valid Egress URL is required';
 	} else {
 		egressError = null;
@@ -102,7 +102,7 @@
 		>Egress URL
 		<input
 			type="text"
-			bind:value={data.EgressUrl}
+			bind:value={data.egress_url}
 			placeholder="https://example.com/egress"
 			required
 			disabled={loading}
@@ -113,11 +113,11 @@
 	{/if}
 	<label
 		>Static Headers
-		<InputMap bind:json={data.StaticHeaders} disabled={loading} />
+		<InputMap bind:json={data.static_headers} disabled={loading} />
 	</label>
 	<label
 		>Description
-		<textarea bind:value={data.Description} placeholder="Optional description"></textarea>
+		<textarea bind:value={data.description} placeholder="Optional description"></textarea>
 	</label>
 	<button type="submit" disabled={loading || Boolean(egressError)}>Create New Source</button>
 	{#if error}

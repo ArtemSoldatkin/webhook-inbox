@@ -3,25 +3,25 @@ import type { DeliveryAttemptDTO, EventDTO, SourceDTO } from './types';
 export function parseSourceDTO(raw: any): SourceDTO {
 	return {
 		...raw,
-		CreatedAt: new Date(raw.CreatedAt),
-		UpdatedAt: new Date(raw.UpdatedAt),
-		DisableAt: raw.DisableAt ? new Date(raw.DisableAt) : null
+		created_at: new Date(raw.created_at),
+		updated_at: new Date(raw.updated_at),
+		disable_at: raw.disable_at && new Date(raw.disable_at)
 	};
 }
 
 export function parseEventDTO(raw: any): EventDTO {
 	return {
 		...raw,
-		ReceivedAt: new Date(raw.ReceivedAt)
+		received_at: new Date(raw.received_at)
 	};
 }
 
 export function parseDeliveryAttemptDTO(raw: any): DeliveryAttemptDTO {
 	return {
 		...raw,
-		StartedAt: raw.StartedAt ? new Date(raw.StartedAt) : null,
-		FinishedAt: raw.FinishedAt ? new Date(raw.FinishedAt) : null,
-		CreatedAt: new Date(raw.CreatedAt),
-		NextAttemptAt: raw.NextAttemptAt ? new Date(raw.NextAttemptAt) : null
+		started_at: raw.started_at && new Date(raw.started_at),
+		finished_at: raw.finished_at && new Date(raw.finished_at),
+		created_at: new Date(raw.created_at),
+		next_attempt_at: raw.next_attempt_at && new Date(raw.next_attempt_at)
 	};
 }
