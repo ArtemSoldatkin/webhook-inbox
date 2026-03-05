@@ -47,6 +47,15 @@ func loadEnvs[T any](config *T) error {
 			); err != nil {
 				return err
 			}
+		case reflect.Int64:
+			if err := setInt64Field(
+				configValue,
+				envName,
+				field.Name,
+				envOptions,
+			); err != nil {
+				return err
+			}
 		case reflect.String:
 			if err := setStringField(
 				configValue,
@@ -151,6 +160,46 @@ func setIntField(
 	return nil
 }
 
+// TODO : Refactor setIntField and setInt64Field to reduce code duplication, as they have very similar logic. Consider creating a generic function that can handle both int and int64 types, or use reflection to determine the appropriate type to set.
+func setInt64Field(
+	configValue reflect.Value,
+	envName string,
+	fieldName string,
+	envOptions map[string]string,
+) error {
+	envValue, err := getEnvWithDefault(envName, envOptions)
+	if err != nil {
+		return fmt.Errorf(
+			"error getting environment variable %s for field %s: %w",
+			envName,
+			fieldName,
+			err,
+		)
+	}
+
+	valueInt, err := strconv.ParseInt(envValue, 10, 64)
+	if err != nil {
+		return fmt.Errorf(
+			"environment variable %s has invalid value for field %s: %w",
+			envName,
+			fieldName,
+			err,
+		)
+	}
+
+	if !isInt64ValueWithinBoundary(valueInt, envOptions) {
+		return fmt.Errorf(
+			"environment variable %s has value out of boundary for field %s: value '%d' is not within specified boundaries",
+			envName,
+			fieldName,
+			valueInt,
+		)
+	}
+
+	configValue.SetInt(valueInt)
+	return nil
+}
+
 // setStringField is a helper function that sets a string field in the config struct based on the environment variable value.
 // It retrieves the environment variable, checks for errors, and sets the field value.
 func setStringField(
@@ -214,6 +263,46 @@ func isIntValueWithinBoundary(value int, envOptions map[string]string) bool {
 
 	if hasMax {
 		maxValue, err := strconv.Atoi(maxValueStr)
+		if err != nil {
+			return false
+		}
+
+		return value <= maxValue
+	}
+
+	return true
+}
+
+// TODO : Refactor isIntValueWithinBoundary and isInt64ValueWithinBoundary to reduce code duplication, as they have very similar logic. Consider creating a generic function that can handle both int and int64 types, or use reflection to determine the appropriate type to check.
+func isInt64ValueWithinBoundary(value int64, envOptions map[string]string) bool {
+	minValueStr, hasMin := envOptions["min"]
+	maxValueStr, hasMax := envOptions["max"]
+
+	if hasMin && hasMax {
+		minValue, err := strconv.ParseInt(minValueStr, 10, 64)
+		if err != nil {
+			return false
+		}
+
+		maxValue, err := strconv.ParseInt(maxValueStr, 10, 64)
+		if err != nil {
+			return false
+		}
+
+		return value >= minValue && value <= maxValue
+	}
+
+	if hasMin {
+		minValue, err := strconv.ParseInt(minValueStr, 10, 64)
+		if err != nil {
+			return false
+		}
+
+		return value >= minValue
+	}
+
+	if hasMax {
+		maxValue, err := strconv.ParseInt(maxValueStr, 10, 64)
 		if err != nil {
 			return false
 		}
