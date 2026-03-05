@@ -14,7 +14,8 @@ type PaginatedResponse[T any] struct {
 	HasNext    bool    `json:"has_next"`
 }
 
-// ToPaginatedResponse converts a slice of data into a PaginatedResponse, determining if there is a next page based on the provided page size and cursor function.
+// ToPaginatedResponse converts a slice of data into a PaginatedResponse,
+// determining if there is a next page based on the provided page size and cursor function.
 func ToPaginatedResponse[T any](
 	data []T,
 	pageSize int,
@@ -27,6 +28,7 @@ func ToPaginatedResponse[T any](
 		cursorStr := cursor.ToString()
 		nextCursor = &cursorStr
 	}
+
 	return PaginatedResponse[T]{
 		Data:       data,
 		NextCursor: nextCursor,
@@ -49,6 +51,7 @@ func ParsePaginationParams(
 	if err != nil {
 		return 0, cursor, err
 	}
+
 	if pageSize < minPageSize || pageSize > maxPageSize {
 		return 0, cursor, fmt.Errorf(
 			"limit parameter must be between %d and %d",
@@ -56,10 +59,12 @@ func ParsePaginationParams(
 			maxPageSize,
 		)
 	}
+
 	cursorStr := query.Get("cursor")
 	if err := cursor.FromString(cursorStr); err != nil {
 		return 0, cursor, fmt.Errorf("invalid cursor parameter: %w", err)
 	}
+
 	return pageSize, cursor, nil
 }
 
@@ -69,6 +74,7 @@ func getIntQueryParam(query url.Values, key string, defaultValue int) (value int
 	if valueStr == "" {
 		return defaultValue, nil
 	}
+
 	value, err = strconv.Atoi(valueStr)
 	if err != nil || value <= 0 {
 		return 0, fmt.Errorf(
@@ -76,5 +82,6 @@ func getIntQueryParam(query url.Values, key string, defaultValue int) (value int
 			key,
 		)
 	}
+
 	return value, nil
 }

@@ -76,17 +76,28 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			}
 
 			sourceDTOs = append(sourceDTOs, dtov1.SourceDTO{
-				ID:            source.ID,
-				PublicID:      source.PublicID.String(),
-				IngressUrl:    utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
+				ID:       source.ID,
+				PublicID: source.PublicID.String(),
+				IngressUrl: utils.GenerateIngressURL(
+					svc.Config.APIProtocol,
+					svc.Config.APIHost,
+					svc.Config.APIPort,
+					source.PublicID.String(),
+				),
 				EgressUrl:     source.EgressUrl,
 				StaticHeaders: staticHeaders,
 				Status:        source.Status,
-				StatusReason:  utils.PtrIfValid(source.StatusReason.String, source.StatusReason.Valid),
-				Description:   utils.PtrIfValid(source.Description.String, source.Description.Valid),
-				CreatedAt:     source.CreatedAt.Time,
-				UpdatedAt:     source.UpdatedAt.Time,
-				DisableAt:     disableAt,
+				StatusReason: utils.PtrIfValid(
+					source.StatusReason.String,
+					source.StatusReason.Valid,
+				),
+				Description: utils.PtrIfValid(
+					source.Description.String,
+					source.Description.Valid,
+				),
+				CreatedAt: source.CreatedAt.Time,
+				UpdatedAt: source.UpdatedAt.Time,
+				DisableAt: disableAt,
 			})
 		}
 
@@ -162,17 +173,28 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 		}
 
 		sourceDTO := dtov1.SourceDTO{
-			ID:            source.ID,
-			PublicID:      source.PublicID.String(),
-			IngressUrl:    utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
+			ID:       source.ID,
+			PublicID: source.PublicID.String(),
+			IngressUrl: utils.GenerateIngressURL(
+				svc.Config.APIProtocol,
+				svc.Config.APIHost,
+				svc.Config.APIPort,
+				source.PublicID.String(),
+			),
 			EgressUrl:     source.EgressUrl,
 			StaticHeaders: staticHeaders,
 			Status:        source.Status,
-			StatusReason:  utils.PtrIfValid(source.StatusReason.String, source.StatusReason.Valid),
-			Description:   utils.PtrIfValid(source.Description.String, source.Description.Valid),
-			CreatedAt:     source.CreatedAt.Time,
-			UpdatedAt:     source.UpdatedAt.Time,
-			DisableAt:     disableAt,
+			StatusReason: utils.PtrIfValid(
+				source.StatusReason.String,
+				source.StatusReason.Valid,
+			),
+			Description: utils.PtrIfValid(
+				source.Description.String,
+				source.Description.Valid,
+			),
+			CreatedAt: source.CreatedAt.Time,
+			UpdatedAt: source.UpdatedAt.Time,
+			DisableAt: disableAt,
 		}
 
 		response, err := json.Marshal(sourceDTO)
@@ -231,7 +253,10 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		source, err := svc.CreateSource(r.Context(), db.CreateSourceParams{
 			EgressUrl:     data.EgressUrl,
 			StaticHeaders: staticHeaders,
-			Description:   pgtype.Text{String: data.Description, Valid: data.Description != ""},
+			Description: pgtype.Text{
+				String: data.Description,
+				Valid:  data.Description != "",
+			},
 		})
 		if err != nil {
 			logrus.WithError(err).Error("Failed to create source")
@@ -241,16 +266,27 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		logrus.WithField("source_id", source.ID).Info("Created new source")
 
 		sourceDTO := dtov1.SourceDTO{
-			ID:            source.ID,
-			PublicID:      source.PublicID.String(),
-			IngressUrl:    utils.GenerateIngressURL(svc.Config.APIProtocol, svc.Config.APIHost, svc.Config.APIPort, source.PublicID.String()),
+			ID:       source.ID,
+			PublicID: source.PublicID.String(),
+			IngressUrl: utils.GenerateIngressURL(
+				svc.Config.APIProtocol,
+				svc.Config.APIHost,
+				svc.Config.APIPort,
+				source.PublicID.String(),
+			),
 			EgressUrl:     source.EgressUrl,
 			StaticHeaders: data.StaticHeaders,
 			Status:        source.Status,
-			StatusReason:  utils.PtrIfValid(source.StatusReason.String, source.StatusReason.Valid),
-			Description:   utils.PtrIfValid(source.Description.String, source.Description.Valid),
-			CreatedAt:     source.CreatedAt.Time,
-			UpdatedAt:     source.UpdatedAt.Time,
+			StatusReason: utils.PtrIfValid(
+				source.StatusReason.String,
+				source.StatusReason.Valid,
+			),
+			Description: utils.PtrIfValid(
+				source.Description.String,
+				source.Description.Valid,
+			),
+			CreatedAt: source.CreatedAt.Time,
+			UpdatedAt: source.UpdatedAt.Time,
 		}
 
 		response, err := json.Marshal(sourceDTO)
@@ -274,7 +310,9 @@ func validateEgressUrl(egressUrl, env string) bool {
 	if err != nil {
 		return false
 	}
-	if len(parsedUrl.String()) > 2048 || (parsedUrl.Scheme != "http" && parsedUrl.Scheme != "https") {
+	if len(parsedUrl.String()) > 2048 ||
+		(parsedUrl.Scheme != "http" &&
+			parsedUrl.Scheme != "https") {
 		return false
 	}
 	if env == "dev" {
@@ -286,7 +324,10 @@ func validateEgressUrl(egressUrl, env string) bool {
 		return false
 	}
 	for _, ip := range ips {
-		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+		if ip.IsLoopback() ||
+			ip.IsPrivate() ||
+			ip.IsLinkLocalUnicast() ||
+			ip.IsLinkLocalMulticast() {
 			return false
 		}
 		// Block IPv4-mapped IPv6 loopback
@@ -294,8 +335,20 @@ func validateEgressUrl(egressUrl, env string) bool {
 			return false
 		}
 		// Block IPv4-mapped IPv6 for 127.0.0.0/8
-		if ip.To4() == nil && len(ip) == net.IPv6len && ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0 &&
-			ip[4] == 0 && ip[5] == 0 && ip[6] == 0 && ip[7] == 0 && ip[8] == 0 && ip[9] == 0 && ip[10] == 0xff && ip[11] == 0xff &&
+		if ip.To4() == nil &&
+			len(ip) == net.IPv6len &&
+			ip[0] == 0 &&
+			ip[1] == 0 &&
+			ip[2] == 0 &&
+			ip[3] == 0 &&
+			ip[4] == 0 &&
+			ip[5] == 0 &&
+			ip[6] == 0 &&
+			ip[7] == 0 &&
+			ip[8] == 0 &&
+			ip[9] == 0 &&
+			ip[10] == 0xff &&
+			ip[11] == 0xff &&
 			ip[12] == 127 {
 			return false
 		}

@@ -1,4 +1,5 @@
-// Package deliveryengine implements the background process responsible for processing and delivering webhooks.
+// Package deliveryengine implements the background process responsible for processing
+// and delivering webhooks.
 package deliveryengine
 
 import (
@@ -10,7 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Start initializes and starts the delivery engine, which periodically checks for pending deliveries and processes them.
+// Start initializes and starts the delivery engine,
+// which periodically checks for pending deliveries and processes them.
 func Start(svc *service.Service, pollInterval time.Duration) {
 	ctx := context.Background()
 	ticker := time.NewTicker(pollInterval)
@@ -38,9 +40,12 @@ func Start(svc *service.Service, pollInterval time.Duration) {
 				"event_id":    delivery.EventID,
 				"attempt":     delivery.AttemptNumber,
 			}).Debug("Starting delivery attempt")
+
 			semaphore <- struct{}{}
+
 			go func(delivery service.PendingDeliveryAttempt) {
 				defer func() { <-semaphore }()
+
 				attemptDelivery(svc, httpClient, delivery)
 			}(delivery)
 		}

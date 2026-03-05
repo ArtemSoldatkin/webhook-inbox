@@ -29,6 +29,9 @@ func (svc *Service) GetEventByID(ctx context.Context, eventID int64) (db.Event, 
 }
 
 // CreateEvent inserts a new event into the database and returns its ID.
-func (svc *Service) CreateEvent(ctx context.Context, event db.CreateEventParams) (int64, error) {
+func (svc *Service) CreateEvent(
+	ctx context.Context,
+	event db.CreateEventParams,
+) (int64, error) {
 	return svc.queries.CreateEvent(ctx, event)
 }

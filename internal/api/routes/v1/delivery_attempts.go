@@ -58,13 +58,31 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 				EventID:       deliveryAttempt.EventID,
 				AttemptNumber: deliveryAttempt.AttemptNumber,
 				State:         deliveryAttempt.State,
-				StatusCode:    utils.PtrIfValid(deliveryAttempt.StatusCode.Int32, deliveryAttempt.StatusCode.Valid),
-				ErrorType:     utils.PtrIfValid(deliveryAttempt.ErrorType.String, deliveryAttempt.ErrorType.Valid),
-				ErrorMessage:  utils.PtrIfValid(deliveryAttempt.ErrorMessage.String, deliveryAttempt.ErrorMessage.Valid),
-				StartedAt:     utils.PtrIfValid(deliveryAttempt.StartedAt.Time, deliveryAttempt.StartedAt.Valid),
-				FinishedAt:    utils.PtrIfValid(deliveryAttempt.FinishedAt.Time, deliveryAttempt.FinishedAt.Valid),
-				CreatedAt:     deliveryAttempt.CreatedAt.Time,
-				NextAttemptAt: utils.PtrIfValid(deliveryAttempt.NextAttemptAt.Time, deliveryAttempt.NextAttemptAt.Valid),
+				StatusCode: utils.PtrIfValid(
+					deliveryAttempt.StatusCode.Int32,
+					deliveryAttempt.StatusCode.Valid,
+				),
+				ErrorType: utils.PtrIfValid(
+					deliveryAttempt.ErrorType.String,
+					deliveryAttempt.ErrorType.Valid,
+				),
+				ErrorMessage: utils.PtrIfValid(
+					deliveryAttempt.ErrorMessage.String,
+					deliveryAttempt.ErrorMessage.Valid,
+				),
+				StartedAt: utils.PtrIfValid(
+					deliveryAttempt.StartedAt.Time,
+					deliveryAttempt.StartedAt.Valid,
+				),
+				FinishedAt: utils.PtrIfValid(
+					deliveryAttempt.FinishedAt.Time,
+					deliveryAttempt.FinishedAt.Valid,
+				),
+				CreatedAt: deliveryAttempt.CreatedAt.Time,
+				NextAttemptAt: utils.PtrIfValid(
+					deliveryAttempt.NextAttemptAt.Time,
+					deliveryAttempt.NextAttemptAt.Valid,
+				),
 			}
 		}
 
