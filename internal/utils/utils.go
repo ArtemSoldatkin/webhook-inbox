@@ -13,8 +13,7 @@ func JSONBtoType[T any](jsonb []byte) (T, error) {
 	return result, err
 }
 
-// MergeMaps merges two maps of string keys and values,
-// with values from the second map taking precedence in case of key conflicts.
+// MergeHeaders merges static headers and raw headers into a single map of headers.
 func MergeHeaders(
 	staticHeaders map[string]string,
 	rawHeaders map[string][]string,

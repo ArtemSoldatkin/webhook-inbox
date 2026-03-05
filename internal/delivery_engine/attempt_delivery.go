@@ -275,12 +275,12 @@ func attemptDelivery(
 	if err != nil {
 		logrus.WithError(err).Error("Error loading delivery payload")
 
-		if markErr := markInPending(ctx, svc, delivery.ID); markErr != nil {
+		if err := markInPending(ctx, svc, delivery.ID); err != nil {
 			logrus.
 				WithError(err).
 				Error(
 					"Error reverting delivery attempt state to pending after load failure:",
-					markErr,
+					err,
 				)
 		}
 
