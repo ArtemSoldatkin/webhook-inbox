@@ -44,15 +44,17 @@ func loadEnvs[T any](config *T) error {
 				envName,
 				field.Name,
 				envOptions,
+				32,
 			); err != nil {
 				return err
 			}
 		case reflect.Int64:
-			if err := setInt64Field(
+			if err := setIntField(
 				configValue,
 				envName,
 				field.Name,
 				envOptions,
+				64,
 			); err != nil {
 				return err
 			}
@@ -119,13 +121,14 @@ func getEnvWithDefault(envName string, envOptions map[string]string) (string, er
 	return envValue, nil
 }
 
-// setIntField is a helper function that sets an integer field in the config struct based on the environment variable value.
-// It retrieves the environment variable, checks for errors, converts it to an integer, and sets the field value.
+// setIntField is a helper function that sets an int field in the config struct based on the environment variable value.
+// It retrieves the environment variable, checks for errors, validates the value against specified boundaries, and sets the field value.
 func setIntField(
 	configValue reflect.Value,
 	envName string,
 	fieldName string,
 	envOptions map[string]string,
+	bitSize int,
 ) error {
 	envValue, err := getEnvWithDefault(envName, envOptions)
 	if err != nil {
@@ -137,7 +140,7 @@ func setIntField(
 		)
 	}
 
-	valueInt, err := strconv.Atoi(envValue)
+	valueInt, err := strconv.ParseInt(envValue, 10, bitSize)
 	if err != nil {
 		return fmt.Errorf(
 			"environment variable %s has invalid value for field %s: %w",
@@ -147,47 +150,7 @@ func setIntField(
 		)
 	}
 
-	if !isIntValueWithinBoundary(valueInt, envOptions) {
-		return fmt.Errorf(
-			"environment variable %s has value out of boundary for field %s: value '%d' is not within specified boundaries",
-			envName,
-			fieldName,
-			valueInt,
-		)
-	}
-
-	configValue.SetInt(int64(valueInt))
-	return nil
-}
-
-// TODO : Refactor setIntField and setInt64Field to reduce code duplication, as they have very similar logic. Consider creating a generic function that can handle both int and int64 types, or use reflection to determine the appropriate type to set.
-func setInt64Field(
-	configValue reflect.Value,
-	envName string,
-	fieldName string,
-	envOptions map[string]string,
-) error {
-	envValue, err := getEnvWithDefault(envName, envOptions)
-	if err != nil {
-		return fmt.Errorf(
-			"error getting environment variable %s for field %s: %w",
-			envName,
-			fieldName,
-			err,
-		)
-	}
-
-	valueInt, err := strconv.ParseInt(envValue, 10, 64)
-	if err != nil {
-		return fmt.Errorf(
-			"environment variable %s has invalid value for field %s: %w",
-			envName,
-			fieldName,
-			err,
-		)
-	}
-
-	if !isInt64ValueWithinBoundary(valueInt, envOptions) {
+	if !isIntValueWithinBoundary(valueInt, envOptions, bitSize) {
 		return fmt.Errorf(
 			"environment variable %s has value out of boundary for field %s: value '%d' is not within specified boundaries",
 			envName,
@@ -231,20 +194,24 @@ func setStringField(
 	return nil
 }
 
-// isIntValueWithinBoundary checks if an integer value is within the specified minimum
+// isInt64ValueWithinBoundary checks if an int64 value is within the specified minimum
 // and maximum boundaries defined in the environment variable options.
 // It returns true if the value is within the boundaries or if no boundaries are specified, and false otherwise.
-func isIntValueWithinBoundary(value int, envOptions map[string]string) bool {
+func isIntValueWithinBoundary(
+	value int64,
+	envOptions map[string]string,
+	bitSize int,
+) bool {
 	minValueStr, hasMin := envOptions["min"]
 	maxValueStr, hasMax := envOptions["max"]
 
 	if hasMin && hasMax {
-		minValue, err := strconv.Atoi(minValueStr)
+		minValue, err := strconv.ParseInt(minValueStr, 10, bitSize)
 		if err != nil {
 			return false
 		}
 
-		maxValue, err := strconv.Atoi(maxValueStr)
+		maxValue, err := strconv.ParseInt(maxValueStr, 10, bitSize)
 		if err != nil {
 			return false
 		}
@@ -253,7 +220,7 @@ func isIntValueWithinBoundary(value int, envOptions map[string]string) bool {
 	}
 
 	if hasMin {
-		minValue, err := strconv.Atoi(minValueStr)
+		minValue, err := strconv.ParseInt(minValueStr, 10, bitSize)
 		if err != nil {
 			return false
 		}
@@ -262,47 +229,7 @@ func isIntValueWithinBoundary(value int, envOptions map[string]string) bool {
 	}
 
 	if hasMax {
-		maxValue, err := strconv.Atoi(maxValueStr)
-		if err != nil {
-			return false
-		}
-
-		return value <= maxValue
-	}
-
-	return true
-}
-
-// TODO : Refactor isIntValueWithinBoundary and isInt64ValueWithinBoundary to reduce code duplication, as they have very similar logic. Consider creating a generic function that can handle both int and int64 types, or use reflection to determine the appropriate type to check.
-func isInt64ValueWithinBoundary(value int64, envOptions map[string]string) bool {
-	minValueStr, hasMin := envOptions["min"]
-	maxValueStr, hasMax := envOptions["max"]
-
-	if hasMin && hasMax {
-		minValue, err := strconv.ParseInt(minValueStr, 10, 64)
-		if err != nil {
-			return false
-		}
-
-		maxValue, err := strconv.ParseInt(maxValueStr, 10, 64)
-		if err != nil {
-			return false
-		}
-
-		return value >= minValue && value <= maxValue
-	}
-
-	if hasMin {
-		minValue, err := strconv.ParseInt(minValueStr, 10, 64)
-		if err != nil {
-			return false
-		}
-
-		return value >= minValue
-	}
-
-	if hasMax {
-		maxValue, err := strconv.ParseInt(maxValueStr, 10, 64)
+		maxValue, err := strconv.ParseInt(maxValueStr, 10, bitSize)
 		if err != nil {
 			return false
 		}
