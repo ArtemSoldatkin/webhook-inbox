@@ -44,6 +44,17 @@ func loadEnvs[T any](config *T) error {
 				envName,
 				field.Name,
 				envOptions,
+				strconv.IntSize,
+			); err != nil {
+				return err
+			}
+		case reflect.Int64:
+			if err := setIntField(
+				configValue,
+				envName,
+				field.Name,
+				envOptions,
+				64,
 			); err != nil {
 				return err
 			}
@@ -110,13 +121,14 @@ func getEnvWithDefault(envName string, envOptions map[string]string) (string, er
 	return envValue, nil
 }
 
-// setIntField is a helper function that sets an integer field in the config struct based on the environment variable value.
-// It retrieves the environment variable, checks for errors, converts it to an integer, and sets the field value.
+// setIntField is a helper function that sets an int field in the config struct based on the environment variable value.
+// It retrieves the environment variable, checks for errors, validates the value against specified boundaries, and sets the field value.
 func setIntField(
 	configValue reflect.Value,
 	envName string,
 	fieldName string,
 	envOptions map[string]string,
+	bitSize int,
 ) error {
 	envValue, err := getEnvWithDefault(envName, envOptions)
 	if err != nil {
@@ -128,7 +140,7 @@ func setIntField(
 		)
 	}
 
-	valueInt, err := strconv.Atoi(envValue)
+	valueInt, err := strconv.ParseInt(envValue, 10, bitSize)
 	if err != nil {
 		return fmt.Errorf(
 			"environment variable %s has invalid value for field %s: %w",
@@ -138,7 +150,7 @@ func setIntField(
 		)
 	}
 
-	if !isIntValueWithinBoundary(valueInt, envOptions) {
+	if !isIntValueWithinBoundary(valueInt, envOptions, bitSize) {
 		return fmt.Errorf(
 			"environment variable %s has value out of boundary for field %s: value '%d' is not within specified boundaries",
 			envName,
@@ -147,7 +159,7 @@ func setIntField(
 		)
 	}
 
-	configValue.SetInt(int64(valueInt))
+	configValue.SetInt(valueInt)
 	return nil
 }
 
@@ -182,20 +194,24 @@ func setStringField(
 	return nil
 }
 
-// isIntValueWithinBoundary checks if an integer value is within the specified minimum
+// isInt64ValueWithinBoundary checks if an int64 value is within the specified minimum
 // and maximum boundaries defined in the environment variable options.
 // It returns true if the value is within the boundaries or if no boundaries are specified, and false otherwise.
-func isIntValueWithinBoundary(value int, envOptions map[string]string) bool {
+func isIntValueWithinBoundary(
+	value int64,
+	envOptions map[string]string,
+	bitSize int,
+) bool {
 	minValueStr, hasMin := envOptions["min"]
 	maxValueStr, hasMax := envOptions["max"]
 
 	if hasMin && hasMax {
-		minValue, err := strconv.Atoi(minValueStr)
+		minValue, err := strconv.ParseInt(minValueStr, 10, bitSize)
 		if err != nil {
 			return false
 		}
 
-		maxValue, err := strconv.Atoi(maxValueStr)
+		maxValue, err := strconv.ParseInt(maxValueStr, 10, bitSize)
 		if err != nil {
 			return false
 		}
@@ -204,7 +220,7 @@ func isIntValueWithinBoundary(value int, envOptions map[string]string) bool {
 	}
 
 	if hasMin {
-		minValue, err := strconv.Atoi(minValueStr)
+		minValue, err := strconv.ParseInt(minValueStr, 10, bitSize)
 		if err != nil {
 			return false
 		}
@@ -213,7 +229,7 @@ func isIntValueWithinBoundary(value int, envOptions map[string]string) bool {
 	}
 
 	if hasMax {
-		maxValue, err := strconv.Atoi(maxValueStr)
+		maxValue, err := strconv.ParseInt(maxValueStr, 10, bitSize)
 		if err != nil {
 			return false
 		}

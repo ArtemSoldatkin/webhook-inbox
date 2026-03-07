@@ -6,6 +6,7 @@ import (
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/config"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
+	"github.com/dgraph-io/ristretto"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -15,16 +16,22 @@ type Service struct {
 	dbPool  *pgxpool.Pool
 	queries *db.Queries
 	Config  *config.Config
+	Cache   *ristretto.Cache
 }
 
 // NewService creates a new instance of Service.
-func NewService(dbPool *pgxpool.Pool, config *config.Config) *Service {
+func NewService(
+	dbPool *pgxpool.Pool,
+	config *config.Config,
+	cache *ristretto.Cache,
+) *Service {
 	queries := db.New(dbPool)
 
 	return &Service{
 		dbPool:  dbPool,
 		queries: queries,
 		Config:  config,
+		Cache:   cache,
 	}
 }
 

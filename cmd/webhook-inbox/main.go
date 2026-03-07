@@ -14,6 +14,8 @@ import (
 	deliveryengine "github.com/ArtemSoldatkin/webhook-inbox/internal/delivery_engine"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/sirupsen/logrus"
+
+	"github.com/dgraph-io/ristretto"
 )
 
 // createDatabasePool creates a new database connection pool.
@@ -73,7 +75,22 @@ func main() {
 		config.DBName,
 	)
 	defer dbPool.Close()
-	service := service.NewService(dbPool, &config)
+
+	cache, err := ristretto.NewCache(&ristretto.Config{
+		NumCounters: config.APICacheNumCounters,
+		MaxCost:     config.APICacheMaxCost,
+		BufferItems: config.APICacheBufferItems,
+	})
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to create cache")
+	}
+	defer cache.Close()
+
+	service := service.NewService(
+		dbPool,
+		&config,
+		cache,
+	)
 
 	logrus.
 		WithField("interval_sec", config.APIDeliveryIntervalSec).
@@ -94,8 +111,10 @@ func main() {
 	r.Mount("/api/v1", routev1.V1Router(service))
 
 	logrus.WithField("port", config.APIPort).Info("Starting server...")
-	err := http.ListenAndServe(fmt.Sprintf(":%d", config.APIPort), r)
-	if err != nil {
+	if err := http.ListenAndServe(
+		fmt.Sprintf(":%d", config.APIPort),
+		r,
+	); err != nil {
 		logrus.WithError(err).Fatal("Failed to start server")
 	}
 }

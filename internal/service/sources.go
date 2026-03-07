@@ -2,10 +2,14 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/sirupsen/logrus"
 )
 
 // ListSources retrieves all sources from the database.
@@ -32,13 +36,46 @@ func (svc *Service) GetSourceByPublicID(
 	ctx context.Context,
 	publicID string,
 ) (db.Source, error) {
+	cacheKey := fmt.Sprintf("GetSourceByPublicID|%s", publicID)
+
+	if cachedSource, ok := svc.Cache.Get(cacheKey); ok {
+		source, ok := cachedSource.(db.Source)
+		if ok {
+			return source, nil
+		}
+
+		logrus.
+			WithField("public_id", publicID).
+			Warning("cache hit for GetSourceByPublicID but value has unexpected type, ignoring cache")
+	}
+
 	var publicUUID pgtype.UUID
-	err := publicUUID.Scan(publicID)
+	if err := publicUUID.Scan(publicID); err != nil {
+		return db.Source{}, err
+	}
+
+	source, err := svc.queries.GetSourceByPublicID(ctx, publicUUID)
 	if err != nil {
 		return db.Source{}, err
 	}
 
-	return svc.queries.GetSourceByPublicID(ctx, publicUUID)
+	cacheCost, err := utils.EstimateStructSize(source)
+	if err != nil {
+		logrus.
+			WithError(err).
+			WithField("source_id", source.ID).
+			Warning("failed to estimate cache cost for source, using default cost")
+		cacheCost = svc.Config.APICacheDefaultCost
+	}
+
+	svc.Cache.SetWithTTL(
+		cacheKey,
+		source,
+		cacheCost,
+		time.Duration(svc.Config.APICacheSourceTTLSec)*time.Second,
+	)
+
+	return source, nil
 }
 
 // CreateSource creates a new source in the database with the provided parameters.

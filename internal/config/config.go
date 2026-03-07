@@ -19,6 +19,15 @@ type Config struct {
 	APIHost     string `env:"API_HOST,required"`
 	APIPort     int    `env:"API_PORT,required"`
 
+	APICacheNumCounters int64 `env:"API_CACHE_NUM_COUNTERS,default:10000000,min:1000,max:100000000"`
+	APICacheMaxCost     int64 `env:"API_CACHE_MAX_COST,default:1073741824,min:1048576,max:10737418240"`
+	APICacheBufferItems int64 `env:"API_CACHE_BUFFER_ITEMS,default:64,min:1,max:1024"`
+
+	APICacheDefaultCost int64 `env:"API_CACHE_DEFAULT_COST,default:1024,min:1,max:1048576"`
+
+	APICacheSourceTTLSec int `env:"API_CACHE_SOURCE_TTL_SEC,default:300,min:60,max:3600"`
+	APICacheEventTTLSec  int `env:"API_CACHE_EVENT_TTL_SEC,default:900,min:60,max:3600"`
+
 	APIDefaultPageSize int `env:"API_DEFAULT_PAGE_SIZE,default:20,min:1,max:100"`
 	APIMinPageSize     int `env:"API_MIN_PAGE_SIZE,default:1,min:1,max:100"`
 	APIMaxPageSize     int `env:"API_MAX_PAGE_SIZE,default:100,min:1,max:100"`
