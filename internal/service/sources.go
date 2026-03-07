@@ -39,7 +39,14 @@ func (svc *Service) GetSourceByPublicID(
 	cacheKey := fmt.Sprintf("GetSourceByPublicID|%s", publicID)
 
 	if cachedSource, ok := svc.Cache.Get(cacheKey); ok {
-		return cachedSource.(db.Source), nil
+		source, ok := cachedSource.(db.Source)
+		if ok {
+			return source, nil
+		}
+
+		logrus.
+			WithField("public_id", publicID).
+			Warning("cache hit for GetSourceByPublicID but value has unexpected type, ignoring cache")
 	}
 
 	var publicUUID pgtype.UUID
@@ -62,7 +69,7 @@ func (svc *Service) GetSourceByPublicID(
 	}
 
 	svc.Cache.SetWithTTL(
-		fmt.Sprintf(cacheKey, publicID),
+		cacheKey,
 		source,
 		cacheCost,
 		time.Duration(svc.Config.APICacheSourceTTLSec)*time.Second,

@@ -44,7 +44,7 @@ func loadEnvs[T any](config *T) error {
 				envName,
 				field.Name,
 				envOptions,
-				32,
+				strconv.IntSize,
 			); err != nil {
 				return err
 			}

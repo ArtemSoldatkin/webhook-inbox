@@ -32,7 +32,14 @@ func (svc *Service) GetEventByID(ctx context.Context, eventID int64) (db.Event, 
 	cacheKey := fmt.Sprintf("GetEventByID|%d", eventID)
 
 	if cachedEvent, ok := svc.Cache.Get(cacheKey); ok {
-		return cachedEvent.(db.Event), nil
+		event, ok := cachedEvent.(db.Event)
+		if ok {
+			return event, nil
+		}
+
+		logrus.
+			WithField("event_id", eventID).
+			Warning("cache hit for GetEventByID but value has unexpected type, ignoring cache")
 	}
 
 	event, err := svc.queries.GetEventByID(ctx, eventID)
@@ -45,7 +52,7 @@ func (svc *Service) GetEventByID(ctx context.Context, eventID int64) (db.Event, 
 		logrus.
 			WithError(err).
 			WithField("event_id", event.ID).
-			Warning("failed to estimate cache cost for source, using default cost")
+			Warning("failed to estimate cache cost for event, using default cost")
 		cacheCost = svc.Config.APICacheDefaultCost
 	}
 
