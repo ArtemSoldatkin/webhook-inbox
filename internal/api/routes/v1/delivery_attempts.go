@@ -30,6 +30,12 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		if eventID <= 0 {
+			logrus.Error("Event ID must be a positive integer")
+			http.Error(w, "Event ID must be a positive integer", http.StatusBadRequest)
+			return
+		}
+
 		pageSize, cursor, err := api.ParsePaginationParams(
 			r.URL.Query(),
 			svc.Config.APIDefaultPageSize,

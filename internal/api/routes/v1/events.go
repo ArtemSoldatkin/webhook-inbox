@@ -46,6 +46,12 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		if sourceID <= 0 {
+			logrus.WithField("source_id", sourceID).Error("Source ID must be a positive integer")
+			http.Error(w, "Source ID must be a positive integer", http.StatusBadRequest)
+			return
+		}
+
 		events, err := svc.ListEvents(r.Context(), sourceID, cursor, pageSize)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list events")
@@ -142,10 +148,16 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		if eventID <= 0 {
+			logrus.WithField("event_id", eventID).Error("Event ID must be a positive integer")
+			http.Error(w, "Event ID must be a positive integer", http.StatusBadRequest)
+			return
+		}
+
 		event, err := svc.GetEventByID(r.Context(), eventID)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to get event")
-			http.Error(w, "Failed to get event", http.StatusInternalServerError)
+			http.Error(w, "Failed to get event", http.StatusNotFound)
 			return
 		}
 

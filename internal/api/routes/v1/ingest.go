@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
+	"regexp"
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
@@ -15,6 +16,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
 )
+
+var uuidRegexp = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
 
 // ingestEvent handles ANY requests to ingest a new event.
 func ingestEvent(svc *service.Service) http.HandlerFunc {
@@ -26,8 +29,10 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			"path":      r.URL.Path,
 			"query":     r.URL.RawQuery,
 		}).Debug("Received ingestEvent request")
-		if publicID == "" {
-			http.Error(w, "public_id is required", http.StatusBadRequest)
+
+		if !validatePublicID(publicID) {
+			logrus.WithField("public_id", publicID).Errorf("Invalid public_id")
+			http.Error(w, "Invalid public_id", http.StatusBadRequest)
 			return
 		}
 
@@ -155,6 +160,11 @@ func generateDedupHash(dedupPayload DedupPayload) (string, error) {
 	}
 	hash := sha256.Sum256(dedupData)
 	return hex.EncodeToString(hash[:]), nil
+}
+
+// validatePublicID checks if the provided public ID matches the expected UUID format.
+func validatePublicID(publicID string) bool {
+	return uuidRegexp.MatchString(publicID)
 }
 
 // ingestRouter sets up the router for event ingestion endpoints.
