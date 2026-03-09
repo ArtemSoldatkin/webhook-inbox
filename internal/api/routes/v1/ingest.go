@@ -33,7 +33,7 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 		}).Debug("Received ingestEvent request")
 
 		if !validatePublicID(publicID) {
-			logrus.WithField("public_id", publicID).Errorf("Invalid public_id")
+			logrus.WithField("public_id", publicID).Error("Invalid public_id")
 			http.Error(w, "Invalid public_id", http.StatusBadRequest)
 			return
 		}
