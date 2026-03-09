@@ -2,6 +2,8 @@ package routev1
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -15,6 +17,7 @@ import (
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
 )
@@ -163,8 +166,13 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 
 		source, err := svc.GetSourceByID(r.Context(), sourceID)
 		if err != nil {
-			logrus.WithError(err).Error("Failed to get source by ID")
-			http.Error(w, "Failed to get source", http.StatusNotFound)
+			if errors.Is(err, pgx.ErrNoRows) {
+				logrus.WithField("source_id", sourceID).Info("Source not found")
+				http.Error(w, "Source not found", http.StatusNotFound)
+				return
+			}
+			logrus.WithField("source_id", sourceID).WithError(err).Error("Failed to get source")
+			http.Error(w, "Failed to get source", http.StatusInternalServerError)
 			return
 		}
 
@@ -251,14 +259,11 @@ func createSource(svc *service.Service) http.HandlerFunc {
 
 		if len(data.Description) > maxDescriptionLen {
 			logrus.Error("Description too long")
-			http.Error(w, "Description must be 500 characters or less", http.StatusBadRequest)
-			return
-		}
-
-		staticHeaders, staticHeadersErr := json.Marshal(data.StaticHeaders)
-		if staticHeadersErr != nil {
-			logrus.WithError(staticHeadersErr).Error("Failed to marshal static headers")
-			http.Error(w, "Invalid static headers", http.StatusBadRequest)
+			http.Error(
+				w,
+				fmt.Sprintf("Description must be %d characters or less", maxDescriptionLen),
+				http.StatusBadRequest,
+			)
 			return
 		}
 
@@ -271,6 +276,13 @@ func createSource(svc *service.Service) http.HandlerFunc {
 				http.Error(w, "Header key or value too long", http.StatusBadRequest)
 				return
 			}
+		}
+
+		staticHeaders, staticHeadersErr := json.Marshal(data.StaticHeaders)
+		if staticHeadersErr != nil {
+			logrus.WithError(staticHeadersErr).Error("Failed to marshal static headers")
+			http.Error(w, "Invalid static headers", http.StatusBadRequest)
+			return
 		}
 
 		if !validateEgressUrl(data.EgressUrl, svc.Config.Env) {

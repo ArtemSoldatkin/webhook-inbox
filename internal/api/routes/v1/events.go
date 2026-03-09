@@ -2,6 +2,7 @@ package routev1
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 )
 
@@ -156,8 +158,13 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 
 		event, err := svc.GetEventByID(r.Context(), eventID)
 		if err != nil {
-			logrus.WithError(err).Error("Failed to get event")
-			http.Error(w, "Failed to get event", http.StatusNotFound)
+			if errors.Is(err, pgx.ErrNoRows) {
+				logrus.WithField("event_id", eventID).Info("Event not found")
+				http.Error(w, "Event not found", http.StatusNotFound)
+				return
+			}
+			logrus.WithField("event_id", eventID).WithError(err).Error("Failed to get event")
+			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
 		}
 

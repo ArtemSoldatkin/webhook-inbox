@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
 )
@@ -38,10 +40,13 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 
 		source, err := svc.GetSourceByPublicID(r.Context(), publicID)
 		if err != nil {
-			logrus.
-				WithError(err).
-				Errorf("Failed to retrieve source for public_id: %s", publicID)
-			http.Error(w, "Source not found", http.StatusNotFound)
+			if errors.Is(err, pgx.ErrNoRows) {
+				logrus.WithField("public_id", publicID).Info("Source not found")
+				http.Error(w, "Source not found", http.StatusNotFound)
+				return
+			}
+			logrus.WithField("public_id", publicID).WithError(err).Error("Failed to get source")
+			http.Error(w, "Failed to get source", http.StatusInternalServerError)
 			return
 		}
 
