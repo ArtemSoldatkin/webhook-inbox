@@ -19,9 +19,10 @@ type Config struct {
 	APIHost     string `env:"API_HOST,required"`
 	APIPort     int    `env:"API_PORT,required"`
 
-	APIRateLimitRequests       int `env:"API_RATE_LIMIT_REQUESTS,default:100,min:1,max:1000"`
-	APIRateLimitWindowSec      int `env:"API_RATE_LIMIT_WINDOW_SEC,default:60,min:1,max:3600"`
-	APIThrottleConcurrentLimit int `env:"API_THROTTLE_CONCURRENT_LIMIT,default:100,min:1,max:1000"`
+	APIRateLimitRequests       int   `env:"API_RATE_LIMIT_REQUESTS,default:100,min:1,max:1000"`
+	APIRateLimitWindowSec      int   `env:"API_RATE_LIMIT_WINDOW_SEC,default:60,min:1,max:3600"`
+	APIThrottleConcurrentLimit int   `env:"API_THROTTLE_CONCURRENT_LIMIT,default:100,min:1,max:1000"`
+	APIRequestSizeLimitBytes   int64 `env:"API_REQUEST_SIZE_LIMIT_BYTES,default:10485760,min:1024,max:104857600"`
 
 	APICacheNumCounters int64 `env:"API_CACHE_NUM_COUNTERS,default:10000000,min:1000,max:100000000"`
 	APICacheMaxCost     int64 `env:"API_CACHE_MAX_COST,default:1073741824,min:1048576,max:10737418240"`

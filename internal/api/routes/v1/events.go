@@ -2,6 +2,7 @@ package routev1
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,6 +45,12 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 		if err != nil {
 			logrus.WithError(err).Error("Invalid source ID")
 			http.Error(w, "Invalid source ID", http.StatusBadRequest)
+			return
+		}
+
+		if sourceID <= 0 {
+			logrus.WithField("source_id", sourceID).Error("Source ID must be a positive integer")
+			http.Error(w, "Source ID must be a positive integer", http.StatusBadRequest)
 			return
 		}
 
@@ -142,9 +150,20 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		if eventID <= 0 {
+			logrus.WithField("event_id", eventID).Error("Event ID must be a positive integer")
+			http.Error(w, "Event ID must be a positive integer", http.StatusBadRequest)
+			return
+		}
+
 		event, err := svc.GetEventByID(r.Context(), eventID)
 		if err != nil {
-			logrus.WithError(err).Error("Failed to get event")
+			if errors.Is(err, pgx.ErrNoRows) {
+				logrus.WithField("event_id", eventID).Info("Event not found")
+				http.Error(w, "Event not found", http.StatusNotFound)
+				return
+			}
+			logrus.WithField("event_id", eventID).WithError(err).Error("Failed to get event")
 			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
 		}

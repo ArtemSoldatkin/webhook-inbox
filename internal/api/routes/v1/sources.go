@@ -2,6 +2,8 @@ package routev1
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -15,8 +17,16 @@ import (
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	maxDescriptionLen = 500
+	maxHeaders        = 20
+	maxHeaderKeyLen   = 100
+	maxHeaderValueLen = 500
 )
 
 var (
@@ -148,9 +158,20 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		if sourceID <= 0 {
+			logrus.WithField("source_id", sourceID).Error("Source ID must be a positive integer")
+			http.Error(w, "Source ID must be a positive integer", http.StatusBadRequest)
+			return
+		}
+
 		source, err := svc.GetSourceByID(r.Context(), sourceID)
 		if err != nil {
-			logrus.WithError(err).Error("Failed to get source by ID")
+			if errors.Is(err, pgx.ErrNoRows) {
+				logrus.WithField("source_id", sourceID).Info("Source not found")
+				http.Error(w, "Source not found", http.StatusNotFound)
+				return
+			}
+			logrus.WithField("source_id", sourceID).WithError(err).Error("Failed to get source")
 			http.Error(w, "Failed to get source", http.StatusInternalServerError)
 			return
 		}
@@ -212,7 +233,6 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 
 // CreateSourceData defines the parameters required to create a new source.
 type CreateSourceData struct {
-	IngressUrl    string            `json:"IngressUrl"`
 	EgressUrl     string            `json:"EgressUrl"`
 	StaticHeaders map[string]string `json:"StaticHeaders,omitempty"`
 	Description   string            `json:"Description,omitempty"`
@@ -236,6 +256,27 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			"egress_url":  data.EgressUrl,
 			"description": data.Description,
 		}).Debug("Create source request data")
+
+		if len(data.Description) > maxDescriptionLen {
+			logrus.Error("Description too long")
+			http.Error(
+				w,
+				fmt.Sprintf("Description must be %d characters or less", maxDescriptionLen),
+				http.StatusBadRequest,
+			)
+			return
+		}
+
+		if len(data.StaticHeaders) > maxHeaders {
+			http.Error(w, "Too many headers", http.StatusBadRequest)
+			return
+		}
+		for k, v := range data.StaticHeaders {
+			if len(k) > maxHeaderKeyLen || len(v) > maxHeaderValueLen {
+				http.Error(w, "Header key or value too long", http.StatusBadRequest)
+				return
+			}
+		}
 
 		staticHeaders, staticHeadersErr := json.Marshal(data.StaticHeaders)
 		if staticHeadersErr != nil {
@@ -306,6 +347,9 @@ func createSource(svc *service.Service) http.HandlerFunc {
 // with no user input, the risk is low. If the tool becomes public or user-facing, keep/enhance this check.
 // validateEgressUrl checks if the provided egress URL is valid and does not point to local or private network addresses.
 func validateEgressUrl(egressUrl, env string) bool {
+	if egressUrl == "" {
+		return false
+	}
 	parsedUrl, err := url.Parse(egressUrl)
 	if err != nil {
 		return false
