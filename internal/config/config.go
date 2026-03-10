@@ -24,6 +24,8 @@ type Config struct {
 	APIThrottleConcurrentLimit int   `env:"API_THROTTLE_CONCURRENT_LIMIT,default:100,min:1,max:1000"`
 	APIRequestSizeLimitBytes   int64 `env:"API_REQUEST_SIZE_LIMIT_BYTES,default:10485760,min:1024,max:104857600"`
 
+	APICORSMaxAgeSec int `env:"API_CORS_MAX_AGE_SEC,default:300,min:60,max:3600"`
+
 	APICacheNumCounters int64 `env:"API_CACHE_NUM_COUNTERS,default:10000000,min:1000,max:100000000"`
 	APICacheMaxCost     int64 `env:"API_CACHE_MAX_COST,default:1073741824,min:1048576,max:10737418240"`
 	APICacheBufferItems int64 `env:"API_CACHE_BUFFER_ITEMS,default:64,min:1,max:1024"`
@@ -48,6 +50,10 @@ type Config struct {
 
 	APIRecoveryIntervalSec int `env:"API_RECOVERY_INTERVAL_SEC,default:300,min:300,max:3600"`
 	APIRecoveryTimeoutSec  int `env:"API_RECOVERY_TIMEOUT_SEC,default:15,min:5,max:60"`
+
+	UIProtocol string `env:"UI_PROTOCOL,required,allowed:http|https"`
+	UIHost     string `env:"UI_HOST,required"`
+	UIPort     int    `env:"UI_PORT,required"`
 }
 
 // LoadConfig loads configuration from environment variables.
