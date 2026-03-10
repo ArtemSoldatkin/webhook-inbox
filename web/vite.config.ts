@@ -10,8 +10,8 @@ export default defineConfig({
 		port: Number(env.UI_PORT),
 		...(env.UI_PROTOCOL === 'https' && {
 			https: {
-				key: fs.readFileSync('./certs/dev.key'),
-				cert: fs.readFileSync('./certs/dev.crt')
+				key: fs.readFileSync(env.UI_HTTPS_KEY_PATH),
+				cert: fs.readFileSync(env.UI_HTTPS_CERT_PATH)
 			}
 		}),
 		proxy: {
