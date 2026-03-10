@@ -1,10 +1,19 @@
 import { sveltekit } from '@sveltejs/kit/vite';
+import fs from 'fs';
 import { defineConfig } from 'vite';
 import env from './env';
 
 export default defineConfig({
 	plugins: [sveltekit()],
 	server: {
+		host: env.UI_HOST,
+		port: Number(env.UI_PORT),
+		...(env.UI_PROTOCOL === 'https' && {
+			https: {
+				key: fs.readFileSync('./certs/dev.key'),
+				cert: fs.readFileSync('./certs/dev.crt')
+			}
+		}),
 		proxy: {
 			'/api': {
 				target: `${env.API_PROTOCOL}://${env.API_HOST}:${env.API_PORT}/api/v1`,
