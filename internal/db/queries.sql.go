@@ -291,19 +291,26 @@ WHERE
             created_at = $2 AND
             id < $3
         )
+    ) AND
+    (
+        state ILIKE '%' || $4 || '%' OR
+        status_code::text ILIKE '%' || $4 || '%' OR
+        error_type ILIKE '%' || $4 || '%' OR
+        error_message ILIKE '%' || $4 || '%'
     )
 ORDER BY
     created_at DESC
     , id DESC
 LIMIT
-    $4+ 1
+    $5+ 1
 `
 
 type ListDeliveryAttemptsByEventParams struct {
-	EventID  int64
-	CursorTs interface{}
-	CursorID int64
-	PageSize int32
+	EventID     int64
+	CursorTs    interface{}
+	CursorID    int64
+	SearchQuery pgtype.Text
+	PageSize    int32
 }
 
 func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliveryAttemptsByEventParams) ([]DeliveryAttempt, error) {
@@ -311,6 +318,7 @@ func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliv
 		arg.EventID,
 		arg.CursorTs,
 		arg.CursorID,
+		arg.SearchQuery,
 		arg.PageSize,
 	)
 	if err != nil {
@@ -367,19 +375,26 @@ WHERE
             received_at = $2 AND
             id < $3
         )
+    ) AND
+    (
+        dedup_hash ILIKE '%' || $4 || '%' OR
+        method ILIKE '%' || $4 || '%' OR
+        ingress_path ILIKE '%' || $4 || '%' OR
+        remote_address ILIKE '%' || $4 || '%'
     )
 ORDER BY
     received_at DESC
     , id DESC
 LIMIT
-    $4+ 1
+    $5+ 1
 `
 
 type ListEventsBySourceParams struct {
-	SourceID int64
-	CursorTs interface{}
-	CursorID int64
-	PageSize int32
+	SourceID    int64
+	CursorTs    interface{}
+	CursorID    int64
+	SearchQuery pgtype.Text
+	PageSize    int32
 }
 
 func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySourceParams) ([]Event, error) {
@@ -387,6 +402,7 @@ func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySource
 		arg.SourceID,
 		arg.CursorTs,
 		arg.CursorID,
+		arg.SearchQuery,
 		arg.PageSize,
 	)
 	if err != nil {
@@ -441,22 +457,33 @@ WHERE
             updated_at = $1 AND
             id < $2
         )
+    ) AND
+    (
+        egress_url ILIKE '%' || $3 || '%' OR
+        description ILIKE '%' || $3 || '%' OR
+        public_id::text ILIKE '%' || $3 || '%'
     )
 ORDER BY
     updated_at DESC
     , id DESC
 LIMIT
-    $3+ 1
+    $4+ 1
 `
 
 type ListSourcesParams struct {
-	CursorTs interface{}
-	CursorID int64
-	PageSize int32
+	CursorTs    interface{}
+	CursorID    int64
+	SearchQuery pgtype.Text
+	PageSize    int32
 }
 
 func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Source, error) {
-	rows, err := q.db.Query(ctx, listSources, arg.CursorTs, arg.CursorID, arg.PageSize)
+	rows, err := q.db.Query(ctx, listSources,
+		arg.CursorTs,
+		arg.CursorID,
+		arg.SearchQuery,
+		arg.PageSize,
+	)
 	if err != nil {
 		return nil, err
 	}

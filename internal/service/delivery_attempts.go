@@ -6,6 +6,7 @@ import (
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // This file contains service methods related to managing delivery attempts,
@@ -23,6 +24,7 @@ func (svc *Service) ListDeliveryAttempts(
 	eventID int64,
 	cursor api.Cursor,
 	pageSize int,
+	searchQuery string,
 ) ([]db.DeliveryAttempt, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListDeliveryAttemptsByEvent(
@@ -31,6 +33,10 @@ func (svc *Service) ListDeliveryAttempts(
 			EventID:  eventID,
 			CursorTs: cursorTS,
 			CursorID: cursorID,
+			SearchQuery: pgtype.Text{
+				String: searchQuery,
+				Valid:  searchQuery != "",
+			},
 			PageSize: int32(pageSize),
 		},
 	)

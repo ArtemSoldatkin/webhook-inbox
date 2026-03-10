@@ -34,10 +34,13 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 
 		sourceIDRaw := chi.URLParam(r, "sourceID")
 
+		searchQuery := r.URL.Query().Get("search")
+
 		logrus.WithFields(logrus.Fields{
 			"source_id": sourceIDRaw,
 			"pageSize":  pageSize,
 			"cursor":    cursor,
+			"search":    searchQuery,
 			"query":     r.URL.RawQuery,
 		}).Debug("Received listEvents request")
 
@@ -54,7 +57,13 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		events, err := svc.ListEvents(r.Context(), sourceID, cursor, pageSize)
+		events, err := svc.ListEvents(
+			r.Context(),
+			sourceID,
+			cursor,
+			pageSize,
+			searchQuery,
+		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list events")
 			http.Error(w, "Failed to list events", http.StatusInternalServerError)

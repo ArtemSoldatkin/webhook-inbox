@@ -20,6 +20,11 @@ WHERE
             updated_at = @cursor_ts AND
             id < @cursor_id
         )
+    ) AND
+    (
+        egress_url ILIKE '%' || @search_query || '%' OR
+        description ILIKE '%' || @search_query || '%' OR
+        public_id::text ILIKE '%' || @search_query || '%'
     )
 ORDER BY
     updated_at DESC
@@ -97,6 +102,12 @@ WHERE
             received_at = @cursor_ts AND
             id < @cursor_id
         )
+    ) AND
+    (
+        dedup_hash ILIKE '%' || @search_query || '%' OR
+        method ILIKE '%' || @search_query || '%' OR
+        ingress_path ILIKE '%' || @search_query || '%' OR
+        remote_address ILIKE '%' || @search_query || '%'
     )
 ORDER BY
     received_at DESC
@@ -172,6 +183,12 @@ WHERE
             created_at = @cursor_ts AND
             id < @cursor_id
         )
+    ) AND
+    (
+        state ILIKE '%' || @search_query || '%' OR
+        status_code::text ILIKE '%' || @search_query || '%' OR
+        error_type ILIKE '%' || @search_query || '%' OR
+        error_message ILIKE '%' || @search_query || '%'
     )
 ORDER BY
     created_at DESC

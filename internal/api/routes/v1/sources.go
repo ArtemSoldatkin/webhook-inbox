@@ -55,13 +55,21 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		searchQuery := r.URL.Query().Get("search")
+
 		logrus.WithFields(logrus.Fields{
 			"pageSize": pageSize,
 			"cursor":   cursor,
+			"search":   searchQuery,
 			"query":    r.URL.RawQuery,
 		}).Debug("Received listSources request")
 
-		sources, err := svc.ListSources(r.Context(), cursor, pageSize)
+		sources, err := svc.ListSources(
+			r.Context(),
+			cursor,
+			pageSize,
+			searchQuery,
+		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list sources")
 			http.Error(w, "Failed to list sources", http.StatusInternalServerError)

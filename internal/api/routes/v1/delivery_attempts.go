@@ -18,8 +18,11 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		eventIDRaw := chi.URLParam(r, "eventID")
 
+		searchQuery := r.URL.Query().Get("search")
+
 		logrus.WithFields(logrus.Fields{
 			"event_id": eventIDRaw,
+			"search":   searchQuery,
 			"query":    r.URL.RawQuery,
 		}).Debug("Received listDeliveryAttempts request")
 
@@ -50,7 +53,13 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		deliveryAttempts, err := svc.ListDeliveryAttempts(r.Context(), eventID, cursor, pageSize)
+		deliveryAttempts, err := svc.ListDeliveryAttempts(
+			r.Context(),
+			eventID,
+			cursor,
+			pageSize,
+			searchQuery,
+		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list delivery attempts")
 			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)

@@ -17,11 +17,16 @@ func (svc *Service) ListSources(
 	ctx context.Context,
 	cursor api.Cursor,
 	pageSize int,
+	searchQuery string,
 ) ([]db.Source, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListSources(ctx, db.ListSourcesParams{
 		CursorTs: cursorTS,
 		CursorID: cursorID,
+		SearchQuery: pgtype.Text{
+			String: searchQuery,
+			Valid:  searchQuery != "",
+		},
 		PageSize: int32(pageSize),
 	})
 }

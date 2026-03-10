@@ -8,6 +8,7 @@ import (
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,12 +18,17 @@ func (svc *Service) ListEvents(
 	sourceID int64,
 	cursor api.Cursor,
 	pageSize int,
+	searchQuery string,
 ) ([]db.Event, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListEventsBySource(ctx, db.ListEventsBySourceParams{
 		SourceID: sourceID,
 		CursorTs: cursorTS,
 		CursorID: cursorID,
+		SearchQuery: pgtype.Text{
+			String: searchQuery,
+			Valid:  searchQuery != "",
+		},
 		PageSize: int32(pageSize),
 	})
 }
