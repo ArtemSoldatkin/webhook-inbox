@@ -11,10 +11,19 @@ import (
 	"github.com/go-chi/httprate"
 
 	"github.com/go-chi/cors"
+
+	"github.com/unrolled/secure"
 )
 
 // V1Router sets up and returns the router for API version 1.
 func V1Router(svc *service.Service) chi.Router {
+	secureMiddleware := secure.New(secure.Options{
+		FrameDeny:          true,
+		ContentTypeNosniff: true,
+		BrowserXssFilter:   true,
+		ReferrerPolicy:     "strict-origin-when-cross-origin",
+	})
+
 	r := chi.NewRouter()
 
 	r.Use(cors.Handler(cors.Options{
@@ -32,6 +41,8 @@ func V1Router(svc *service.Service) chi.Router {
 	))
 	r.Use(middleware.Throttle(svc.Config.APIThrottleConcurrentLimit))
 	r.Use(middleware.RequestSize(svc.Config.APIRequestSizeLimitBytes))
+
+	r.Use(secureMiddleware.Handler)
 
 	r.Mount("/ingest", ingestRouter(svc))
 	r.Mount("/sources", sourcesRouter(svc))
