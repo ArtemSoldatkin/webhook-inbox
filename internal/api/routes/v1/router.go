@@ -26,6 +26,8 @@ func V1Router(svc *service.Service) chi.Router {
 
 	r := chi.NewRouter()
 
+	r.Use(secureMiddleware.Handler)
+
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{
 			fmt.Sprintf("%s://%s:%d", svc.Config.UIProtocol, svc.Config.UIHost, svc.Config.UIPort),
@@ -41,8 +43,6 @@ func V1Router(svc *service.Service) chi.Router {
 	))
 	r.Use(middleware.Throttle(svc.Config.APIThrottleConcurrentLimit))
 	r.Use(middleware.RequestSize(svc.Config.APIRequestSizeLimitBytes))
-
-	r.Use(secureMiddleware.Handler)
 
 	r.Mount("/ingest", ingestRouter(svc))
 	r.Mount("/sources", sourcesRouter(svc))
