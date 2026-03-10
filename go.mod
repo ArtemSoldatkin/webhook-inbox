@@ -9,6 +9,7 @@ require (
 	github.com/go-chi/httprate v0.15.0
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/sirupsen/logrus v1.9.4
+	github.com/unrolled/secure v1.17.0
 )
 
 require (
