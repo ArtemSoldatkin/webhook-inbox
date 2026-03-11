@@ -23,15 +23,17 @@ func (svc *Service) ListDeliveryAttempts(
 	eventID int64,
 	cursor api.Cursor,
 	pageSize int,
+	searchQuery string,
 ) ([]db.DeliveryAttempt, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListDeliveryAttemptsByEvent(
 		ctx,
 		db.ListDeliveryAttemptsByEventParams{
-			EventID:  eventID,
-			CursorTs: cursorTS,
-			CursorID: cursorID,
-			PageSize: int32(pageSize),
+			EventID:     eventID,
+			CursorTs:    cursorTS,
+			CursorID:    cursorID,
+			SearchQuery: searchQuery,
+			PageSize:    int32(pageSize),
 		},
 	)
 }

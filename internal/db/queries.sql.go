@@ -283,27 +283,39 @@ SELECT
 FROM
     delivery_attempts
 WHERE
-    event_id = $1 AND
     (
-        $2 IS NULL OR
-        created_at < $2 OR
+        event_id = $1 AND
         (
-            created_at = $2 AND
-            id < $3
+            $2::timestamptz IS NULL OR
+            created_at < $2::timestamptz OR
+            (
+                created_at = $2::timestamptz AND
+                id < $3
+            )
+        )
+    ) AND
+    (
+        $4::text IS NULL OR $4::text = '' OR
+        (
+            state ILIKE '%' || $4::text || '%' OR
+            status_code::text ILIKE '%' || $4::text || '%' OR
+            error_type ILIKE '%' || $4::text || '%' OR
+            error_message ILIKE '%' || $4::text || '%'
         )
     )
 ORDER BY
     created_at DESC
     , id DESC
 LIMIT
-    $4+ 1
+    $5+ 1
 `
 
 type ListDeliveryAttemptsByEventParams struct {
-	EventID  int64
-	CursorTs interface{}
-	CursorID int64
-	PageSize int32
+	EventID     int64
+	CursorTs    pgtype.Timestamptz
+	CursorID    int64
+	SearchQuery string
+	PageSize    int32
 }
 
 func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliveryAttemptsByEventParams) ([]DeliveryAttempt, error) {
@@ -311,6 +323,7 @@ func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliv
 		arg.EventID,
 		arg.CursorTs,
 		arg.CursorID,
+		arg.SearchQuery,
 		arg.PageSize,
 	)
 	if err != nil {
@@ -359,27 +372,39 @@ SELECT
 FROM
     events
 WHERE
-    source_id = $1 AND
     (
-        $2 IS NULL OR
-        received_at < $2 OR
+        source_id = $1 AND
         (
-            received_at = $2 AND
-            id < $3
+            $2::timestamptz IS NULL OR
+            received_at < $2::timestamptz OR
+            (
+                received_at = $2::timestamptz AND
+                id < $3
+            )
+        )
+    ) AND
+    (
+        $4::text IS NULL OR $4::text = '' OR
+        (
+            dedup_hash ILIKE '%' || $4::text || '%' OR
+            method ILIKE '%' || $4::text || '%' OR
+            ingress_path ILIKE '%' || $4::text || '%' OR
+            remote_address::text ILIKE '%' || $4::text || '%'
         )
     )
 ORDER BY
     received_at DESC
     , id DESC
 LIMIT
-    $4+ 1
+    $5+ 1
 `
 
 type ListEventsBySourceParams struct {
-	SourceID int64
-	CursorTs interface{}
-	CursorID int64
-	PageSize int32
+	SourceID    int64
+	CursorTs    pgtype.Timestamptz
+	CursorID    int64
+	SearchQuery string
+	PageSize    int32
 }
 
 func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySourceParams) ([]Event, error) {
@@ -387,6 +412,7 @@ func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySource
 		arg.SourceID,
 		arg.CursorTs,
 		arg.CursorID,
+		arg.SearchQuery,
 		arg.PageSize,
 	)
 	if err != nil {
@@ -434,29 +460,45 @@ SELECT
 FROM
     sources
 WHERE
-    $1 IS NULL OR
     (
-        updated_at < $1 OR
+        $1::timestamptz IS NULL OR
         (
-            updated_at = $1 AND
-            id < $2
+            updated_at < $1::timestamptz OR
+            (
+                updated_at = $1::timestamptz AND
+                id < $2
+            )
+        )
+    ) AND
+    (
+        $3::text IS NULL OR $3::text = '' OR
+        (
+            egress_url ILIKE '%' || $3::text || '%' OR
+            description ILIKE '%' || $3::text || '%' OR
+            public_id::text ILIKE '%' || $3::text || '%'
         )
     )
 ORDER BY
     updated_at DESC
     , id DESC
 LIMIT
-    $3+ 1
+    $4+ 1
 `
 
 type ListSourcesParams struct {
-	CursorTs interface{}
-	CursorID int64
-	PageSize int32
+	CursorTs    pgtype.Timestamptz
+	CursorID    int64
+	SearchQuery string
+	PageSize    int32
 }
 
 func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Source, error) {
-	rows, err := q.db.Query(ctx, listSources, arg.CursorTs, arg.CursorID, arg.PageSize)
+	rows, err := q.db.Query(ctx, listSources,
+		arg.CursorTs,
+		arg.CursorID,
+		arg.SearchQuery,
+		arg.PageSize,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -525,8 +567,8 @@ LIMIT
     $1
 `
 
-func (q *Queries) SelectPendingDeliveryAttemptIDs(ctx context.Context, limit int32) ([]int64, error) {
-	rows, err := q.db.Query(ctx, selectPendingDeliveryAttemptIDs, limit)
+func (q *Queries) SelectPendingDeliveryAttemptIDs(ctx context.Context, batchSize int32) ([]int64, error) {
+	rows, err := q.db.Query(ctx, selectPendingDeliveryAttemptIDs, batchSize)
 	if err != nil {
 		return nil, err
 	}
@@ -608,8 +650,8 @@ type UpdateDeliveryAttemptsToInFlightRow struct {
 	AttemptNumber int32
 }
 
-func (q *Queries) UpdateDeliveryAttemptsToInFlight(ctx context.Context, dollar_1 []int64) ([]UpdateDeliveryAttemptsToInFlightRow, error) {
-	rows, err := q.db.Query(ctx, updateDeliveryAttemptsToInFlight, dollar_1)
+func (q *Queries) UpdateDeliveryAttemptsToInFlight(ctx context.Context, batchIds []int64) ([]UpdateDeliveryAttemptsToInFlightRow, error) {
+	rows, err := q.db.Query(ctx, updateDeliveryAttemptsToInFlight, batchIds)
 	if err != nil {
 		return nil, err
 	}

@@ -39,6 +39,8 @@ type Config struct {
 	APIMinPageSize     int `env:"API_MIN_PAGE_SIZE,default:1,min:1,max:100"`
 	APIMaxPageSize     int `env:"API_MAX_PAGE_SIZE,default:100,min:1,max:100"`
 
+	APIMaxSearchQueryLength int `env:"API_MAX_SEARCH_QUERY_LENGTH,default:512,min:1,max:1024"`
+
 	APIDeliveryIntervalSec       int `env:"API_DELIVERY_INTERVAL_SEC,default:30,min:10,max:60"`
 	APIDeliveryMaxConcurrency    int `env:"API_DELIVERY_MAX_CONCURRENCY,default:10,min:1,max:100"`
 	APIDeliveryTimeoutSec        int `env:"API_DELIVERY_TIMEOUT_SEC,default:15,min:5,max:60"`

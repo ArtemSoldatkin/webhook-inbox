@@ -3,11 +3,13 @@ import type { PaginatedResponse } from './types';
 export async function fetchPaginatedData<T>(
 	url: string,
 	pageSize: number,
-	nextCursor: string | null
+	nextCursor: string | null,
+	urlSearchParams: Record<string, string> = {}
 ): Promise<PaginatedResponse<T>> {
 	const params = new URLSearchParams({
 		limit: pageSize.toString(),
-		cursor: nextCursor || ''
+		cursor: nextCursor || '',
+		...urlSearchParams
 	});
 	const response = await fetch(`${url}?${params.toString()}`);
 	if (!response.ok) {
