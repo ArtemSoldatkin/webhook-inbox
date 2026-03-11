@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { fetchPaginatedData } from '$lib/api';
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
+	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import { parseEventDTO } from '$lib/dtoParsers';
 	import type { EventDTO } from '$lib/types';
@@ -17,6 +18,8 @@
 	let nextCursor: string | null = null;
 	let hasNext: boolean = false;
 
+	let searchQuery: string = '';
+
 	async function fetchEvents() {
 		loading = true;
 		error = null;
@@ -24,7 +27,10 @@
 			const result = await fetchPaginatedData(
 				`/api/sources/${sourceID}/events`,
 				pageSize,
-				nextCursor
+				nextCursor,
+				{
+					search: searchQuery
+				}
 			);
 			data = [...data, ...result.data.map(parseEventDTO)];
 			nextCursor = result.next_cursor;
@@ -49,6 +55,7 @@
 	}
 </script>
 
+<FilterBar bind:searchQuery onSearch={resetAndFetchEvents} />
 <button on:click={resetAndFetchEvents} disabled={loading}>Refresh Events</button>
 {#if loading}
 	<p>Loading events...</p>

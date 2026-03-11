@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { fetchPaginatedData } from '$lib/api';
+	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dtoParsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
@@ -15,6 +16,8 @@
 	let nextCursor: string | null = null;
 	let hasNext: boolean = false;
 
+	let searchQuery: string = '';
+
 	async function fetchDeliveryAttempts() {
 		loading = true;
 		error = null;
@@ -22,7 +25,10 @@
 			const result = await fetchPaginatedData(
 				`/api/sources/${sourceID}/events/${eventID}/delivery-attempts`,
 				pageSize,
-				nextCursor
+				nextCursor,
+				{
+					search: searchQuery
+				}
 			);
 			data = [...data, ...result.data.map(parseDeliveryAttemptDTO)];
 			nextCursor = result.next_cursor;
@@ -47,6 +53,7 @@
 	}
 </script>
 
+<FilterBar bind:searchQuery onSearch={resetAndFetchDeliveryAttempts} />
 <button on:click={resetAndFetchDeliveryAttempts} disabled={loading}>Refresh Events</button>
 <h3>Delivery Attempts</h3>
 {#if loading}
@@ -58,7 +65,7 @@
 		<p>No delivery attempts found for this event.</p>
 	{:else}
 		<ul>
-			{#each data as attempt}
+			{#each data as attempt (attempt.id)}
 				<li>
 					<section>
 						<h3>Attempt ID: {attempt.id}</h3>
@@ -80,7 +87,7 @@
 						</p>
 						<p>Created at: {new Date(attempt.created_at).toLocaleString()}</p>
 						<p>
-							Next attempt at:{' '}
+							Next attempt at:
 							{attempt.next_attempt_at ? new Date(attempt.next_attempt_at).toLocaleString() : 'N/A'}
 						</p>
 					</section>

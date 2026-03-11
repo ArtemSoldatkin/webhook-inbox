@@ -19,6 +19,11 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 		eventIDRaw := chi.URLParam(r, "eventID")
 
 		searchQuery := r.URL.Query().Get("search")
+		if len(searchQuery) > svc.Config.APIMaxSearchQueryLength {
+			logrus.WithField("search_query_length", len(searchQuery)).Error("Search query is too long")
+			http.Error(w, "Search query is too long", http.StatusBadRequest)
+			return
+		}
 
 		logrus.WithFields(logrus.Fields{
 			"event_id": eventIDRaw,

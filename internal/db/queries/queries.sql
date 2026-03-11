@@ -13,18 +13,23 @@ SELECT
 FROM
     sources
 WHERE
-    @cursor_ts IS NULL OR
     (
-        updated_at < @cursor_ts OR
+        @cursor_ts::timestamptz IS NULL OR
         (
-            updated_at = @cursor_ts AND
-            id < @cursor_id
+            updated_at < @cursor_ts::timestamptz OR
+            (
+                updated_at = @cursor_ts::timestamptz AND
+                id < @cursor_id
+            )
         )
     ) AND
     (
-        egress_url ILIKE '%' || @search_query || '%' OR
-        description ILIKE '%' || @search_query || '%' OR
-        public_id::text ILIKE '%' || @search_query || '%'
+        @search_query::text IS NULL OR @search_query::text = '' OR
+        (
+            egress_url ILIKE '%' || @search_query::text || '%' OR
+            description ILIKE '%' || @search_query::text || '%' OR
+            public_id::text ILIKE '%' || @search_query::text || '%'
+        )
     )
 ORDER BY
     updated_at DESC
@@ -94,20 +99,25 @@ SELECT
 FROM
     events
 WHERE
-    source_id = @source_id AND
     (
-        @cursor_ts IS NULL OR
-        received_at < @cursor_ts OR
+        source_id = @source_id AND
         (
-            received_at = @cursor_ts AND
-            id < @cursor_id
+            @cursor_ts::timestamptz IS NULL OR
+            received_at < @cursor_ts::timestamptz OR
+            (
+                received_at = @cursor_ts::timestamptz AND
+                id < @cursor_id
+            )
         )
     ) AND
     (
-        dedup_hash ILIKE '%' || @search_query || '%' OR
-        method ILIKE '%' || @search_query || '%' OR
-        ingress_path ILIKE '%' || @search_query || '%' OR
-        remote_address ILIKE '%' || @search_query || '%'
+        @search_query::text IS NULL OR @search_query::text = '' OR
+        (
+            dedup_hash ILIKE '%' || @search_query::text || '%' OR
+            method ILIKE '%' || @search_query::text || '%' OR
+            ingress_path ILIKE '%' || @search_query::text || '%' OR
+            remote_address::text ILIKE '%' || @search_query::text || '%'
+        )
     )
 ORDER BY
     received_at DESC
@@ -175,20 +185,25 @@ SELECT
 FROM
     delivery_attempts
 WHERE
-    event_id = @event_id AND
     (
-        @cursor_ts IS NULL OR
-        created_at < @cursor_ts OR
+        event_id = @event_id AND
         (
-            created_at = @cursor_ts AND
-            id < @cursor_id
+            @cursor_ts::timestamptz IS NULL OR
+            created_at < @cursor_ts::timestamptz OR
+            (
+                created_at = @cursor_ts::timestamptz AND
+                id < @cursor_id
+            )
         )
     ) AND
     (
-        state ILIKE '%' || @search_query || '%' OR
-        status_code::text ILIKE '%' || @search_query || '%' OR
-        error_type ILIKE '%' || @search_query || '%' OR
-        error_message ILIKE '%' || @search_query || '%'
+        @search_query::text IS NULL OR @search_query::text = '' OR
+        (
+            state ILIKE '%' || @search_query::text || '%' OR
+            status_code::text ILIKE '%' || @search_query::text || '%' OR
+            error_type ILIKE '%' || @search_query::text || '%' OR
+            error_message ILIKE '%' || @search_query::text || '%'
+        )
     )
 ORDER BY
     created_at DESC
@@ -241,7 +256,7 @@ ORDER BY
     delivery_attempts.created_at ASC
 FOR UPDATE OF delivery_attempts SKIP LOCKED
 LIMIT
-    $1;
+    @batch_size;
 
 
 -- name: UpdateDeliveryAttemptsToInFlight :many
@@ -251,7 +266,7 @@ SET
     , started_at = NOW()
     , finished_at = NULL
 WHERE
-    id = ANY($1::bigint[])
+    id = ANY(@batch_ids::bigint[])
 RETURNING
     id
     , event_id

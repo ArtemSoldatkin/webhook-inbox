@@ -283,20 +283,25 @@ SELECT
 FROM
     delivery_attempts
 WHERE
-    event_id = $1 AND
     (
-        $2 IS NULL OR
-        created_at < $2 OR
+        event_id = $1 AND
         (
-            created_at = $2 AND
-            id < $3
+            $2::timestamptz IS NULL OR
+            created_at < $2::timestamptz OR
+            (
+                created_at = $2::timestamptz AND
+                id < $3
+            )
         )
     ) AND
     (
-        state ILIKE '%' || $4 || '%' OR
-        status_code::text ILIKE '%' || $4 || '%' OR
-        error_type ILIKE '%' || $4 || '%' OR
-        error_message ILIKE '%' || $4 || '%'
+        $4::text IS NULL OR $4::text = '' OR
+        (
+            state ILIKE '%' || $4::text || '%' OR
+            status_code::text ILIKE '%' || $4::text || '%' OR
+            error_type ILIKE '%' || $4::text || '%' OR
+            error_message ILIKE '%' || $4::text || '%'
+        )
     )
 ORDER BY
     created_at DESC
@@ -307,9 +312,9 @@ LIMIT
 
 type ListDeliveryAttemptsByEventParams struct {
 	EventID     int64
-	CursorTs    interface{}
+	CursorTs    pgtype.Timestamptz
 	CursorID    int64
-	SearchQuery pgtype.Text
+	SearchQuery string
 	PageSize    int32
 }
 
@@ -367,20 +372,25 @@ SELECT
 FROM
     events
 WHERE
-    source_id = $1 AND
     (
-        $2 IS NULL OR
-        received_at < $2 OR
+        source_id = $1 AND
         (
-            received_at = $2 AND
-            id < $3
+            $2::timestamptz IS NULL OR
+            received_at < $2::timestamptz OR
+            (
+                received_at = $2::timestamptz AND
+                id < $3
+            )
         )
     ) AND
     (
-        dedup_hash ILIKE '%' || $4 || '%' OR
-        method ILIKE '%' || $4 || '%' OR
-        ingress_path ILIKE '%' || $4 || '%' OR
-        remote_address ILIKE '%' || $4 || '%'
+        $4::text IS NULL OR $4::text = '' OR
+        (
+            dedup_hash ILIKE '%' || $4::text || '%' OR
+            method ILIKE '%' || $4::text || '%' OR
+            ingress_path ILIKE '%' || $4::text || '%' OR
+            remote_address::text ILIKE '%' || $4::text || '%'
+        )
     )
 ORDER BY
     received_at DESC
@@ -391,9 +401,9 @@ LIMIT
 
 type ListEventsBySourceParams struct {
 	SourceID    int64
-	CursorTs    interface{}
+	CursorTs    pgtype.Timestamptz
 	CursorID    int64
-	SearchQuery pgtype.Text
+	SearchQuery string
 	PageSize    int32
 }
 
@@ -450,18 +460,23 @@ SELECT
 FROM
     sources
 WHERE
-    $1 IS NULL OR
     (
-        updated_at < $1 OR
+        $1::timestamptz IS NULL OR
         (
-            updated_at = $1 AND
-            id < $2
+            updated_at < $1::timestamptz OR
+            (
+                updated_at = $1::timestamptz AND
+                id < $2
+            )
         )
     ) AND
     (
-        egress_url ILIKE '%' || $3 || '%' OR
-        description ILIKE '%' || $3 || '%' OR
-        public_id::text ILIKE '%' || $3 || '%'
+        $3::text IS NULL OR $3::text = '' OR
+        (
+            egress_url ILIKE '%' || $3::text || '%' OR
+            description ILIKE '%' || $3::text || '%' OR
+            public_id::text ILIKE '%' || $3::text || '%'
+        )
     )
 ORDER BY
     updated_at DESC
@@ -471,9 +486,9 @@ LIMIT
 `
 
 type ListSourcesParams struct {
-	CursorTs    interface{}
+	CursorTs    pgtype.Timestamptz
 	CursorID    int64
-	SearchQuery pgtype.Text
+	SearchQuery string
 	PageSize    int32
 }
 
@@ -552,8 +567,8 @@ LIMIT
     $1
 `
 
-func (q *Queries) SelectPendingDeliveryAttemptIDs(ctx context.Context, limit int32) ([]int64, error) {
-	rows, err := q.db.Query(ctx, selectPendingDeliveryAttemptIDs, limit)
+func (q *Queries) SelectPendingDeliveryAttemptIDs(ctx context.Context, batchSize int32) ([]int64, error) {
+	rows, err := q.db.Query(ctx, selectPendingDeliveryAttemptIDs, batchSize)
 	if err != nil {
 		return nil, err
 	}
@@ -635,8 +650,8 @@ type UpdateDeliveryAttemptsToInFlightRow struct {
 	AttemptNumber int32
 }
 
-func (q *Queries) UpdateDeliveryAttemptsToInFlight(ctx context.Context, dollar_1 []int64) ([]UpdateDeliveryAttemptsToInFlightRow, error) {
-	rows, err := q.db.Query(ctx, updateDeliveryAttemptsToInFlight, dollar_1)
+func (q *Queries) UpdateDeliveryAttemptsToInFlight(ctx context.Context, batchIds []int64) ([]UpdateDeliveryAttemptsToInFlightRow, error) {
+	rows, err := q.db.Query(ctx, updateDeliveryAttemptsToInFlight, batchIds)
 	if err != nil {
 		return nil, err
 	}
