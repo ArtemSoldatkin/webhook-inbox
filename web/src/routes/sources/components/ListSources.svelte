@@ -16,12 +16,16 @@
 
 	let searchQuery: string = '';
 
+	let filterStatus: string = '*';
+	const filterStatusOptions = ['active', 'paused', 'quarantined', 'disabled'];
+
 	async function fetchSources() {
 		loading = true;
 		error = null;
 		try {
 			const result = await fetchPaginatedData('/api/sources', pageSize, nextCursor, {
-				search: searchQuery
+				search: searchQuery,
+				filter_status: filterStatus
 			});
 			data = [...data, ...result.data.map(parseSourceDTO)];
 			nextCursor = result.next_cursor;
@@ -41,12 +45,20 @@
 		await fetchSources();
 	}
 
-	$: if (pageSize) {
+	$effect(() => {
+		pageSize;
+		filterStatus;
 		resetAndFetchSources();
-	}
+	});
 </script>
 
-<FilterBar bind:searchQuery onSearch={resetAndFetchSources} />
+<FilterBar
+	bind:searchQuery
+	bind:filter={filterStatus}
+	filterName="status"
+	filterOptions={filterStatusOptions}
+	onSearch={resetAndFetchSources}
+/>
 <button on:click={resetAndFetchSources} disabled={loading}>Refresh Sources</button>
 {#if loading}
 	<p>Loading sources...</p>

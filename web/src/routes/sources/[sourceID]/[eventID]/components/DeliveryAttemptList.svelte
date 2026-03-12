@@ -18,6 +18,9 @@
 
 	let searchQuery: string = '';
 
+	let filterState: string = '*';
+	const filterStateOptions = ['pending', 'in_flight', 'succeeded', 'failed', 'aborted'];
+
 	async function fetchDeliveryAttempts() {
 		loading = true;
 		error = null;
@@ -27,7 +30,8 @@
 				pageSize,
 				nextCursor,
 				{
-					search: searchQuery
+					search: searchQuery,
+					filter_state: filterState
 				}
 			);
 			data = [...data, ...result.data.map(parseDeliveryAttemptDTO)];
@@ -48,12 +52,22 @@
 		await fetchDeliveryAttempts();
 	}
 
-	$: if (sourceID && eventID && pageSize) {
+	$effect(() => {
+		sourceID;
+		eventID;
+		pageSize;
+		filterState;
 		resetAndFetchDeliveryAttempts();
-	}
+	});
 </script>
 
-<FilterBar bind:searchQuery onSearch={resetAndFetchDeliveryAttempts} />
+<FilterBar
+	bind:searchQuery
+	bind:filter={filterState}
+	filterName="state"
+	filterOptions={filterStateOptions}
+	onSearch={resetAndFetchDeliveryAttempts}
+/>
 <button on:click={resetAndFetchDeliveryAttempts} disabled={loading}>Refresh Events</button>
 <h3>Delivery Attempts</h3>
 {#if loading}

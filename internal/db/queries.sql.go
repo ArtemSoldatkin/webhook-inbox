@@ -295,19 +295,26 @@ WHERE
         )
     ) AND
     (
-        $4::text IS NULL OR $4::text = '' OR
+        $4::text IS NULL OR
+        $4::text = '' OR
         (
             state ILIKE '%' || $4::text || '%' OR
             status_code::text ILIKE '%' || $4::text || '%' OR
             error_type ILIKE '%' || $4::text || '%' OR
             error_message ILIKE '%' || $4::text || '%'
         )
+    ) AND
+    (
+        $5::text IS NULL OR
+        $5::text = '' OR
+        $5::text = '*' OR
+        state = $5::text
     )
 ORDER BY
     created_at DESC
     , id DESC
 LIMIT
-    $5+ 1
+    $6+ 1
 `
 
 type ListDeliveryAttemptsByEventParams struct {
@@ -315,6 +322,7 @@ type ListDeliveryAttemptsByEventParams struct {
 	CursorTs    pgtype.Timestamptz
 	CursorID    int64
 	SearchQuery string
+	FilterState string
 	PageSize    int32
 }
 
@@ -324,6 +332,7 @@ func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliv
 		arg.CursorTs,
 		arg.CursorID,
 		arg.SearchQuery,
+		arg.FilterState,
 		arg.PageSize,
 	)
 	if err != nil {
@@ -471,25 +480,33 @@ WHERE
         )
     ) AND
     (
-        $3::text IS NULL OR $3::text = '' OR
+        $3::text IS NULL OR
+        $3::text = '' OR
         (
             egress_url ILIKE '%' || $3::text || '%' OR
             description ILIKE '%' || $3::text || '%' OR
             public_id::text ILIKE '%' || $3::text || '%'
         )
+    ) AND
+    (
+        $4::text IS NULL OR
+        $4::text = '' OR
+        $4::text = '*' OR
+        status = $4::text
     )
 ORDER BY
     updated_at DESC
     , id DESC
 LIMIT
-    $4+ 1
+    $5+ 1
 `
 
 type ListSourcesParams struct {
-	CursorTs    pgtype.Timestamptz
-	CursorID    int64
-	SearchQuery string
-	PageSize    int32
+	CursorTs     pgtype.Timestamptz
+	CursorID     int64
+	SearchQuery  string
+	FilterStatus string
+	PageSize     int32
 }
 
 func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Source, error) {
@@ -497,6 +514,7 @@ func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Sou
 		arg.CursorTs,
 		arg.CursorID,
 		arg.SearchQuery,
+		arg.FilterStatus,
 		arg.PageSize,
 	)
 	if err != nil {
