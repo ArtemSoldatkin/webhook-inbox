@@ -35,6 +35,7 @@ WHERE
     (
         @filter_status::text IS NULL OR
         @filter_status::text = '' OR
+        @filter_status::text = '*' OR
         status = @filter_status::text
     )
 ORDER BY
@@ -215,6 +216,7 @@ WHERE
     (
         @filter_state::text IS NULL OR
         @filter_state::text = '' OR
+        @filter_state::text = '*' OR
         state = @filter_state::text
     )
 ORDER BY

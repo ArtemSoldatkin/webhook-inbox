@@ -38,6 +38,13 @@ var (
 	metadata169Regexp = regexp.MustCompile(`^https?://169\.254\.169\.254(/|:|$)`)
 )
 
+var FilterStatusOptions = map[string]bool{
+	"active":      true,
+	"paused":      true,
+	"quarantined": true,
+	"disabled":    true,
+}
+
 // listSources handles GET requests to list all sources.
 func listSources(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -62,8 +69,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		filterStatus := r.URL.Query().Get("filter_status")
-		// TODO - validate filterStatus values ???
+		filterStatus := api.ParseFilter(r.URL.Query(), "status", FilterStatusOptions)
 
 		logrus.WithFields(logrus.Fields{
 			"pageSize":     pageSize,

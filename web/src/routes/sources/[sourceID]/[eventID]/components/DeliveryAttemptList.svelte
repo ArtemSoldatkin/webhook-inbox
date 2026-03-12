@@ -18,7 +18,7 @@
 
 	let searchQuery: string = '';
 
-	let filterState: string = '';
+	let filterState: string = '*';
 	const filterStateOptions = ['pending', 'in_flight', 'succeeded', 'failed', 'aborted'];
 
 	async function fetchDeliveryAttempts() {

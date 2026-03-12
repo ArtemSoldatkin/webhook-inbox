@@ -16,7 +16,7 @@
 
 	let searchQuery: string = '';
 
-	let filterStatus: string = '';
+	let filterStatus: string = '*';
 	const filterStatusOptions = ['active', 'paused', 'quarantined', 'disabled'];
 
 	async function fetchSources() {

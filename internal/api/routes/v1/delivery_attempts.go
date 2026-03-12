@@ -13,6 +13,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var FilterStateOptions = map[string]bool{
+	"pending":   true,
+	"in_flight": true,
+	"succeeded": true,
+	"failed":    true,
+	"aborted":   true,
+}
+
 // listDeliveryAttempts handles GET requests to list all delivery attempts.
 func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -25,8 +33,7 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		filterState := r.URL.Query().Get("filter_state")
-		// TODO - validate filterState values ???
+		filterState := api.ParseFilter(r.URL.Query(), "state", FilterStateOptions)
 
 		logrus.WithFields(logrus.Fields{
 			"event_id":    eventIDRaw,

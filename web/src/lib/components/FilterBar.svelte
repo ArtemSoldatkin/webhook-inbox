@@ -2,9 +2,8 @@
 	export let searchQuery: string = '';
 	export let onSearch: () => void;
 
-	// TODO add option to unselect filter (e.g. "All")
 	export let filterOptions: string[] = [];
-	export let filter: string = '';
+	export let filter: string = '*';
 </script>
 
 <section>
@@ -15,6 +14,7 @@
 	{#if filterOptions.length > 0}
 		<div>
 			<select bind:value={filter}>
+				<option value="*">All</option>
 				{#each filterOptions as category (category)}
 					<option value={category}>{category}</option>
 				{/each}

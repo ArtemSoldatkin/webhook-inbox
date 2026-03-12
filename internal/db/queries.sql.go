@@ -307,6 +307,7 @@ WHERE
     (
         $5::text IS NULL OR
         $5::text = '' OR
+        $5::text = '*' OR
         state = $5::text
     )
 ORDER BY
@@ -490,6 +491,7 @@ WHERE
     (
         $4::text IS NULL OR
         $4::text = '' OR
+        $4::text = '*' OR
         status = $4::text
     )
 ORDER BY
