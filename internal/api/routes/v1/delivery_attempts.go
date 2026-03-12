@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var FilterStateOptions = map[string]bool{
+var filterStateOptions = map[string]bool{
 	"pending":   true,
 	"in_flight": true,
 	"succeeded": true,
@@ -33,7 +33,7 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		filterState := api.ParseFilter(r.URL.Query(), "state", FilterStateOptions)
+		filterState := api.ParseFilter(r.URL.Query(), "state", filterStateOptions)
 
 		logrus.WithFields(logrus.Fields{
 			"event_id":    eventIDRaw,

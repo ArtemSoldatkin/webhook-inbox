@@ -52,14 +52,19 @@
 		await fetchDeliveryAttempts();
 	}
 
-	$: if (sourceID && eventID && pageSize && filterState) {
+	$effect(() => {
+		sourceID;
+		eventID;
+		pageSize;
+		filterState;
 		resetAndFetchDeliveryAttempts();
-	}
+	});
 </script>
 
 <FilterBar
 	bind:searchQuery
 	bind:filter={filterState}
+	filterName="state"
 	filterOptions={filterStateOptions}
 	onSearch={resetAndFetchDeliveryAttempts}
 />

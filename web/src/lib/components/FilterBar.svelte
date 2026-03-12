@@ -2,6 +2,7 @@
 	export let searchQuery: string = '';
 	export let onSearch: () => void;
 
+	export let filterName: string = '';
 	export let filterOptions: string[] = [];
 	export let filter: string = '*';
 </script>
@@ -13,12 +14,15 @@
 	</div>
 	{#if filterOptions.length > 0}
 		<div>
-			<select bind:value={filter}>
-				<option value="*">All</option>
-				{#each filterOptions as category (category)}
-					<option value={category}>{category}</option>
-				{/each}
-			</select>
+			<label for="filter"
+				>Filter by {filterName}:
+				<select bind:value={filter}>
+					<option value="*">All</option>
+					{#each filterOptions as category (category)}
+						<option value={category}>{category}</option>
+					{/each}
+				</select>
+			</label>
 		</div>
 	{/if}
 </section>

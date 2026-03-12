@@ -45,14 +45,17 @@
 		await fetchSources();
 	}
 
-	$: if (pageSize && filterStatus) {
+	$effect(() => {
+		pageSize;
+		filterStatus;
 		resetAndFetchSources();
-	}
+	});
 </script>
 
 <FilterBar
 	bind:searchQuery
 	bind:filter={filterStatus}
+	filterName="status"
 	filterOptions={filterStatusOptions}
 	onSearch={resetAndFetchSources}
 />
