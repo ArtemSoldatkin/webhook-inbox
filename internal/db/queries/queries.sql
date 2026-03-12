@@ -24,12 +24,18 @@ WHERE
         )
     ) AND
     (
-        @search_query::text IS NULL OR @search_query::text = '' OR
+        @search_query::text IS NULL OR
+        @search_query::text = '' OR
         (
             egress_url ILIKE '%' || @search_query::text || '%' OR
             description ILIKE '%' || @search_query::text || '%' OR
             public_id::text ILIKE '%' || @search_query::text || '%'
         )
+    ) AND
+    (
+        @filter_status::text IS NULL OR
+        @filter_status::text = '' OR
+        status = @filter_status::text
     )
 ORDER BY
     updated_at DESC
@@ -197,13 +203,19 @@ WHERE
         )
     ) AND
     (
-        @search_query::text IS NULL OR @search_query::text = '' OR
+        @search_query::text IS NULL OR
+        @search_query::text = '' OR
         (
             state ILIKE '%' || @search_query::text || '%' OR
             status_code::text ILIKE '%' || @search_query::text || '%' OR
             error_type ILIKE '%' || @search_query::text || '%' OR
             error_message ILIKE '%' || @search_query::text || '%'
         )
+    ) AND
+    (
+        @filter_state::text IS NULL OR
+        @filter_state::text = '' OR
+        state = @filter_state::text
     )
 ORDER BY
     created_at DESC

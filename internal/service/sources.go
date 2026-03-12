@@ -18,13 +18,15 @@ func (svc *Service) ListSources(
 	cursor api.Cursor,
 	pageSize int,
 	searchQuery string,
+	filterStatus string,
 ) ([]db.Source, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListSources(ctx, db.ListSourcesParams{
-		CursorTs:    cursorTS,
-		CursorID:    cursorID,
-		SearchQuery: searchQuery,
-		PageSize:    int32(pageSize),
+		CursorTs:     cursorTS,
+		CursorID:     cursorID,
+		SearchQuery:  searchQuery,
+		PageSize:     int32(pageSize),
+		FilterStatus: filterStatus,
 	})
 }
 
