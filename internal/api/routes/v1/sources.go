@@ -70,13 +70,15 @@ func listSources(svc *service.Service) http.HandlerFunc {
 		}
 
 		filterStatus := api.ParseFilter(r.URL.Query(), "status", filterStatusOptions)
+		sortDirection := api.ParseSortDirection(r.URL.Query(), api.SortDirectionDesc)
 
 		logrus.WithFields(logrus.Fields{
-			"pageSize":     pageSize,
-			"cursor":       cursor,
-			"search":       searchQuery,
-			"filterStatus": filterStatus,
-			"query":        r.URL.RawQuery,
+			"pageSize":       pageSize,
+			"cursor":         cursor,
+			"search":         searchQuery,
+			"filterStatus":   filterStatus,
+			"sortDirection": sortDirection,
+			"query":          r.URL.RawQuery,
 		}).Debug("Received listSources request")
 
 		sources, err := svc.ListSources(
@@ -85,6 +87,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			pageSize,
 			searchQuery,
 			filterStatus,
+			sortDirection,
 		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list sources")

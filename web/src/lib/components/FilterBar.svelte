@@ -1,10 +1,23 @@
 <script lang="ts">
-	export let searchQuery: string = '';
-	export let onSearch: () => void;
+	let {
+		searchQuery = $bindable(),
+		onSearch,
+		filterName,
+		filterOptions,
+		filter = $bindable(),
+		sortDirection = $bindable()
+	} = $props<{
+		searchQuery: string;
+		onSearch: () => void;
+		filterName?: string;
+		filterOptions?: string[];
+		filter?: string;
+		sortDirection: 'ASC' | 'DESC';
+	}>();
 
-	export let filterName: string = '';
-	export let filterOptions: string[] = [];
-	export let filter: string = '*';
+	function toggleSortDirection() {
+		sortDirection = sortDirection === 'ASC' ? 'DESC' : 'ASC';
+	}
 </script>
 
 <section>
@@ -12,10 +25,10 @@
 		<input type="text" placeholder="Search..." bind:value={searchQuery} />
 		<button type="button" on:click={onSearch}>Search</button>
 	</div>
-	{#if filterOptions.length > 0}
+	{#if filter && filterOptions}
 		<div>
 			<label for="filter"
-				>Filter by {filterName}:
+				>Filter by {filterName ?? 'category'}:
 				<select bind:value={filter}>
 					<option value="*">All</option>
 					{#each filterOptions as category (category)}
@@ -25,4 +38,9 @@
 			</label>
 		</div>
 	{/if}
+	<div>
+		<button type="button" on:click={toggleSortDirection} aria-label="Toggle sort direction">
+			{sortDirection === 'ASC' ? '↑' : '↓'}
+		</button>
+	</div>
 </section>

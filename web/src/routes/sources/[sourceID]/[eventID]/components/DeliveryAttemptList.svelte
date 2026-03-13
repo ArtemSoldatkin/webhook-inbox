@@ -5,21 +5,22 @@
 	import { parseDeliveryAttemptDTO } from '$lib/dtoParsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 
-	export let sourceID: string;
-	export let eventID: string;
+	let { sourceID, eventID } = $props<{ sourceID: string; eventID: string }>();
 
-	let data: DeliveryAttemptDTO[] = [];
-	let loading = false;
-	let error: string | null = null;
+	let data = $state<DeliveryAttemptDTO[]>([]);
+	let loading = $state(false);
+	let error = $state<string | null>(null);
 
-	let pageSize: number = 20;
-	let nextCursor: string | null = null;
-	let hasNext: boolean = false;
+	let pageSize = $state(20);
+	let nextCursor = $state<string | null>(null);
+	let hasNext = $state(false);
 
-	let searchQuery: string = '';
+	let searchQuery = $state('');
 
-	let filterState: string = '*';
+	let filterState = $state('*');
 	const filterStateOptions = ['pending', 'in_flight', 'succeeded', 'failed', 'aborted'];
+
+	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
 	async function fetchDeliveryAttempts() {
 		loading = true;
@@ -31,7 +32,8 @@
 				nextCursor,
 				{
 					search: searchQuery,
-					filter_state: filterState
+					filter_state: filterState,
+					sort_direction: sortDirection
 				}
 			);
 			data = [...data, ...result.data.map(parseDeliveryAttemptDTO)];
@@ -57,6 +59,7 @@
 		eventID;
 		pageSize;
 		filterState;
+		sortDirection;
 		resetAndFetchDeliveryAttempts();
 	});
 </script>
@@ -64,6 +67,7 @@
 <FilterBar
 	bind:searchQuery
 	bind:filter={filterState}
+	bind:sortDirection
 	filterName="state"
 	filterOptions={filterStateOptions}
 	onSearch={resetAndFetchDeliveryAttempts}

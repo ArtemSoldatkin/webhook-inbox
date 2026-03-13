@@ -14,26 +14,27 @@ import (
 
 const createDeliveryAttempt = `-- name: CreateDeliveryAttempt :one
 INSERT INTO delivery_attempts (
-    event_id
-    , attempt_number
-    , state
-    , status_code
-    , error_type
-    , error_message
-    , started_at
-    , finished_at
-    , next_attempt_at
-) VALUES (
-    $1
-    , $2
-    , $3
-    , $4
-    , $5
-    , $6
-    , $7
-    , $8
-    , $9
-)
+        event_id,
+        attempt_number,
+        state,
+        status_code,
+        error_type,
+        error_message,
+        started_at,
+        finished_at,
+        next_attempt_at
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9
+    )
 RETURNING id
 `
 
@@ -68,26 +69,27 @@ func (q *Queries) CreateDeliveryAttempt(ctx context.Context, arg CreateDeliveryA
 
 const createEvent = `-- name: CreateEvent :one
 INSERT INTO events (
-    source_id
-    , dedup_hash
-    , method
-    , ingress_path
-    , remote_address
-    , query_params
-    , raw_headers
-    , body
-    , body_content_type
-) VALUES (
-    $1
-    , $2
-    , $3
-    , $4
-    , $5
-    , $6
-    , $7
-    , $8
-    , $9
-)
+        source_id,
+        dedup_hash,
+        method,
+        ingress_path,
+        remote_address,
+        query_params,
+        raw_headers,
+        body,
+        body_content_type
+    )
+VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9
+    )
 RETURNING id
 `
 
@@ -122,14 +124,15 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (int64
 
 const createSource = `-- name: CreateSource :one
 INSERT INTO sources (
-    egress_url
-    , static_headers
-    , description
-) VALUES (
-    $1
-    , $2
-    , $3
-)
+        egress_url,
+        static_headers,
+        description
+    )
+VALUES (
+        $1,
+        $2,
+        $3
+    )
 RETURNING id, public_id, egress_url, static_headers, status, status_reason, description, created_at, updated_at, disable_at
 `
 
@@ -158,22 +161,19 @@ func (q *Queries) CreateSource(ctx context.Context, arg CreateSourceParams) (Sou
 }
 
 const getEventByID = `-- name: GetEventByID :one
-SELECT
-    id
-    , source_id
-    , dedup_hash
-    , method
-    , ingress_path
-    , remote_address
-    , query_params
-    , raw_headers
-    , body
-    , body_content_type
-    , received_at
-FROM
-    events
-WHERE
-    id = $1
+SELECT id,
+    source_id,
+    dedup_hash,
+    method,
+    ingress_path,
+    remote_address,
+    query_params,
+    raw_headers,
+    body,
+    body_content_type,
+    received_at
+FROM events
+WHERE id = $1
 `
 
 func (q *Queries) GetEventByID(ctx context.Context, eventID int64) (Event, error) {
@@ -196,21 +196,18 @@ func (q *Queries) GetEventByID(ctx context.Context, eventID int64) (Event, error
 }
 
 const getSourceByID = `-- name: GetSourceByID :one
-SELECT
-    id
-    , public_id
-    , egress_url
-    , static_headers
-    , status
-    , status_reason
-    , description
-    , created_at
-    , updated_at
-    , disable_at
-FROM
-    sources
-WHERE
-    id = $1
+SELECT id,
+    public_id,
+    egress_url,
+    static_headers,
+    status,
+    status_reason,
+    description,
+    created_at,
+    updated_at,
+    disable_at
+FROM sources
+WHERE id = $1
 `
 
 func (q *Queries) GetSourceByID(ctx context.Context, sourceID int64) (Source, error) {
@@ -232,21 +229,18 @@ func (q *Queries) GetSourceByID(ctx context.Context, sourceID int64) (Source, er
 }
 
 const getSourceByPublicID = `-- name: GetSourceByPublicID :one
-SELECT
-    id
-    , public_id
-    , egress_url
-    , static_headers
-    , status
-    , status_reason
-    , description
-    , created_at
-    , updated_at
-    , disable_at
-FROM
-    sources
-WHERE
-    public_id = $1
+SELECT id,
+    public_id,
+    egress_url,
+    static_headers,
+    status,
+    status_reason,
+    description,
+    created_at,
+    updated_at,
+    disable_at
+FROM sources
+WHERE public_id = $1
 `
 
 func (q *Queries) GetSourceByPublicID(ctx context.Context, publicID pgtype.UUID) (Source, error) {
@@ -268,68 +262,93 @@ func (q *Queries) GetSourceByPublicID(ctx context.Context, publicID pgtype.UUID)
 }
 
 const listDeliveryAttemptsByEvent = `-- name: ListDeliveryAttemptsByEvent :many
-SELECT
-    id
-    , event_id
-    , attempt_number
-    , state
-    , status_code
-    , error_type
-    , error_message
-    , started_at
-    , finished_at
-    , created_at
-    , next_attempt_at
-FROM
-    delivery_attempts
-WHERE
-    (
-        event_id = $1 AND
-        (
-            $2::timestamptz IS NULL OR
-            created_at < $2::timestamptz OR
-            (
-                created_at = $2::timestamptz AND
-                id < $3
+SELECT id,
+    event_id,
+    attempt_number,
+    state,
+    status_code,
+    error_type,
+    error_message,
+    started_at,
+    finished_at,
+    created_at,
+    next_attempt_at
+FROM delivery_attempts
+WHERE (
+        event_id = $1
+        AND (
+            $2::timestamptz IS NULL
+            OR (
+                (
+                    $3::text = 'DESC'
+                    AND created_at < $2::timestamptz
+                )
+                OR (
+                    $3::text = 'ASC'
+                    AND created_at > $2::timestamptz
+                )
+            )
+            OR (
+                created_at = $2::timestamptz
+                AND (
+                    (
+                        $3::text = 'DESC'
+                        AND id < $4
+                    )
+                    OR (
+                        $3::text = 'ASC'
+                        AND id > $4
+                    )
+                )
             )
         )
-    ) AND
-    (
-        $4::text IS NULL OR
-        $4::text = '' OR
-        (
-            state ILIKE '%' || $4::text || '%' OR
-            status_code::text ILIKE '%' || $4::text || '%' OR
-            error_type ILIKE '%' || $4::text || '%' OR
-            error_message ILIKE '%' || $4::text || '%'
-        )
-    ) AND
-    (
-        $5::text IS NULL OR
-        $5::text = '' OR
-        $5::text = '*' OR
-        state = $5::text
     )
-ORDER BY
-    created_at DESC
-    , id DESC
-LIMIT
-    $6+ 1
+    AND (
+        $5::text IS NULL
+        OR $5::text = ''
+        OR (
+            state ILIKE '%' || $5::text || '%'
+            OR status_code::text ILIKE '%' || $5::text || '%'
+            OR error_type ILIKE '%' || $5::text || '%'
+            OR error_message ILIKE '%' || $5::text || '%'
+        )
+    )
+    AND (
+        $6::text IS NULL
+        OR $6::text = ''
+        OR $6::text = '*'
+        OR state = $6::text
+    )
+ORDER BY CASE
+        WHEN $3::text = 'DESC' THEN created_at
+    END DESC,
+    CASE
+        WHEN $3::text = 'ASC' THEN created_at
+    END ASC,
+    CASE
+        WHEN $3::text = 'DESC' THEN id
+    END DESC,
+    CASE
+        WHEN $3::text = 'ASC' THEN id
+    END ASC
+LIMIT $7+ 1
 `
 
 type ListDeliveryAttemptsByEventParams struct {
-	EventID     int64
-	CursorTs    pgtype.Timestamptz
-	CursorID    int64
-	SearchQuery string
-	FilterState string
-	PageSize    int32
+	EventID       int64
+	CursorTs      pgtype.Timestamptz
+	SortDirection string
+	CursorID      int64
+	SearchQuery   string
+	FilterState   string
+	PageSize      int32
 }
 
 func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliveryAttemptsByEventParams) ([]DeliveryAttempt, error) {
 	rows, err := q.db.Query(ctx, listDeliveryAttemptsByEvent,
 		arg.EventID,
 		arg.CursorTs,
+		arg.SortDirection,
 		arg.CursorID,
 		arg.SearchQuery,
 		arg.FilterState,
@@ -366,60 +385,86 @@ func (q *Queries) ListDeliveryAttemptsByEvent(ctx context.Context, arg ListDeliv
 }
 
 const listEventsBySource = `-- name: ListEventsBySource :many
-SELECT
-    id
-    , source_id
-    , dedup_hash
-    , method
-    , ingress_path
-    , remote_address
-    , query_params
-    , raw_headers
-    , body
-    , body_content_type
-    , received_at
-FROM
-    events
-WHERE
-    (
-        source_id = $1 AND
-        (
-            $2::timestamptz IS NULL OR
-            received_at < $2::timestamptz OR
-            (
-                received_at = $2::timestamptz AND
-                id < $3
+SELECT id,
+    source_id,
+    dedup_hash,
+    method,
+    ingress_path,
+    remote_address,
+    query_params,
+    raw_headers,
+    body,
+    body_content_type,
+    received_at
+FROM events
+WHERE (
+        source_id = $1
+        AND (
+            $2::timestamptz IS NULL
+            OR (
+                (
+                    $3::text = 'DESC'
+                    AND received_at < $2::timestamptz
+                )
+                OR (
+                    $3::text = 'ASC'
+                    AND received_at > $2::timestamptz
+                )
+            )
+            OR (
+                received_at = $2::timestamptz
+                AND (
+                    (
+                        $3::text = 'DESC'
+                        AND id < $4
+                    )
+                    OR (
+                        $3::text = 'ASC'
+                        AND id > $4
+                    )
+                )
             )
         )
-    ) AND
-    (
-        $4::text IS NULL OR $4::text = '' OR
-        (
-            dedup_hash ILIKE '%' || $4::text || '%' OR
-            method ILIKE '%' || $4::text || '%' OR
-            ingress_path ILIKE '%' || $4::text || '%' OR
-            remote_address::text ILIKE '%' || $4::text || '%'
+    )
+    AND (
+        $5::text IS NULL
+        OR $5::text = ''
+        OR (
+            dedup_hash ILIKE '%' || $5::text || '%'
+            OR method ILIKE '%' || $5::text || '%'
+            OR ingress_path ILIKE '%' || $5::text || '%'
+            OR remote_address::text ILIKE '%' || $5::text || '%'
         )
     )
-ORDER BY
-    received_at DESC
-    , id DESC
-LIMIT
-    $5+ 1
+ORDER BY CASE
+        WHEN $3::text = 'DESC' THEN received_at
+    END DESC,
+    CASE
+        WHEN $3::text = 'ASC' THEN received_at
+    END ASC,
+    CASE
+        WHEN $3::text = 'DESC' THEN id
+    END DESC,
+    CASE
+        WHEN $3::text = 'ASC' THEN id
+    END ASC
+LIMIT $6+ 1
 `
 
 type ListEventsBySourceParams struct {
-	SourceID    int64
-	CursorTs    pgtype.Timestamptz
-	CursorID    int64
-	SearchQuery string
-	PageSize    int32
+	SourceID      int64
+	CursorTs      pgtype.Timestamptz
+	SortDirection string
+	CursorID      int64
+	SearchQuery   string
+	PageSize      int32
 }
 
 func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySourceParams) ([]Event, error) {
 	rows, err := q.db.Query(ctx, listEventsBySource,
 		arg.SourceID,
 		arg.CursorTs,
+		arg.SortDirection,
 		arg.CursorID,
 		arg.SearchQuery,
 		arg.PageSize,
@@ -455,63 +500,88 @@ func (q *Queries) ListEventsBySource(ctx context.Context, arg ListEventsBySource
 }
 
 const listSources = `-- name: ListSources :many
-SELECT
-    id
-    , public_id
-    , egress_url
-    , static_headers
-    , status
-    , status_reason
-    , description
-    , created_at
-    , updated_at
-    , disable_at
-FROM
-    sources
-WHERE
-    (
-        $1::timestamptz IS NULL OR
-        (
-            updated_at < $1::timestamptz OR
+SELECT id,
+    public_id,
+    egress_url,
+    static_headers,
+    status,
+    status_reason,
+    description,
+    created_at,
+    updated_at,
+    disable_at
+FROM sources
+WHERE (
+        $1::timestamptz IS NULL
+        OR (
             (
-                updated_at = $1::timestamptz AND
-                id < $2
+                (
+                    $2::text = 'DESC'
+                    AND updated_at < $1::timestamptz
+                )
+                OR (
+                    $2::text = 'ASC'
+                    AND updated_at > $1::timestamptz
+                )
+            )
+            OR (
+                updated_at = $1::timestamptz
+                AND (
+                    (
+                        $2::text = 'DESC'
+                        AND id < $3
+                    )
+                    OR (
+                        $2::text = 'ASC'
+                        AND id > $3
+                    )
+                )
             )
         )
-    ) AND
-    (
-        $3::text IS NULL OR
-        $3::text = '' OR
-        (
-            egress_url ILIKE '%' || $3::text || '%' OR
-            description ILIKE '%' || $3::text || '%' OR
-            public_id::text ILIKE '%' || $3::text || '%'
-        )
-    ) AND
-    (
-        $4::text IS NULL OR
-        $4::text = '' OR
-        $4::text = '*' OR
-        status = $4::text
     )
-ORDER BY
-    updated_at DESC
-    , id DESC
-LIMIT
-    $5+ 1
+    AND (
+        $4::text IS NULL
+        OR $4::text = ''
+        OR (
+            egress_url ILIKE '%' || $4::text || '%'
+            OR description ILIKE '%' || $4::text || '%'
+            OR public_id::text ILIKE '%' || $4::text || '%'
+        )
+    )
+    AND (
+        $5::text IS NULL
+        OR $5::text = ''
+        OR $5::text = '*'
+        OR status = $5::text
+    )
+ORDER BY CASE
+        WHEN $2::text = 'DESC' THEN updated_at
+    END DESC,
+    CASE
+        WHEN $2::text = 'ASC' THEN updated_at
+    END ASC,
+    CASE
+        WHEN $2::text = 'DESC' THEN id
+    END DESC,
+    CASE
+        WHEN $2::text = 'ASC' THEN id
+    END ASC
+LIMIT $6+ 1
 `
 
 type ListSourcesParams struct {
-	CursorTs     pgtype.Timestamptz
-	CursorID     int64
-	SearchQuery  string
-	FilterStatus string
-	PageSize     int32
+	CursorTs      pgtype.Timestamptz
+	SortDirection string
+	CursorID      int64
+	SearchQuery   string
+	FilterStatus  string
+	PageSize      int32
 }
 
 func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Source, error) {
 	rows, err := q.db.Query(ctx, listSources,
 		arg.CursorTs,
+		arg.SortDirection,
 		arg.CursorID,
 		arg.SearchQuery,
 		arg.FilterStatus,
@@ -548,13 +618,11 @@ func (q *Queries) ListSources(ctx context.Context, arg ListSourcesParams) ([]Sou
 
 const recoverStuckDeliveryAttempts = `-- name: RecoverStuckDeliveryAttempts :exec
 UPDATE delivery_attempts
-SET
-    state = 'pending'
-    , started_at = NULL
-    , finished_at = NULL
-WHERE
-    state = 'in_flight' AND
-    started_at < NOW() - INTERVAL '15 minutes'
+SET state = 'pending',
+    started_at = NULL,
+    finished_at = NULL
+WHERE state = 'in_flight'
+    AND started_at < NOW() - INTERVAL '15 minutes'
 `
 
 func (q *Queries) RecoverStuckDeliveryAttempts(ctx context.Context) error {
@@ -563,26 +631,17 @@ func (q *Queries) RecoverStuckDeliveryAttempts(ctx context.Context) error {
 }
 
 const selectPendingDeliveryAttemptIDs = `-- name: SelectPendingDeliveryAttemptIDs :many
-SELECT
-    delivery_attempts.id
-FROM
-    delivery_attempts
-INNER JOIN events
-    ON
-        delivery_attempts.event_id = events.id
-INNER JOIN sources
-    ON
-        events.source_id = sources.id
-WHERE
-    delivery_attempts.event_id = events.id AND
-    delivery_attempts.state = 'pending' AND
-    sources.status = 'active' AND
-    COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
-ORDER BY
-    delivery_attempts.created_at ASC
-FOR UPDATE OF delivery_attempts SKIP LOCKED
-LIMIT
-    $1
+SELECT delivery_attempts.id
+FROM delivery_attempts
+    INNER JOIN events ON delivery_attempts.event_id = events.id
+    INNER JOIN sources ON events.source_id = sources.id
+WHERE delivery_attempts.event_id = events.id
+    AND delivery_attempts.state = 'pending'
+    AND sources.status = 'active'
+    AND COALESCE(delivery_attempts.next_attempt_at, NOW()) <= NOW()
+ORDER BY delivery_attempts.created_at ASC FOR
+UPDATE OF delivery_attempts SKIP LOCKED
+LIMIT $1
 `
 
 func (q *Queries) SelectPendingDeliveryAttemptIDs(ctx context.Context, batchSize int32) ([]int64, error) {
@@ -607,22 +666,20 @@ func (q *Queries) SelectPendingDeliveryAttemptIDs(ctx context.Context, batchSize
 
 const updateDeliveryAttempt = `-- name: UpdateDeliveryAttempt :exec
 UPDATE delivery_attempts
-SET
-    state = $1
-    , status_code = $2
-    , error_type = $3
-    , error_message = $4
-    , started_at = CASE
+SET state = $1,
+    status_code = $2,
+    error_type = $3,
+    error_message = $4,
+    started_at = CASE
         WHEN $1 = 'pending' THEN NULL
         ELSE COALESCE(started_at, $5)
-    END
-    , finished_at = CASE
+    END,
+    finished_at = CASE
         WHEN $1 IN ('pending', 'in_flight') THEN NULL
         ELSE COALESCE(finished_at, $6)
     END
-WHERE
-    id = $7 AND
-    state IN ('pending', 'in_flight')
+WHERE id = $7
+    AND state IN ('pending', 'in_flight')
 `
 
 type UpdateDeliveryAttemptParams struct {
@@ -650,16 +707,13 @@ func (q *Queries) UpdateDeliveryAttempt(ctx context.Context, arg UpdateDeliveryA
 
 const updateDeliveryAttemptsToInFlight = `-- name: UpdateDeliveryAttemptsToInFlight :many
 UPDATE delivery_attempts
-SET
-    state = 'in_flight'
-    , started_at = NOW()
-    , finished_at = NULL
-WHERE
-    id = ANY($1::bigint[])
-RETURNING
-    id
-    , event_id
-    , attempt_number
+SET state = 'in_flight',
+    started_at = NOW(),
+    finished_at = NULL
+WHERE id = ANY($1::bigint [])
+RETURNING id,
+    event_id,
+    attempt_number
 `
 
 type UpdateDeliveryAttemptsToInFlightRow struct {
