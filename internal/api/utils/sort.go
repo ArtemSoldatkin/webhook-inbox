@@ -13,10 +13,10 @@ const (
 // ParseSortDirection parses the order direction from the query parameters.
 func ParseSortDirection(
 	query url.Values, defaultSortDirection SortDirection,
-) string {
-	order := query.Get("sort_direction")
-	if order == "ASC" || order == "DESC" {
+) SortDirection {
+	order := SortDirection(query.Get("sort_direction"))
+	if order == SortDirectionAsc || order == SortDirectionDesc {
 		return order
 	}
-	return string(defaultSortDirection)
+	return defaultSortDirection
 }

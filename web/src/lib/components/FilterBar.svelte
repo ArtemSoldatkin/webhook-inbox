@@ -39,7 +39,7 @@
 		</div>
 	{/if}
 	<div>
-		<button on:click={toggleSortDirection} aria-label="Toggle sort direction">
+		<button type="button" on:click={toggleSortDirection} aria-label="Toggle sort direction">
 			{sortDirection === 'ASC' ? '↑' : '↓'}
 		</button>
 	</div>

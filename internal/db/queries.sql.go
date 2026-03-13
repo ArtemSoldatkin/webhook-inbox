@@ -280,17 +280,26 @@ WHERE (
             $2::timestamptz IS NULL
             OR (
                 (
-                    $3 = 'DESC'
+                    $3::text = 'DESC'
                     AND created_at < $2::timestamptz
                 )
                 OR (
-                    $3 = 'ASC'
+                    $3::text = 'ASC'
                     AND created_at > $2::timestamptz
                 )
             )
             OR (
                 created_at = $2::timestamptz
-                AND id < $4
+                AND (
+                    (
+                        $3::text = 'DESC'
+                        AND id < $4
+                    )
+                    OR (
+                        $3::text = 'ASC'
+                        AND id > $4
+                    )
+                )
             )
         )
     )
@@ -311,16 +320,16 @@ WHERE (
         OR state = $6::text
     )
 ORDER BY CASE
-        WHEN $3 = 'DESC' THEN created_at
+        WHEN $3::text = 'DESC' THEN created_at
     END DESC,
     CASE
-        WHEN $3 = 'ASC' THEN created_at
+        WHEN $3::text = 'ASC' THEN created_at
     END ASC,
     CASE
-        WHEN $3 = 'DESC' THEN id
+        WHEN $3::text = 'DESC' THEN id
     END DESC,
     CASE
-        WHEN $3 = 'ASC' THEN id
+        WHEN $3::text = 'ASC' THEN id
     END ASC
 LIMIT $7+ 1
 `
@@ -328,7 +337,7 @@ LIMIT $7+ 1
 type ListDeliveryAttemptsByEventParams struct {
 	EventID       int64
 	CursorTs      pgtype.Timestamptz
-	SortDirection interface{}
+	SortDirection string
 	CursorID      int64
 	SearchQuery   string
 	FilterState   string
@@ -394,17 +403,26 @@ WHERE (
             $2::timestamptz IS NULL
             OR (
                 (
-                    $3 = 'DESC'
+                    $3::text = 'DESC'
                     AND received_at < $2::timestamptz
                 )
                 OR (
-                    $3 = 'ASC'
+                    $3::text = 'ASC'
                     AND received_at > $2::timestamptz
                 )
             )
             OR (
                 received_at = $2::timestamptz
-                AND id < $4
+                AND (
+                    (
+                        $3::text = 'DESC'
+                        AND id < $4
+                    )
+                    OR (
+                        $3::text = 'ASC'
+                        AND id > $4
+                    )
+                )
             )
         )
     )
@@ -419,16 +437,16 @@ WHERE (
         )
     )
 ORDER BY CASE
-        WHEN $3 = 'DESC' THEN received_at
+        WHEN $3::text = 'DESC' THEN received_at
     END DESC,
     CASE
-        WHEN $3 = 'ASC' THEN received_at
+        WHEN $3::text = 'ASC' THEN received_at
     END ASC,
     CASE
-        WHEN $3 = 'DESC' THEN id
+        WHEN $3::text = 'DESC' THEN id
     END DESC,
     CASE
-        WHEN $3 = 'ASC' THEN id
+        WHEN $3::text = 'ASC' THEN id
     END ASC
 LIMIT $6+ 1
 `
@@ -436,7 +454,7 @@ LIMIT $6+ 1
 type ListEventsBySourceParams struct {
 	SourceID      int64
 	CursorTs      pgtype.Timestamptz
-	SortDirection interface{}
+	SortDirection string
 	CursorID      int64
 	SearchQuery   string
 	PageSize      int32
@@ -498,17 +516,26 @@ WHERE (
         OR (
             (
                 (
-                    $2 = 'DESC'
+                    $2::text = 'DESC'
                     AND updated_at < $1::timestamptz
                 )
                 OR (
-                    $2 = 'ASC'
+                    $2::text = 'ASC'
                     AND updated_at > $1::timestamptz
                 )
             )
             OR (
                 updated_at = $1::timestamptz
-                AND id < $3
+                AND (
+                    (
+                        $2::text = 'DESC'
+                        AND id < $3
+                    )
+                    OR (
+                        $2::text = 'ASC'
+                        AND id > $3
+                    )
+                )
             )
         )
     )
@@ -528,23 +555,23 @@ WHERE (
         OR status = $5::text
     )
 ORDER BY CASE
-        WHEN $2 = 'DESC' THEN updated_at
+        WHEN $2::text = 'DESC' THEN updated_at
     END DESC,
     CASE
-        WHEN $2 = 'ASC' THEN updated_at
+        WHEN $2::text = 'ASC' THEN updated_at
     END ASC,
     CASE
-        WHEN $2 = 'DESC' THEN id
+        WHEN $2::text = 'DESC' THEN id
     END DESC,
     CASE
-        WHEN $2 = 'ASC' THEN id
+        WHEN $2::text = 'ASC' THEN id
     END ASC
 LIMIT $6+ 1
 `
 
 type ListSourcesParams struct {
 	CursorTs      pgtype.Timestamptz
-	SortDirection interface{}
+	SortDirection string
 	CursorID      int64
 	SearchQuery   string
 	FilterStatus  string

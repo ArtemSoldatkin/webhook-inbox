@@ -15,17 +15,26 @@ WHERE (
         OR (
             (
                 (
-                    @sort_direction = 'DESC'
+                    @sort_direction::text = 'DESC'
                     AND updated_at < @cursor_ts::timestamptz
                 )
                 OR (
-                    @sort_direction = 'ASC'
+                    @sort_direction::text = 'ASC'
                     AND updated_at > @cursor_ts::timestamptz
                 )
             )
             OR (
                 updated_at = @cursor_ts::timestamptz
-                AND id < @cursor_id
+                AND (
+                    (
+                        @sort_direction::text = 'DESC'
+                        AND id < @cursor_id
+                    )
+                    OR (
+                        @sort_direction::text = 'ASC'
+                        AND id > @cursor_id
+                    )
+                )
             )
         )
     )
@@ -45,16 +54,16 @@ WHERE (
         OR status = @filter_status::text
     )
 ORDER BY CASE
-        WHEN @sort_direction = 'DESC' THEN updated_at
+        WHEN @sort_direction::text = 'DESC' THEN updated_at
     END DESC,
     CASE
-        WHEN @sort_direction = 'ASC' THEN updated_at
+        WHEN @sort_direction::text = 'ASC' THEN updated_at
     END ASC,
     CASE
-        WHEN @sort_direction = 'DESC' THEN id
+        WHEN @sort_direction::text = 'DESC' THEN id
     END DESC,
     CASE
-        WHEN @sort_direction = 'ASC' THEN id
+        WHEN @sort_direction::text = 'ASC' THEN id
     END ASC
 LIMIT @page_size + 1;
 -- name: GetSourceByID :one
@@ -114,17 +123,26 @@ WHERE (
             @cursor_ts::timestamptz IS NULL
             OR (
                 (
-                    @sort_direction = 'DESC'
+                    @sort_direction::text = 'DESC'
                     AND received_at < @cursor_ts::timestamptz
                 )
                 OR (
-                    @sort_direction = 'ASC'
+                    @sort_direction::text = 'ASC'
                     AND received_at > @cursor_ts::timestamptz
                 )
             )
             OR (
                 received_at = @cursor_ts::timestamptz
-                AND id < @cursor_id
+                AND (
+                    (
+                        @sort_direction::text = 'DESC'
+                        AND id < @cursor_id
+                    )
+                    OR (
+                        @sort_direction::text = 'ASC'
+                        AND id > @cursor_id
+                    )
+                )
             )
         )
     )
@@ -139,16 +157,16 @@ WHERE (
         )
     )
 ORDER BY CASE
-        WHEN @sort_direction = 'DESC' THEN received_at
+        WHEN @sort_direction::text = 'DESC' THEN received_at
     END DESC,
     CASE
-        WHEN @sort_direction = 'ASC' THEN received_at
+        WHEN @sort_direction::text = 'ASC' THEN received_at
     END ASC,
     CASE
-        WHEN @sort_direction = 'DESC' THEN id
+        WHEN @sort_direction::text = 'DESC' THEN id
     END DESC,
     CASE
-        WHEN @sort_direction = 'ASC' THEN id
+        WHEN @sort_direction::text = 'ASC' THEN id
     END ASC
 LIMIT @page_size + 1;
 -- name: GetEventByID :one
@@ -208,17 +226,26 @@ WHERE (
             @cursor_ts::timestamptz IS NULL
             OR (
                 (
-                    @sort_direction = 'DESC'
+                    @sort_direction::text = 'DESC'
                     AND created_at < @cursor_ts::timestamptz
                 )
                 OR (
-                    @sort_direction = 'ASC'
+                    @sort_direction::text = 'ASC'
                     AND created_at > @cursor_ts::timestamptz
                 )
             )
             OR (
                 created_at = @cursor_ts::timestamptz
-                AND id < @cursor_id
+                AND (
+                    (
+                        @sort_direction::text = 'DESC'
+                        AND id < @cursor_id
+                    )
+                    OR (
+                        @sort_direction::text = 'ASC'
+                        AND id > @cursor_id
+                    )
+                )
             )
         )
     )
@@ -239,16 +266,16 @@ WHERE (
         OR state = @filter_state::text
     )
 ORDER BY CASE
-        WHEN @sort_direction = 'DESC' THEN created_at
+        WHEN @sort_direction::text = 'DESC' THEN created_at
     END DESC,
     CASE
-        WHEN @sort_direction = 'ASC' THEN created_at
+        WHEN @sort_direction::text = 'ASC' THEN created_at
     END ASC,
     CASE
-        WHEN @sort_direction = 'DESC' THEN id
+        WHEN @sort_direction::text = 'DESC' THEN id
     END DESC,
     CASE
-        WHEN @sort_direction = 'ASC' THEN id
+        WHEN @sort_direction::text = 'ASC' THEN id
     END ASC
 LIMIT @page_size + 1;
 -- name: CreateDeliveryAttempt :one

@@ -18,7 +18,7 @@ func (svc *Service) ListEvents(
 	cursor api.Cursor,
 	pageSize int,
 	searchQuery string,
-	sortDirection string,
+	sortDirection api.SortDirection,
 ) ([]db.Event, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListEventsBySource(ctx, db.ListEventsBySourceParams{
@@ -27,7 +27,7 @@ func (svc *Service) ListEvents(
 		CursorID:      cursorID,
 		SearchQuery:   searchQuery,
 		PageSize:      int32(pageSize),
-		SortDirection: sortDirection,
+		SortDirection: string(sortDirection),
 	})
 }
 
