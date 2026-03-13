@@ -41,12 +41,15 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		sortDirection := api.ParseSortDirection(r.URL.Query(), api.SortDirectionDesc)
+
 		logrus.WithFields(logrus.Fields{
-			"source_id": sourceIDRaw,
-			"pageSize":  pageSize,
-			"cursor":    cursor,
-			"search":    searchQuery,
-			"query":     r.URL.RawQuery,
+			"source_id":      sourceIDRaw,
+			"pageSize":       pageSize,
+			"cursor":         cursor,
+			"search":         searchQuery,
+			"sortDirection": sortDirection,
+			"query":          r.URL.RawQuery,
 		}).Debug("Received listEvents request")
 
 		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
@@ -68,6 +71,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			cursor,
 			pageSize,
 			searchQuery,
+			sortDirection,
 		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list events")

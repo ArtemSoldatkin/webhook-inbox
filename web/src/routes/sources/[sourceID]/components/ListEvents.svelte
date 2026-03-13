@@ -8,17 +8,18 @@
 	import type { EventDTO } from '$lib/types';
 	import BodyView from './BodyView.svelte';
 
-	export let sourceID: string;
+	let { sourceID } = $props<{ sourceID: string }>();
 
-	let data: EventDTO[] = [];
-	let loading = false;
-	let error: string | null = null;
+	let data = $state<EventDTO[]>([]);
+	let loading = $state(false);
+	let error = $state<string | null>(null);
 
-	let pageSize: number = 20;
-	let nextCursor: string | null = null;
-	let hasNext: boolean = false;
+	let pageSize = $state(20);
+	let nextCursor = $state<string | null>(null);
+	let hasNext = $state(false);
 
-	let searchQuery: string = '';
+	let searchQuery = $state('');
+	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
 	async function fetchEvents() {
 		loading = true;
@@ -29,7 +30,8 @@
 				pageSize,
 				nextCursor,
 				{
-					search: searchQuery
+					search: searchQuery,
+					sort_direction: sortDirection
 				}
 			);
 			data = [...data, ...result.data.map(parseEventDTO)];
@@ -50,12 +52,15 @@
 		await fetchEvents();
 	}
 
-	$: if (sourceID && pageSize) {
+	$effect(() => {
+		sourceID;
+		pageSize;
+		sortDirection;
 		resetAndFetchEvents();
-	}
+	});
 </script>
 
-<FilterBar bind:searchQuery onSearch={resetAndFetchEvents} />
+<FilterBar bind:searchQuery bind:sortDirection onSearch={resetAndFetchEvents} />
 <button on:click={resetAndFetchEvents} disabled={loading}>Refresh Events</button>
 {#if loading}
 	<p>Loading events...</p>

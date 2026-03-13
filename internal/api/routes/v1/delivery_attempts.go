@@ -34,12 +34,14 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 		}
 
 		filterState := api.ParseFilter(r.URL.Query(), "state", filterStateOptions)
+		sortDirection := api.ParseSortDirection(r.URL.Query(), api.SortDirectionDesc)
 
 		logrus.WithFields(logrus.Fields{
-			"event_id":    eventIDRaw,
-			"search":      searchQuery,
-			"filterState": filterState,
-			"query":       r.URL.RawQuery,
+			"event_id":      eventIDRaw,
+			"search":        searchQuery,
+			"filterState":   filterState,
+			"sortDirection": sortDirection,
+			"query":         r.URL.RawQuery,
 		}).Debug("Received listDeliveryAttempts request")
 
 		eventID, err := strconv.ParseInt(eventIDRaw, 10, 64)
@@ -76,6 +78,7 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			pageSize,
 			searchQuery,
 			filterState,
+			sortDirection,
 		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list delivery attempts")

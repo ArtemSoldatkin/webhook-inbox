@@ -6,18 +6,20 @@
 	import { parseSourceDTO } from '$lib/dtoParsers';
 	import type { SourceDTO } from '$lib/types';
 
-	let data: SourceDTO[] = [];
-	let loading = false;
-	let error: string | null = null;
+	let data = $state<SourceDTO[]>([]);
+	let loading = $state(false);
+	let error = $state<string | null>(null);
 
-	let pageSize: number = 20;
-	let nextCursor: string | null = null;
-	let hasNext: boolean = false;
+	let pageSize = $state(20);
+	let nextCursor = $state<string | null>(null);
+	let hasNext = $state(false);
 
-	let searchQuery: string = '';
+	let searchQuery = $state('');
 
-	let filterStatus: string = '*';
+	let filterStatus = $state('*');
 	const filterStatusOptions = ['active', 'paused', 'quarantined', 'disabled'];
+
+	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
 	async function fetchSources() {
 		loading = true;
@@ -25,7 +27,8 @@
 		try {
 			const result = await fetchPaginatedData('/api/sources', pageSize, nextCursor, {
 				search: searchQuery,
-				filter_status: filterStatus
+				filter_status: filterStatus,
+				sort_direction: sortDirection
 			});
 			data = [...data, ...result.data.map(parseSourceDTO)];
 			nextCursor = result.next_cursor;
@@ -48,6 +51,7 @@
 	$effect(() => {
 		pageSize;
 		filterStatus;
+		sortDirection;
 		resetAndFetchSources();
 	});
 </script>
@@ -55,6 +59,7 @@
 <FilterBar
 	bind:searchQuery
 	bind:filter={filterStatus}
+	bind:sortDirection
 	filterName="status"
 	filterOptions={filterStatusOptions}
 	onSearch={resetAndFetchSources}
