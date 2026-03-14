@@ -113,9 +113,13 @@ func listSources(svc *service.Service) http.HandlerFunc {
 		)
 
 		if err := api.JSON(w, http.StatusOK, paginatedResponse); err != nil {
-			logrus.WithError(err).Error("Failed to write response")
-			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
-			return
+			var writeErr *api.JSONWriteError
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Failed to write response")
+			} else {
+				logrus.WithError(err).Error("Failed to marshal response")
+				http.Error(w, "Failed to list sources", http.StatusInternalServerError)
+			}
 		}
 	}
 }
@@ -158,9 +162,13 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 		sourceDTO := mapperv1.ToSourceDTO(source, svc.Config)
 
 		if err := api.JSON(w, http.StatusOK, sourceDTO); err != nil {
-			logrus.WithError(err).Error("Failed to write response")
-			http.Error(w, "Failed to get source", http.StatusInternalServerError)
-			return
+			var writeErr *api.JSONWriteError
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Failed to write response")
+			} else {
+				logrus.WithError(err).Error("Failed to marshal response")
+				http.Error(w, "Failed to get source", http.StatusInternalServerError)
+			}
 		}
 	}
 }
@@ -243,9 +251,13 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		sourceDTO := mapperv1.ToSourceDTO(source, svc.Config)
 
 		if err := api.JSON(w, http.StatusCreated, sourceDTO); err != nil {
-			logrus.WithError(err).Error("Failed to write response")
-			http.Error(w, "Failed to create source", http.StatusInternalServerError)
-			return
+			var writeErr *api.JSONWriteError
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Failed to write response")
+			} else {
+				logrus.WithError(err).Error("Failed to marshal response")
+				http.Error(w, "Failed to create source", http.StatusInternalServerError)
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package routev1
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -107,9 +108,13 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 		)
 
 		if err := api.JSON(w, http.StatusOK, paginatedResponse); err != nil {
-			logrus.WithError(err).Error("Failed to write response")
-			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
-			return
+			var writeErr *api.JSONWriteError
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Failed to write response")
+			} else {
+				logrus.WithError(err).Error("Failed to marshal response")
+				http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
+			}
 		}
 	}
 }

@@ -100,9 +100,13 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 		)
 
 		if err := api.JSON(w, http.StatusOK, paginatedResponse); err != nil {
-			logrus.WithError(err).Error("Failed to write response")
-			http.Error(w, "Failed to list events", http.StatusInternalServerError)
-			return
+			var writeErr *api.JSONWriteError
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Failed to write response")
+			} else {
+				logrus.WithError(err).Error("Failed to marshal response")
+				http.Error(w, "Failed to list events", http.StatusInternalServerError)
+			}
 		}
 	}
 }
@@ -145,9 +149,13 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 		eventDTO := mapperv1.ToEventDTO(event)
 
 		if err := api.JSON(w, http.StatusOK, eventDTO); err != nil {
-			logrus.WithError(err).Error("Failed to write response")
-			http.Error(w, "Failed to get event", http.StatusInternalServerError)
-			return
+			var writeErr *api.JSONWriteError
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Failed to write response")
+			} else {
+				logrus.WithError(err).Error("Failed to marshal response")
+				http.Error(w, "Failed to get event", http.StatusInternalServerError)
+			}
 		}
 	}
 }
