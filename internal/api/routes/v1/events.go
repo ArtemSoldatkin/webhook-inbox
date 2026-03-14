@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
-	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
+	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
-	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
@@ -44,12 +43,12 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 		sortDirection := api.ParseSortDirection(r.URL.Query(), api.SortDirectionDesc)
 
 		logrus.WithFields(logrus.Fields{
-			"source_id":      sourceIDRaw,
-			"pageSize":       pageSize,
-			"cursor":         cursor,
-			"search":         searchQuery,
+			"source_id":     sourceIDRaw,
+			"pageSize":      pageSize,
+			"cursor":        cursor,
+			"search":        searchQuery,
 			"sortDirection": sortDirection,
-			"query":          r.URL.RawQuery,
+			"query":         r.URL.RawQuery,
 		}).Debug("Received listEvents request")
 
 		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
@@ -79,44 +78,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		eventDTOs := make([]dtov1.EventDTO, 0, len(events))
-		for _, event := range events {
-			queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams)
-			if err != nil {
-				logrus.WithError(err).Error("Failed to unmarshal query params")
-				queryParams = map[string][]string{
-					"__error": {"Webhook Inbox Error - Failed to parse"},
-				}
-			}
-
-			rawHeaders, err := utils.JSONBtoType[map[string][]string](event.RawHeaders)
-			if err != nil {
-				logrus.WithError(err).Error("Failed to unmarshal raw headers")
-				rawHeaders = map[string][]string{
-					"__error": {"Webhook Inbox Error - Failed to parse"},
-				}
-			}
-
-			var remoteAddress *string
-			if event.RemoteAddress != nil {
-				str := event.RemoteAddress.String()
-				remoteAddress = &str
-			}
-
-			eventDTOs = append(eventDTOs, dtov1.EventDTO{
-				ID:              event.ID,
-				SourceID:        event.SourceID,
-				DedupHash:       event.DedupHash.String,
-				Method:          event.Method,
-				IngressPath:     event.IngressPath,
-				RemoteAddress:   remoteAddress,
-				QueryParams:     queryParams,
-				RawHeaders:      rawHeaders,
-				Body:            event.Body,
-				BodyContentType: event.BodyContentType,
-				ReceivedAt:      event.ReceivedAt.Time,
-			})
-		}
+		eventDTOs := mapperv1.ToEventDTOs(events)
 
 		logrus.WithFields(logrus.Fields{
 			"source_id":      sourceID,
@@ -186,39 +148,7 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		queryParams, err := utils.JSONBtoType[map[string][]string](event.QueryParams)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to unmarshal query params")
-			http.Error(w, "Failed to get event", http.StatusInternalServerError)
-			return
-		}
-
-		rawHeaders, err := utils.JSONBtoType[map[string][]string](event.RawHeaders)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to unmarshal raw headers")
-			http.Error(w, "Failed to get event", http.StatusInternalServerError)
-			return
-		}
-
-		var remoteAddress *string
-		if event.RemoteAddress != nil {
-			str := event.RemoteAddress.String()
-			remoteAddress = &str
-		}
-
-		eventDTO := dtov1.EventDTO{
-			ID:              event.ID,
-			SourceID:        event.SourceID,
-			DedupHash:       event.DedupHash.String,
-			Method:          event.Method,
-			IngressPath:     event.IngressPath,
-			RemoteAddress:   remoteAddress,
-			QueryParams:     queryParams,
-			RawHeaders:      rawHeaders,
-			Body:            event.Body,
-			BodyContentType: event.BodyContentType,
-			ReceivedAt:      event.ReceivedAt.Time,
-		}
+		eventDTO := mapperv1.ToEventDTO(event)
 
 		response, err := json.Marshal(eventDTO)
 		if err != nil {

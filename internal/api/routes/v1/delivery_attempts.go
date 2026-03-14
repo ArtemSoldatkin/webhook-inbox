@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
+	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
-	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
 )
@@ -86,49 +85,16 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		deliveryAttemptsDTO := make([]dtov1.DeliveryAttemptDTO, len(deliveryAttempts))
-		for i, deliveryAttempt := range deliveryAttempts {
-			deliveryAttemptsDTO[i] = dtov1.DeliveryAttemptDTO{
-				ID:            deliveryAttempt.ID,
-				EventID:       deliveryAttempt.EventID,
-				AttemptNumber: deliveryAttempt.AttemptNumber,
-				State:         deliveryAttempt.State,
-				StatusCode: utils.PtrIfValid(
-					deliveryAttempt.StatusCode.Int32,
-					deliveryAttempt.StatusCode.Valid,
-				),
-				ErrorType: utils.PtrIfValid(
-					deliveryAttempt.ErrorType.String,
-					deliveryAttempt.ErrorType.Valid,
-				),
-				ErrorMessage: utils.PtrIfValid(
-					deliveryAttempt.ErrorMessage.String,
-					deliveryAttempt.ErrorMessage.Valid,
-				),
-				StartedAt: utils.PtrIfValid(
-					deliveryAttempt.StartedAt.Time,
-					deliveryAttempt.StartedAt.Valid,
-				),
-				FinishedAt: utils.PtrIfValid(
-					deliveryAttempt.FinishedAt.Time,
-					deliveryAttempt.FinishedAt.Valid,
-				),
-				CreatedAt: deliveryAttempt.CreatedAt.Time,
-				NextAttemptAt: utils.PtrIfValid(
-					deliveryAttempt.NextAttemptAt.Time,
-					deliveryAttempt.NextAttemptAt.Valid,
-				),
-			}
-		}
+		deliveryAttemptDTOs := mapperv1.ToDeliveryAttemptDTOs(deliveryAttempts)
 
 		logrus.WithFields(logrus.Fields{
 			"event_id":       eventID,
-			"returned_count": len(deliveryAttemptsDTO),
+			"returned_count": len(deliveryAttemptDTOs),
 		}).Debug("Returning delivery attempts")
 
 		var nextCursor api.Cursor
-		if len(deliveryAttemptsDTO) > pageSize {
-			lastAttempt := deliveryAttemptsDTO[len(deliveryAttemptsDTO)-1]
+		if len(deliveryAttemptDTOs) > pageSize {
+			lastAttempt := deliveryAttemptDTOs[len(deliveryAttemptDTOs)-1]
 			nextCursor = api.NewCursor(
 				&lastAttempt.CreatedAt,
 				&lastAttempt.ID,
@@ -136,7 +102,7 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 		}
 
 		paginatedResponse := api.ToPaginatedResponse(
-			deliveryAttemptsDTO,
+			deliveryAttemptDTOs,
 			pageSize,
 			nextCursor,
 		)

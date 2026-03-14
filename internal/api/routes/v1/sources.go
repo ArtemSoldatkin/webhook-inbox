@@ -9,13 +9,11 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
-	"time"
 
-	dtov1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/dto/v1"
+	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
-	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -73,12 +71,12 @@ func listSources(svc *service.Service) http.HandlerFunc {
 		sortDirection := api.ParseSortDirection(r.URL.Query(), api.SortDirectionDesc)
 
 		logrus.WithFields(logrus.Fields{
-			"pageSize":       pageSize,
-			"cursor":         cursor,
-			"search":         searchQuery,
-			"filterStatus":   filterStatus,
+			"pageSize":      pageSize,
+			"cursor":        cursor,
+			"search":        searchQuery,
+			"filterStatus":  filterStatus,
 			"sortDirection": sortDirection,
-			"query":          r.URL.RawQuery,
+			"query":         r.URL.RawQuery,
 		}).Debug("Received listSources request")
 
 		sources, err := svc.ListSources(
@@ -95,48 +93,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		sourceDTOs := make([]dtov1.SourceDTO, 0, len(sources))
-		for _, source := range sources {
-			staticHeaders, err := utils.JSONBtoType[map[string]string](source.StaticHeaders)
-			if err != nil {
-				logrus.WithError(err).Error("Failed to unmarshal static headers")
-				staticHeaders = map[string]string{
-					"__error": "Webhook Inbox Error - Failed to parse",
-				}
-			}
-
-			var disableAt *time.Time
-			if source.DisableAt.Valid {
-				disableAt = &source.DisableAt.Time
-			} else {
-				disableAt = nil
-			}
-
-			sourceDTOs = append(sourceDTOs, dtov1.SourceDTO{
-				ID:       source.ID,
-				PublicID: source.PublicID.String(),
-				IngressUrl: utils.GenerateIngressURL(
-					svc.Config.APIProtocol,
-					svc.Config.APIHost,
-					svc.Config.APIPort,
-					source.PublicID.String(),
-				),
-				EgressUrl:     source.EgressUrl,
-				StaticHeaders: staticHeaders,
-				Status:        source.Status,
-				StatusReason: utils.PtrIfValid(
-					source.StatusReason.String,
-					source.StatusReason.Valid,
-				),
-				Description: utils.PtrIfValid(
-					source.Description.String,
-					source.Description.Valid,
-				),
-				CreatedAt: source.CreatedAt.Time,
-				UpdatedAt: source.UpdatedAt.Time,
-				DisableAt: disableAt,
-			})
-		}
+		sourceDTOs := mapperv1.ToSourceDTOs(sources, svc.Config)
 
 		logrus.WithField("returned_count", len(sourceDTOs)).Debug("Returning sources")
 
@@ -203,47 +160,7 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		var staticHeaders = make(map[string]string)
-		if err := json.Unmarshal(source.StaticHeaders, &staticHeaders); err != nil {
-			logrus.WithError(err).Error("Failed to unmarshal static headers")
-			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
-			return
-		}
-		if staticHeaders == nil {
-			staticHeaders = make(map[string]string)
-		}
-
-		var disableAt *time.Time
-		if source.DisableAt.Valid {
-			disableAt = &source.DisableAt.Time
-		} else {
-			disableAt = nil
-		}
-
-		sourceDTO := dtov1.SourceDTO{
-			ID:       source.ID,
-			PublicID: source.PublicID.String(),
-			IngressUrl: utils.GenerateIngressURL(
-				svc.Config.APIProtocol,
-				svc.Config.APIHost,
-				svc.Config.APIPort,
-				source.PublicID.String(),
-			),
-			EgressUrl:     source.EgressUrl,
-			StaticHeaders: staticHeaders,
-			Status:        source.Status,
-			StatusReason: utils.PtrIfValid(
-				source.StatusReason.String,
-				source.StatusReason.Valid,
-			),
-			Description: utils.PtrIfValid(
-				source.Description.String,
-				source.Description.Valid,
-			),
-			CreatedAt: source.CreatedAt.Time,
-			UpdatedAt: source.UpdatedAt.Time,
-			DisableAt: disableAt,
-		}
+		sourceDTO := mapperv1.ToSourceDTO(source, svc.Config)
 
 		response, err := json.Marshal(sourceDTO)
 		if err != nil {
@@ -333,29 +250,7 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		}
 		logrus.WithField("source_id", source.ID).Info("Created new source")
 
-		sourceDTO := dtov1.SourceDTO{
-			ID:       source.ID,
-			PublicID: source.PublicID.String(),
-			IngressUrl: utils.GenerateIngressURL(
-				svc.Config.APIProtocol,
-				svc.Config.APIHost,
-				svc.Config.APIPort,
-				source.PublicID.String(),
-			),
-			EgressUrl:     source.EgressUrl,
-			StaticHeaders: data.StaticHeaders,
-			Status:        source.Status,
-			StatusReason: utils.PtrIfValid(
-				source.StatusReason.String,
-				source.StatusReason.Valid,
-			),
-			Description: utils.PtrIfValid(
-				source.Description.String,
-				source.Description.Valid,
-			),
-			CreatedAt: source.CreatedAt.Time,
-			UpdatedAt: source.UpdatedAt.Time,
-		}
+		sourceDTO := mapperv1.ToSourceDTO(source, svc.Config)
 
 		response, err := json.Marshal(sourceDTO)
 		if err != nil {
