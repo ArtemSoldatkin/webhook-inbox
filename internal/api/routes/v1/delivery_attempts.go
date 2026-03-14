@@ -1,7 +1,6 @@
 package routev1
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -107,16 +106,11 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			nextCursor,
 		)
 
-		response, err := json.Marshal(paginatedResponse)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to marshal delivery attempts")
+		if err := api.JSON(w, http.StatusOK, paginatedResponse); err != nil {
+			logrus.WithError(err).Error("Failed to write response")
 			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write(response)
 	}
 }
 

@@ -1,7 +1,6 @@
 package routev1
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -100,16 +99,11 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			nextCursor,
 		)
 
-		response, err := json.Marshal(paginatedResponse)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to marshal events")
+		if err := api.JSON(w, http.StatusOK, paginatedResponse); err != nil {
+			logrus.WithError(err).Error("Failed to write response")
 			http.Error(w, "Failed to list events", http.StatusInternalServerError)
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write(response)
 	}
 }
 
@@ -150,16 +144,11 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 
 		eventDTO := mapperv1.ToEventDTO(event)
 
-		response, err := json.Marshal(eventDTO)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to marshal event")
+		if err := api.JSON(w, http.StatusOK, eventDTO); err != nil {
+			logrus.WithError(err).Error("Failed to write response")
 			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write(response)
 	}
 }
 
