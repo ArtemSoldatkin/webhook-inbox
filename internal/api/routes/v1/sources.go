@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
@@ -97,10 +98,10 @@ func listSources(svc *service.Service) http.HandlerFunc {
 
 		logrus.WithField("returned_count", len(sourceDTOs)).Debug("Returning sources")
 
-		var nextCursor api.Cursor
+		var nextCursor types.Cursor
 		if len(sourceDTOs) > pageSize {
 			lastSource := sourceDTOs[len(sourceDTOs)-1]
-			nextCursor = api.NewCursor(
+			nextCursor = types.NewCursor(
 				&lastSource.UpdatedAt,
 				&lastSource.ID,
 			)

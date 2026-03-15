@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -18,11 +19,11 @@ type ListDeliveryAttemptsURLParams struct {
 
 // ListDeliveryAttemptsQueryParams defines the query parameters for the list delivery attempts endpoint.
 type ListDeliveryAttemptsQueryParams struct {
-	Search        string `param:"search,max_length=512"`
-	Filter        string `param:"filter_state,allowed=pending|in_flight|succeeded|failed|aborted,default=*"`
-	SortDirection string `param:"sort,allowed=ASC|DESC,default=DESC"`
-	PageSize      int    `param:"limit,min=1,max=100,default=20"`
-	Cursor        string `param:"cursor"`
+	Search        string       `param:"search,max_length=512"`
+	Filter        string       `param:"filter_state,allowed=pending|in_flight|succeeded|failed|aborted,default=*"`
+	SortDirection string       `param:"sort,allowed=ASC|DESC,default=DESC"`
+	PageSize      int          `param:"limit,min=1,max=100,default=20"`
+	Cursor        types.Cursor `param:"cursor"`
 }
 
 // listDeliveryAttempts handles GET requests to list all delivery attempts.
@@ -48,29 +49,15 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			"filter_state":   queryParams.Filter,
 			"sort_direction": queryParams.SortDirection,
 			"page_size":      queryParams.PageSize,
+			"cursor":         queryParams.Cursor,
 			"query":          r.URL.RawQuery,
 		}).Debug("Received listDeliveryAttempts request")
-
-		// TODO: Move logic into ParseQueryParams and validate parameters there
-		pageSize, cursor, err := api.ParsePaginationParams(
-			r.URL.Query(),
-			svc.Config.APIDefaultPageSize,
-			svc.Config.APIMinPageSize,
-			svc.Config.APIMaxPageSize,
-		)
-		if err != nil {
-			logrus.
-				WithError(err).
-				Error("Invalid pagination parameters")
-			http.Error(w, "Invalid pagination parameters", http.StatusBadRequest)
-			return
-		}
 
 		deliveryAttempts, err := svc.ListDeliveryAttempts(
 			r.Context(),
 			urlParams.EventID,
-			cursor,
-			pageSize,
+			queryParams.Cursor,
+			queryParams.PageSize,
 			queryParams.Search,
 			queryParams.Filter,
 			queryParams.SortDirection,
@@ -88,10 +75,10 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			"returned_count": len(deliveryAttemptDTOs),
 		}).Debug("Returning delivery attempts")
 
-		var nextCursor api.Cursor
-		if len(deliveryAttemptDTOs) > pageSize {
+		var nextCursor types.Cursor
+		if len(deliveryAttemptDTOs) > queryParams.PageSize {
 			lastAttempt := deliveryAttemptDTOs[len(deliveryAttemptDTOs)-1]
-			nextCursor = api.NewCursor(
+			nextCursor = types.NewCursor(
 				&lastAttempt.CreatedAt,
 				&lastAttempt.ID,
 			)
@@ -99,7 +86,7 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 
 		paginatedResponse := api.ToPaginatedResponse(
 			deliveryAttemptDTOs,
-			pageSize,
+			queryParams.PageSize,
 			nextCursor,
 		)
 

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -84,10 +85,10 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 			"returned_count": len(eventDTOs),
 		}).Debug("Returning events")
 
-		var nextCursor api.Cursor
+		var nextCursor types.Cursor
 		if len(eventDTOs) > pageSize {
 			lastEvent := eventDTOs[len(eventDTOs)-1]
-			nextCursor = api.NewCursor(
+			nextCursor = types.NewCursor(
 				&lastEvent.ReceivedAt,
 				&lastEvent.ID,
 			)

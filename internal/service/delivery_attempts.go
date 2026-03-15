@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/jackc/pgx/v5"
 )
@@ -21,7 +21,7 @@ type PendingDeliveryAttempt struct {
 func (svc *Service) ListDeliveryAttempts(
 	ctx context.Context,
 	eventID int64,
-	cursor api.Cursor,
+	cursor types.Cursor,
 	pageSize int,
 	searchQuery string,
 	filterState string,

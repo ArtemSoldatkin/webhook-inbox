@@ -7,6 +7,12 @@ import (
 
 	"reflect"
 	"strings"
+
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
+)
+
+var (
+	cursorType = reflect.TypeOf(types.Cursor{})
 )
 
 // ParseStruct is a generic function that populates a struct with values from variables based on struct tags
@@ -72,11 +78,23 @@ func ParseStruct[T any](config *T, tagName string, getVar func(string) string) e
 				return err
 			}
 		default:
-			return fmt.Errorf(
-				"unsupported field type %s for field %s",
-				configValue.Kind(),
-				reflect.TypeOf(*config).Field(i).Name,
-			)
+			if configValue.Type() == cursorType {
+				if err := setCursorField(
+					configValue,
+					varName,
+					field.Name,
+					varOptions,
+					getVar,
+				); err != nil {
+					return err
+				}
+			} else {
+				return fmt.Errorf(
+					"unsupported field type %s for field %s",
+					configValue.Kind(),
+					reflect.TypeOf(*config).Field(i).Name,
+				)
+			}
 		}
 	}
 	return nil
@@ -313,4 +331,34 @@ func isStringValueWithinBoundary(
 	}
 
 	return true
+}
+
+// setCursorField is a helper function that sets a Cursor field in the config struct based on the variable value.
+// It retrieves the variable, checks for errors, parses the cursor value, and sets the field value.
+func setCursorField(
+	configValue reflect.Value,
+	varName string,
+	fieldName string,
+	varOptions map[string]string,
+	getVar func(string) string,
+) error {
+	varValue, err := getVarWithDefault(varName, varOptions, getVar)
+	if err != nil {
+		return fmt.Errorf(
+			"error getting variable %s for field %s: %w",
+			varName,
+			fieldName,
+			err,
+		)
+	}
+	var cursor types.Cursor
+	if err := cursor.FromString(varValue); err != nil {
+		return fmt.Errorf(
+			"error parsing cursor for field %s: %w",
+			fieldName,
+			err,
+		)
+	}
+	configValue.Set(reflect.ValueOf(cursor))
+	return nil
 }

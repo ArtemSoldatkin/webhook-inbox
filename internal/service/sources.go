@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
@@ -15,7 +16,7 @@ import (
 // ListSources retrieves all sources from the database.
 func (svc *Service) ListSources(
 	ctx context.Context,
-	cursor api.Cursor,
+	cursor types.Cursor,
 	pageSize int,
 	searchQuery string,
 	filterStatus string,
