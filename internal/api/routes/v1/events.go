@@ -163,7 +163,7 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 // eventsRouter sets up the router for events-related endpoints.
 func eventsRouter(svc *service.Service) chi.Router {
 	r := chi.NewRouter()
-	r.Mount("/{eventID}/delivery-attempts", deliveryAttemptsRouter(svc))
+	r.Mount("/{event_id}/delivery-attempts", deliveryAttemptsRouter(svc))
 	r.Get("/{eventID}", getEvent(svc))
 	r.Get("/", listEvents(svc))
 	return r
