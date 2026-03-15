@@ -1,3 +1,4 @@
+// Package types defines the Cursor struct and related methods for handling pagination cursors in API responses.
 package types
 
 import (

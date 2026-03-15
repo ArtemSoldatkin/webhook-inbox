@@ -35,3 +35,23 @@ func ParseQueryParams[T any](queryParams url.Values) (*T, error) {
 
 	return &params, nil
 }
+
+// ParseRequestInput is a generic function that parses both URL and query parameters
+// from an HTTP request into a struct based on struct tags.
+func ParseRequestInput[T any](r *http.Request) (*T, error) {
+	var params T
+
+	if err := structparser.ParseStruct(&params, "url_param", func(varName string) string {
+		return chi.URLParam(r, varName)
+	}); err != nil {
+		return nil, err
+	}
+
+	if err := structparser.ParseStruct(&params, "query_param", func(varName string) string {
+		return r.URL.Query().Get(varName)
+	}); err != nil {
+		return nil, err
+	}
+
+	return &params, nil
+}

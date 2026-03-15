@@ -1,3 +1,5 @@
+// Package structparser provides a generic function to parse struct fields based on struct tags
+// and populate them with values from variables.
 package structparser
 
 import (
