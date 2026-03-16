@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"strconv"
 
 	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
@@ -36,56 +36,41 @@ var (
 	metadata169Regexp = regexp.MustCompile(`^https?://169\.254\.169\.254(/|:|$)`)
 )
 
-var filterStatusOptions = map[string]bool{
-	"active":      true,
-	"paused":      true,
-	"quarantined": true,
-	"disabled":    true,
+// ListSourcesInput defines the expected input parameters for listing sources.
+type ListSourcesInput struct {
+	Filter        string       `query_param:"filter_state,allowed:active|paused|quarantined|disabled,default:*"`
+	SortDirection string       `query_param:"sort,allowed:ASC|DESC,default:DESC"`
+	Search        string       `query_param:"search,max_length:512"`
+	PageSize      int          `query_param:"limit,min:1,max:100,default:20"`
+	Cursor        types.Cursor `query_param:"cursor"`
 }
 
 // listSources handles GET requests to list all sources.
 func listSources(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pageSize, cursor, err := api.ParsePaginationParams(
-			r.URL.Query(),
-			svc.Config.APIDefaultPageSize,
-			svc.Config.APIMinPageSize,
-			svc.Config.APIMaxPageSize,
-		)
+		input, err := api.ParseRequestInput[ListSourcesInput](r)
 		if err != nil {
-			logrus.
-				WithError(err).
-				Error("Invalid pagination parameters")
-			http.Error(w, "Invalid pagination parameters", http.StatusBadRequest)
+			logrus.WithError(err).Error("Failed to parse input parameters")
+			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
 			return
 		}
-
-		searchQuery := r.URL.Query().Get("search")
-		if len(searchQuery) > svc.Config.APIMaxSearchQueryLength {
-			logrus.WithField("search_query_length", len(searchQuery)).Error("Search query is too long")
-			http.Error(w, "Search query is too long", http.StatusBadRequest)
-			return
-		}
-
-		filterStatus := api.ParseFilter(r.URL.Query(), "status", filterStatusOptions)
-		sortDirection := api.ParseSortDirection(r.URL.Query(), api.SortDirectionDesc)
 
 		logrus.WithFields(logrus.Fields{
-			"pageSize":      pageSize,
-			"cursor":        cursor,
-			"search":        searchQuery,
-			"filterStatus":  filterStatus,
-			"sortDirection": sortDirection,
-			"query":         r.URL.RawQuery,
+			"page_size":      input.PageSize,
+			"cursor":         input.Cursor,
+			"search":         input.Search,
+			"filter_status":  input.Filter,
+			"sort_direction": input.SortDirection,
+			"query":          r.URL.RawQuery,
 		}).Debug("Received listSources request")
 
 		sources, err := svc.ListSources(
 			r.Context(),
-			cursor,
-			pageSize,
-			searchQuery,
-			filterStatus,
-			sortDirection,
+			input.Cursor,
+			input.PageSize,
+			input.Search,
+			input.Filter,
+			input.SortDirection,
 		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list sources")
@@ -97,10 +82,10 @@ func listSources(svc *service.Service) http.HandlerFunc {
 
 		logrus.WithField("returned_count", len(sourceDTOs)).Debug("Returning sources")
 
-		var nextCursor api.Cursor
-		if len(sourceDTOs) > pageSize {
+		var nextCursor types.Cursor
+		if len(sourceDTOs) > input.PageSize {
 			lastSource := sourceDTOs[len(sourceDTOs)-1]
-			nextCursor = api.NewCursor(
+			nextCursor = types.NewCursor(
 				&lastSource.UpdatedAt,
 				&lastSource.ID,
 			)
@@ -108,7 +93,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 
 		paginatedResponse := api.ToPaginatedResponse(
 			sourceDTOs,
-			pageSize,
+			input.PageSize,
 			nextCursor,
 		)
 
@@ -124,37 +109,34 @@ func listSources(svc *service.Service) http.HandlerFunc {
 	}
 }
 
+// GetSourceByIDInput defines the expected input parameters for retrieving a source by its ID.
+type GetSourceByIDInput struct {
+	SourceID int64 `url_param:"source_id,required,min:1"`
+}
+
 // getSourceByID handles GET requests to retrieve a source by its ID.
 func getSourceByID(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sourceIDRaw := chi.URLParam(r, "sourceID")
+		input, err := api.ParseRequestInput[GetSourceByIDInput](r)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to parse input parameters")
+			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			return
+		}
 
 		logrus.WithFields(logrus.Fields{
-			"source_id": sourceIDRaw,
+			"source_id": input.SourceID,
 			"query":     r.URL.RawQuery,
 		}).Debug("Received getSourceByID request")
 
-		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
-		if err != nil {
-			logrus.WithError(err).Error("Invalid source ID")
-			http.Error(w, "Invalid source ID", http.StatusBadRequest)
-			return
-		}
-
-		if sourceID <= 0 {
-			logrus.WithField("source_id", sourceID).Error("Source ID must be a positive integer")
-			http.Error(w, "Source ID must be a positive integer", http.StatusBadRequest)
-			return
-		}
-
-		source, err := svc.GetSourceByID(r.Context(), sourceID)
+		source, err := svc.GetSourceByID(r.Context(), input.SourceID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				logrus.WithField("source_id", sourceID).Info("Source not found")
+				logrus.WithField("source_id", input.SourceID).Info("Source not found")
 				http.Error(w, "Source not found", http.StatusNotFound)
 				return
 			}
-			logrus.WithField("source_id", sourceID).WithError(err).Error("Failed to get source")
+			logrus.WithField("source_id", input.SourceID).WithError(err).Error("Failed to get source")
 			http.Error(w, "Failed to get source", http.StatusInternalServerError)
 			return
 		}
@@ -173,8 +155,8 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 	}
 }
 
-// CreateSourceData defines the parameters required to create a new source.
-type CreateSourceData struct {
+// CreateSourceData defines the expected input parameters for creating a new source.
+type CreateSourceInput struct {
 	EgressUrl     string            `json:"EgressUrl"`
 	StaticHeaders map[string]string `json:"StaticHeaders,omitempty"`
 	Description   string            `json:"Description,omitempty"`
@@ -187,19 +169,19 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			"query": r.URL.RawQuery,
 		}).Debug("Received createSource request")
 
-		var data CreateSourceData
-		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-			logrus.WithError(err).Error("Failed to decode create source request")
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
+		input, err := api.ParseRequestInput[CreateSourceInput](r)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to parse input parameters")
+			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
 			return
 		}
 
 		logrus.WithFields(logrus.Fields{
-			"egress_url":  data.EgressUrl,
-			"description": data.Description,
+			"egress_url":  input.EgressUrl,
+			"description": input.Description,
 		}).Debug("Create source request data")
 
-		if len(data.Description) > maxDescriptionLen {
+		if len(input.Description) > maxDescriptionLen {
 			logrus.Error("Description too long")
 			http.Error(
 				w,
@@ -209,36 +191,36 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
-		if len(data.StaticHeaders) > maxHeaders {
+		if len(input.StaticHeaders) > maxHeaders {
 			http.Error(w, "Too many headers", http.StatusBadRequest)
 			return
 		}
-		for k, v := range data.StaticHeaders {
+		for k, v := range input.StaticHeaders {
 			if len(k) > maxHeaderKeyLen || len(v) > maxHeaderValueLen {
 				http.Error(w, "Header key or value too long", http.StatusBadRequest)
 				return
 			}
 		}
 
-		staticHeaders, staticHeadersErr := json.Marshal(data.StaticHeaders)
+		staticHeaders, staticHeadersErr := json.Marshal(input.StaticHeaders)
 		if staticHeadersErr != nil {
 			logrus.WithError(staticHeadersErr).Error("Failed to marshal static headers")
 			http.Error(w, "Invalid static headers", http.StatusBadRequest)
 			return
 		}
 
-		if !validateEgressUrl(data.EgressUrl, svc.Config.Env) {
-			logrus.WithField("egressUrl", data.EgressUrl).Error("Invalid egress URL")
+		if !validateEgressUrl(input.EgressUrl, svc.Config.Env) {
+			logrus.WithField("egressUrl", input.EgressUrl).Error("Invalid egress URL")
 			http.Error(w, "Invalid egress URL", http.StatusBadRequest)
 			return
 		}
 
 		source, err := svc.CreateSource(r.Context(), db.CreateSourceParams{
-			EgressUrl:     data.EgressUrl,
+			EgressUrl:     input.EgressUrl,
 			StaticHeaders: staticHeaders,
 			Description: pgtype.Text{
-				String: data.Description,
-				Valid:  data.Description != "",
+				String: input.Description,
+				Valid:  input.Description != "",
 			},
 		})
 		if err != nil {
@@ -323,8 +305,8 @@ func validateEgressUrl(egressUrl, env string) bool {
 func sourcesRouter(svc *service.Service) chi.Router {
 	r := chi.NewRouter()
 	r.Get("/", listSources(svc))
-	r.Get("/{sourceID}", getSourceByID(svc))
+	r.Get("/{source_id}", getSourceByID(svc))
 	r.Post("/", createSource(svc))
-	r.Mount("/{sourceID}/events", eventsRouter(svc))
+	r.Mount("/{source_id}/events", eventsRouter(svc))
 	return r
 }

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 )
 
 // PaginatedResponse represents a standard structure for paginated API responses.
@@ -19,7 +21,7 @@ type PaginatedResponse[T any] struct {
 func ToPaginatedResponse[T any](
 	data []T,
 	pageSize int,
-	cursor Cursor,
+	cursor types.Cursor,
 ) PaginatedResponse[T] {
 	hasNext := len(data) > pageSize
 	var nextCursor *string
@@ -44,7 +46,7 @@ func ParsePaginationParams(
 	maxPageSize int,
 ) (
 	pageSize int,
-	cursor Cursor,
+	cursor types.Cursor,
 	err error,
 ) {
 	pageSize, err = getIntQueryParam(query, "limit", defaultPageSize)

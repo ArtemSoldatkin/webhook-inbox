@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
+	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/sirupsen/logrus"
@@ -15,10 +15,10 @@ import (
 func (svc *Service) ListEvents(
 	ctx context.Context,
 	sourceID int64,
-	cursor api.Cursor,
+	cursor types.Cursor,
 	pageSize int,
 	searchQuery string,
-	sortDirection api.SortDirection,
+	sortDirection string,
 ) ([]db.Event, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListEventsBySource(ctx, db.ListEventsBySourceParams{
@@ -27,7 +27,7 @@ func (svc *Service) ListEvents(
 		CursorID:      cursorID,
 		SearchQuery:   searchQuery,
 		PageSize:      int32(pageSize),
-		SortDirection: string(sortDirection),
+		SortDirection: sortDirection,
 	})
 }
 
