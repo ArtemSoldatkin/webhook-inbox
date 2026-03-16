@@ -38,10 +38,10 @@ var (
 
 // ListSourcesInput defines the expected input parameters for listing sources.
 type ListSourcesInput struct {
-	Filter        string       `query_param:"filter_state,allowed=active|paused|quarantined|disabled,default=*"`
-	SortDirection string       `query_param:"sort,allowed=ASC|DESC,default=DESC"`
-	Search        string       `query_param:"search,max_length=512"`
-	PageSize      int          `query_param:"limit,min=1,max=100,default=20"`
+	Filter        string       `query_param:"filter_state,allowed:active|paused|quarantined|disabled,default:*"`
+	SortDirection string       `query_param:"sort,allowed:ASC|DESC,default:DESC"`
+	Search        string       `query_param:"search,max_length:512"`
+	PageSize      int          `query_param:"limit,min:1,max:100,default:20"`
 	Cursor        types.Cursor `query_param:"cursor"`
 }
 
@@ -111,7 +111,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 
 // GetSourceByIDInput defines the expected input parameters for retrieving a source by its ID.
 type GetSourceByIDInput struct {
-	SourceID int64 `url_param:"event_id,required,min=1"`
+	SourceID int64 `url_param:"source_id,required,min:1"`
 }
 
 // getSourceByID handles GET requests to retrieve a source by its ID.
