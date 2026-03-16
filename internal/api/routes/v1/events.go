@@ -3,7 +3,6 @@ package routev1
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
@@ -14,63 +13,41 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// ListEventsInput defines the expected input parameters for listing events.
+type ListEventsInput struct {
+	SourceID      int64        `url_param:"source_id,required,min=1"`
+	Search        string       `query_param:"search,max_length=512"`
+	SortDirection string       `query_param:"sort,allowed=ASC|DESC,default=DESC"`
+	PageSize      int          `query_param:"limit,min=1,max=100,default=20"`
+	Cursor        types.Cursor `query_param:"cursor"`
+}
+
 // listEvents handles GET requests to list all events.
 func listEvents(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pageSize, cursor, err := api.ParsePaginationParams(
-			r.URL.Query(),
-			svc.Config.APIDefaultPageSize,
-			svc.Config.APIMinPageSize,
-			svc.Config.APIMaxPageSize,
-		)
+		input, err := api.ParseRequestInput[ListEventsInput](r)
 		if err != nil {
-			logrus.
-				WithError(err).
-				Error("Invalid pagination parameters")
-			http.Error(w, "Invalid pagination parameters", http.StatusBadRequest)
+			logrus.WithError(err).Error("Failed to parse input parameters")
+			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
 			return
 		}
-
-		sourceIDRaw := chi.URLParam(r, "sourceID")
-
-		searchQuery := r.URL.Query().Get("search")
-		if len(searchQuery) > svc.Config.APIMaxSearchQueryLength {
-			logrus.WithField("search_query_length", len(searchQuery)).Error("Search query is too long")
-			http.Error(w, "Search query is too long", http.StatusBadRequest)
-			return
-		}
-
-		sortDirection := api.ParseSortDirection(r.URL.Query(), api.SortDirectionDesc)
 
 		logrus.WithFields(logrus.Fields{
-			"source_id":     sourceIDRaw,
-			"pageSize":      pageSize,
-			"cursor":        cursor,
-			"search":        searchQuery,
-			"sortDirection": sortDirection,
-			"query":         r.URL.RawQuery,
+			"source_id":      input.SourceID,
+			"page_size":      input.PageSize,
+			"cursor":         input.Cursor,
+			"search":         input.Search,
+			"sort_direction": input.SortDirection,
+			"query":          r.URL.RawQuery,
 		}).Debug("Received listEvents request")
-
-		sourceID, err := strconv.ParseInt(sourceIDRaw, 10, 64)
-		if err != nil {
-			logrus.WithError(err).Error("Invalid source ID")
-			http.Error(w, "Invalid source ID", http.StatusBadRequest)
-			return
-		}
-
-		if sourceID <= 0 {
-			logrus.WithField("source_id", sourceID).Error("Source ID must be a positive integer")
-			http.Error(w, "Source ID must be a positive integer", http.StatusBadRequest)
-			return
-		}
 
 		events, err := svc.ListEvents(
 			r.Context(),
-			sourceID,
-			cursor,
-			pageSize,
-			searchQuery,
-			sortDirection,
+			input.SourceID,
+			input.Cursor,
+			input.PageSize,
+			input.Search,
+			input.SortDirection,
 		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list events")
@@ -81,12 +58,12 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 		eventDTOs := mapperv1.ToEventDTOs(events)
 
 		logrus.WithFields(logrus.Fields{
-			"source_id":      sourceID,
+			"source_id":      input.SourceID,
 			"returned_count": len(eventDTOs),
 		}).Debug("Returning events")
 
 		var nextCursor types.Cursor
-		if len(eventDTOs) > pageSize {
+		if len(eventDTOs) > input.PageSize {
 			lastEvent := eventDTOs[len(eventDTOs)-1]
 			nextCursor = types.NewCursor(
 				&lastEvent.ReceivedAt,
@@ -96,7 +73,7 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 
 		paginatedResponse := api.ToPaginatedResponse(
 			eventDTOs,
-			pageSize,
+			input.PageSize,
 			nextCursor,
 		)
 
@@ -112,37 +89,34 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 	}
 }
 
+// GetEventInput defines the expected input parameters for retrieving a specific event.
+type GetEventInput struct {
+	EventID int64 `url_param:"event_id,required,min=1"`
+}
+
 // getEvent handles GET requests to retrieve an event by its ID.
 func getEvent(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		eventIDRaw := chi.URLParam(r, "eventID")
+		input, err := api.ParseRequestInput[GetEventInput](r)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to parse input parameters")
+			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			return
+		}
 
 		logrus.WithFields(logrus.Fields{
-			"event_id": eventIDRaw,
+			"event_id": input.EventID,
 			"query":    r.URL.RawQuery,
 		}).Debug("Received getEvent request")
 
-		eventID, err := strconv.ParseInt(eventIDRaw, 10, 64)
-		if err != nil {
-			logrus.WithError(err).Error("Invalid event ID")
-			http.Error(w, "Invalid event ID", http.StatusBadRequest)
-			return
-		}
-
-		if eventID <= 0 {
-			logrus.WithField("event_id", eventID).Error("Event ID must be a positive integer")
-			http.Error(w, "Event ID must be a positive integer", http.StatusBadRequest)
-			return
-		}
-
-		event, err := svc.GetEventByID(r.Context(), eventID)
+		event, err := svc.GetEventByID(r.Context(), input.EventID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				logrus.WithField("event_id", eventID).Info("Event not found")
+				logrus.WithField("event_id", input.EventID).Info("Event not found")
 				http.Error(w, "Event not found", http.StatusNotFound)
 				return
 			}
-			logrus.WithField("event_id", eventID).WithError(err).Error("Failed to get event")
+			logrus.WithField("event_id", input.EventID).WithError(err).Error("Failed to get event")
 			http.Error(w, "Failed to get event", http.StatusInternalServerError)
 			return
 		}
@@ -165,7 +139,7 @@ func getEvent(svc *service.Service) http.HandlerFunc {
 func eventsRouter(svc *service.Service) chi.Router {
 	r := chi.NewRouter()
 	r.Mount("/{event_id}/delivery-attempts", deliveryAttemptsRouter(svc))
-	r.Get("/{eventID}", getEvent(svc))
+	r.Get("/{event_id}", getEvent(svc))
 	r.Get("/", listEvents(svc))
 	return r
 }

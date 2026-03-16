@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
-	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/utils"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -20,7 +19,7 @@ func (svc *Service) ListSources(
 	pageSize int,
 	searchQuery string,
 	filterStatus string,
-	sortDirection api.SortDirection,
+	sortDirection string,
 ) ([]db.Source, error) {
 	cursorTS, cursorID := cursor.ToDBParams()
 	return svc.queries.ListSources(ctx, db.ListSourcesParams{

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
 
@@ -10,46 +11,53 @@ import (
 
 // ParseUrlParams is a generic function that parses URL parameters
 // from an HTTP request into a struct based on struct tags.
-func ParseUrlParams[T any](r *http.Request) (*T, error) {
-	var params T
-
-	if err := structparser.ParseStruct(&params, "param", func(varName string) string {
+func ParseUrlParams[T any](r *http.Request, params *T) error {
+	if err := structparser.ParseStruct(params, "url_param", func(varName string) string {
 		return chi.URLParam(r, varName)
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
-	return &params, nil
+	return nil
 }
 
 // ParseQueryParams is a generic function that parses query parameters
 // from an HTTP request into a struct based on struct tags.
-func ParseQueryParams[T any](queryParams url.Values) (*T, error) {
-	var params T
-
-	if err := structparser.ParseStruct(&params, "param", func(varName string) string {
+func ParseQueryParams[T any](queryParams url.Values, params *T) error {
+	if err := structparser.ParseStruct(params, "query_param", func(varName string) string {
 		return queryParams.Get(varName)
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
-	return &params, nil
+	return nil
 }
 
-// ParseRequestInput is a generic function that parses both URL and query parameters
+// ParseJsonBodyParams is a generic function that parses JSON body parameters
 // from an HTTP request into a struct based on struct tags.
+func ParseJsonBodyParams[T any](r *http.Request, params *T) error {
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ParseRequestInput is a generic function that parses URL parameters, query parameters,
+// and JSON body parameters from an HTTP request into a struct based on struct tags.
 func ParseRequestInput[T any](r *http.Request) (*T, error) {
 	var params T
 
-	if err := structparser.ParseStruct(&params, "url_param", func(varName string) string {
-		return chi.URLParam(r, varName)
-	}); err != nil {
+	if err := ParseUrlParams(r, &params); err != nil {
 		return nil, err
 	}
 
-	if err := structparser.ParseStruct(&params, "query_param", func(varName string) string {
-		return r.URL.Query().Get(varName)
-	}); err != nil {
+	if err := ParseQueryParams(r.URL.Query(), &params); err != nil {
+		return nil, err
+	}
+
+	if err := ParseJsonBodyParams(r, &params); err != nil {
 		return nil, err
 	}
 

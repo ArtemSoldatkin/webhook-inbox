@@ -11,6 +11,7 @@ import (
 	"net/netip"
 	"regexp"
 
+	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -21,31 +22,42 @@ import (
 
 var uuidRegexp = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
 
+// IngestEventInput defines the expected input parameters for ingesting a new event.
+type IngestEventInput struct {
+	PublicID string `url_param:"public_id,required"`
+}
+
 // ingestEvent handles ANY requests to ingest a new event.
 func ingestEvent(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		publicID := chi.URLParam(r, "public_id")
+		input, err := api.ParseRequestInput[IngestEventInput](r)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to parse input parameters")
+			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			return
+		}
+
 		logrus.WithFields(logrus.Fields{
-			"public_id": publicID,
+			"public_id": input.PublicID,
 			"method":    r.Method,
 			"path":      r.URL.Path,
 			"query":     r.URL.RawQuery,
 		}).Debug("Received ingestEvent request")
 
-		if !validatePublicID(publicID) {
-			logrus.WithField("public_id", publicID).Error("Invalid public_id")
+		if !validatePublicID(input.PublicID) {
+			logrus.WithField("public_id", input.PublicID).Error("Invalid public_id")
 			http.Error(w, "Invalid public_id", http.StatusBadRequest)
 			return
 		}
 
-		source, err := svc.GetSourceByPublicID(r.Context(), publicID)
+		source, err := svc.GetSourceByPublicID(r.Context(), input.PublicID)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				logrus.WithField("public_id", publicID).Info("Source not found")
+				logrus.WithField("public_id", input.PublicID).Info("Source not found")
 				http.Error(w, "Source not found", http.StatusNotFound)
 				return
 			}
-			logrus.WithField("public_id", publicID).WithError(err).Error("Failed to get source")
+			logrus.WithField("public_id", input.PublicID).WithError(err).Error("Failed to get source")
 			http.Error(w, "Failed to get source", http.StatusInternalServerError)
 			return
 		}
