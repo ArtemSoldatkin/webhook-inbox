@@ -1,7 +1,9 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -46,8 +48,30 @@ func ParseQueryParams[T any](queryParams url.Values, params *T) error {
 // ParseJsonBodyParams is a generic function that parses JSON body parameters
 // from an HTTP request into a struct based on struct tags.
 func ParseJsonBodyParams[T any](r *http.Request, params *T) error {
-	decoder := json.NewDecoder(r.Body)
+	if r.Body == nil {
+		return nil
+	}
+
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	// Restore the body for downstream handlers, even if it's empty.
+	defer func() {
+		r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+	}()
+
+	if len(bodyBytes) == 0 {
+		// Treat empty body as "no body", not an error.
+		return nil
+	}
+
+	decoder := json.NewDecoder(bytes.NewReader(bodyBytes))
 	if err := decoder.Decode(params); err != nil {
+		if err == io.EOF {
+			// Treat EOF as "no body".
+			return nil
+		}
 		return err
 	}
 
