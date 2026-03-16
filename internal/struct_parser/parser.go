@@ -19,7 +19,12 @@ var (
 
 // ParseStruct is a generic function that populates a struct with values from variables based on struct tags
 // It takes a pointer to the struct, the tag name to look for, and a function to retrieve variable values.
-func ParseStruct[T any](config *T, tagName string, getVar func(string) string) error {
+func ParseStruct[T any](
+	config *T,
+	tagName string,
+	getVar func(string) string,
+	ignoreMissingTag bool,
+) error {
 	if reflect.TypeOf(*config).Kind() != reflect.Struct {
 		return errors.New("config must be a struct")
 	}
@@ -28,6 +33,9 @@ func ParseStruct[T any](config *T, tagName string, getVar func(string) string) e
 		field := reflect.TypeOf(*config).Field(i)
 		tag := field.Tag.Get(tagName)
 		if tag == "" {
+			if ignoreMissingTag {
+				continue
+			}
 			return fmt.Errorf(
 				"missing %s tag for field %s",
 				tagName,

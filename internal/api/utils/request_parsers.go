@@ -12,9 +12,14 @@ import (
 // ParseUrlParams is a generic function that parses URL parameters
 // from an HTTP request into a struct based on struct tags.
 func ParseUrlParams[T any](r *http.Request, params *T) error {
-	if err := structparser.ParseStruct(params, "url_param", func(varName string) string {
-		return chi.URLParam(r, varName)
-	}); err != nil {
+	if err := structparser.ParseStruct(
+		params,
+		"url_param",
+		func(varName string) string {
+			return chi.URLParam(r, varName)
+		},
+		true,
+	); err != nil {
 		return err
 	}
 
@@ -24,9 +29,14 @@ func ParseUrlParams[T any](r *http.Request, params *T) error {
 // ParseQueryParams is a generic function that parses query parameters
 // from an HTTP request into a struct based on struct tags.
 func ParseQueryParams[T any](queryParams url.Values, params *T) error {
-	if err := structparser.ParseStruct(params, "query_param", func(varName string) string {
-		return queryParams.Get(varName)
-	}); err != nil {
+	if err := structparser.ParseStruct(
+		params,
+		"query_param",
+		func(varName string) string {
+			return queryParams.Get(varName)
+		},
+		true,
+	); err != nil {
 		return err
 	}
 
