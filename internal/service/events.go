@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -136,6 +137,7 @@ func (svc *Service) CreateEvent(
 	if err != nil {
 		return 0, err
 	}
+	r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 
 	method := r.Method
 	ingressPath := r.URL.Path
