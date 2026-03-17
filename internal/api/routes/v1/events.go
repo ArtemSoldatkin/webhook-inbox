@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	mapperv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/mapper/v1"
+	requestsv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/requests/v1"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
@@ -13,19 +14,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ListEventsInput defines the expected input parameters for listing events.
-type ListEventsInput struct {
-	SourceID      int64        `url_param:"source_id,required,min:1"`
-	Search        string       `query_param:"search,max_length:512"`
-	SortDirection string       `query_param:"sort,allowed:ASC|DESC,default:DESC"`
-	PageSize      int          `query_param:"limit,min:1,max:100,default:20"`
-	Cursor        types.Cursor `query_param:"cursor"`
-}
-
 // listEvents handles GET requests to list all events.
 func listEvents(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		input, err := api.ParseRequestInput[ListEventsInput](r)
+		input, err := api.ParseRequestInput[requestsv1.ListEventsInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
 			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
@@ -89,15 +81,10 @@ func listEvents(svc *service.Service) http.HandlerFunc {
 	}
 }
 
-// GetEventInput defines the expected input parameters for retrieving a specific event.
-type GetEventInput struct {
-	EventID int64 `url_param:"event_id,required,min:1"`
-}
-
 // getEvent handles GET requests to retrieve an event by its ID.
 func getEvent(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		input, err := api.ParseRequestInput[GetEventInput](r)
+		input, err := api.ParseRequestInput[requestsv1.GetEventInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
 			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
