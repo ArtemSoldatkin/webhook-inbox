@@ -102,7 +102,7 @@ func (svc *Service) CreateEvent(
 	r *http.Request,
 	publicID string,
 ) (int64, error) {
-	source, err := svc.GetSourceByPublicID(r.Context(), publicID)
+	source, err := svc.GetSourceByPublicID(ctx, publicID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, &SourceIsNotFound{
