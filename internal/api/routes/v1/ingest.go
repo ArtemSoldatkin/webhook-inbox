@@ -1,36 +1,21 @@
 package routev1
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"errors"
-	"io"
-	"net"
 	"net/http"
-	"net/netip"
-	"regexp"
 
+	requestsv1 "github.com/ArtemSoldatkin/webhook-inbox/internal/api/requests/v1"
 	api "github.com/ArtemSoldatkin/webhook-inbox/internal/api/utils"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/db"
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/service"
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
 )
-
-var uuidRegexp = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
-
-// IngestEventInput defines the expected input parameters for ingesting a new event.
-type IngestEventInput struct {
-	PublicID string `url_param:"public_id,required"`
-}
 
 // ingestEvent handles ANY requests to ingest a new event.
 func ingestEvent(svc *service.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		input, err := api.ParseRequestInput[IngestEventInput](r)
+		input, err := api.ParseRequestInput[requestsv1.IngestEventInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
 			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
@@ -44,96 +29,26 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			"query":     r.URL.RawQuery,
 		}).Debug("Received ingestEvent request")
 
-		if !validatePublicID(input.PublicID) {
-			logrus.WithField("public_id", input.PublicID).Error("Invalid public_id")
-			http.Error(w, "Invalid public_id", http.StatusBadRequest)
+		if err := requestsv1.ValidateIngestEventInput(input); err != nil {
+			logrus.WithError(err).WithField("public_id", input.PublicID).Error("Input validation failed")
+			http.Error(w, "Invalid input parameters: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		source, err := svc.GetSourceByPublicID(r.Context(), input.PublicID)
+		eventID, err := svc.CreateEvent(r.Context(), r, input.PublicID)
 		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				logrus.WithField("public_id", input.PublicID).Info("Source not found")
-				http.Error(w, "Source not found", http.StatusNotFound)
+			var writeErr *service.SourceIsNotFound
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Source not found for given public_id")
+				http.Error(w, writeErr.Message, http.StatusNotFound)
 				return
 			}
-			logrus.WithField("public_id", input.PublicID).WithError(err).Error("Failed to get source")
-			http.Error(w, "Failed to get source", http.StatusInternalServerError)
-			return
-		}
-
-		host, _, err := net.SplitHostPort(r.RemoteAddr)
-		if err != nil {
-			logrus.
-				WithError(err).
-				Errorf("Failed to split host and port from remote address: %s", r.RemoteAddr)
-			http.Error(w, "Invalid remote address", http.StatusBadRequest)
-			return
-		}
-
-		remoteAddress, err := netip.ParseAddr(host)
-		if err != nil {
-			logrus.WithError(err).Errorf("Failed to parse remote address: %s", r.RemoteAddr)
-			http.Error(w, "Invalid remote address", http.StatusBadRequest)
-			return
-		}
-
-		headerBytes, err := json.Marshal(r.Header)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to marshal headers")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		queryParams, err := json.Marshal(r.URL.Query())
-		if err != nil {
-			logrus.WithError(err).Error("Failed to marshal query parameters")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		bodyBytes, err := io.ReadAll(r.Body)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to read request body")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		method := r.Method
-		ingressPath := r.URL.Path
-
-		dedupHash, err := generateDedupHash(DedupPayload{
-			Method:      method,
-			IngressPath: ingressPath,
-			QueryParams: queryParams,
-			RawHeaders:  headerBytes,
-			Body:        bodyBytes,
-		})
-		if err != nil {
-			logrus.WithError(err).Error("Failed to generate deduplication hash")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		eventID, err := svc.CreateEvent(r.Context(), db.CreateEventParams{
-			SourceID:        source.ID,
-			DedupHash:       pgtype.Text{String: dedupHash, Valid: true},
-			Method:          method,
-			IngressPath:     ingressPath,
-			RemoteAddress:   &remoteAddress,
-			QueryParams:     queryParams,
-			RawHeaders:      headerBytes,
-			Body:            bodyBytes,
-			BodyContentType: r.Header.Get("Content-Type"),
-		})
-		if err != nil {
 			logrus.WithError(err).Error("Failed to create event")
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 		logrus.WithFields(logrus.Fields{
-			"event_id":   eventID,
-			"body_bytes": len(bodyBytes),
+			"event_id": eventID,
 		}).Info("Created event")
 
 		deliveryAttemptID, err := svc.CreateDeliveryAttempt(
@@ -158,30 +73,6 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("OK"))
 	}
-}
-
-// DedupPayload represents the data used to generate a deduplication hash for an event.
-type DedupPayload struct {
-	Method      string `json:"method"`
-	IngressPath string `json:"ingress_path"`
-	QueryParams []byte `json:"query_params"`
-	RawHeaders  []byte `json:"headers"`
-	Body        []byte `json:"body"`
-}
-
-// generateDedupHash generates a SHA-256 hash of the input data for deduplication purposes.
-func generateDedupHash(dedupPayload DedupPayload) (string, error) {
-	dedupData, err := json.Marshal(dedupPayload)
-	if err != nil {
-		return "", err
-	}
-	hash := sha256.Sum256(dedupData)
-	return hex.EncodeToString(hash[:]), nil
-}
-
-// validatePublicID checks if the provided public ID matches the expected UUID format.
-func validatePublicID(publicID string) bool {
-	return uuidRegexp.MatchString(publicID)
 }
 
 // ingestRouter sets up the router for event ingestion endpoints.
