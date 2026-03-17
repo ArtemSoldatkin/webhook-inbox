@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	structparser "github.com/ArtemSoldatkin/webhook-inbox/internal/struct_parser"
 	"github.com/go-chi/chi/v5"
@@ -91,8 +92,11 @@ func ParseRequestInput[T any](r *http.Request) (*T, error) {
 		return nil, err
 	}
 
-	if err := ParseJsonBodyParams(r, &params); err != nil {
-		return nil, err
+	contentType := r.Header.Get("Content-Type")
+	if strings.HasPrefix(contentType, "application/json") {
+		if err := ParseJsonBodyParams(r, &params); err != nil {
+			return nil, err
+		}
 	}
 
 	return &params, nil
