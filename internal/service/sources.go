@@ -88,7 +88,7 @@ func (svc *Service) GetSourceByPublicID(
 	return source, nil
 }
 
-// ListSources retrieves a paginated list of sources based on the provided parameters.
+// CreateSourceInput contains the parameters required to create a new source.
 type CreateSourceInput struct {
 	EgressUrl     string
 	StaticHeaders map[string]string
