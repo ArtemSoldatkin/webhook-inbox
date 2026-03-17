@@ -148,11 +148,16 @@ func validateEgressUrl(egressUrl, env string) bool {
 		return true
 	}
 	host := parsedUrl.Hostname()
-	ips, err := net.LookupIP(host)
+	// Use a context with timeout to avoid hanging on DNS resolution.
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	ipAddrs, err := net.DefaultResolver.LookupIPAddr(ctx, host)
 	if err != nil {
 		return false
 	}
-	for _, ip := range ips {
+	for _, addr := range ipAddrs {
+		ip := addr.IP
 		if ip.IsLoopback() ||
 			ip.IsPrivate() ||
 			ip.IsLinkLocalUnicast() ||
