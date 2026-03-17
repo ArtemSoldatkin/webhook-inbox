@@ -37,10 +37,10 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 
 		eventID, err := svc.CreateEvent(r.Context(), r, input.PublicID)
 		if err != nil {
-			var writeErr *service.SourceIsNotFound
-			if errors.As(err, &writeErr) {
+			var notFoundErr *service.SourceIsNotFound
+			if errors.As(err, &notFoundErr) {
 				logrus.WithError(err).Error("Source not found for given public_id")
-				http.Error(w, writeErr.Message, http.StatusNotFound)
+				http.Error(w, notFoundErr.Message, http.StatusNotFound)
 				return
 			}
 			logrus.WithError(err).Error("Failed to create event")
