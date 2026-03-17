@@ -133,10 +133,17 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			return
 		}
 
+		// Avoid logging full static_headers as it may contain secrets (e.g., Authorization/API keys).
+		headerNames := make([]string, 0, len(input.StaticHeaders))
+		for k := range input.StaticHeaders {
+			headerNames = append(headerNames, k)
+		}
+
 		logrus.WithFields(logrus.Fields{
-			"egress_url":     input.EgressUrl,
-			"static_headers": input.StaticHeaders,
-			"description":    input.Description,
+			"egress_url":          input.EgressUrl,
+			"static_header_names": headerNames,
+			"static_header_count": len(input.StaticHeaders),
+			"description":         input.Description,
 		}).Debug("Create source request data")
 
 		if err := requestsv1.ValidateCreateSourceInput(input); err != nil {
