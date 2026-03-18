@@ -35,6 +35,11 @@
 		}
 	}
 
+	function handleClear() {
+		body = '';
+		error = null;
+	}
+
 	$effect(() => {
 		if (body && !isValidBase64(body)) {
 			error = 'Invalid base64 string';
@@ -44,5 +49,6 @@
 	});
 </script>
 
-<textarea rows={5} bind:value={body} placeholder="Enter base64 body here..."></textarea>
+<textarea rows="10" cols="50" bind:value={body} placeholder="Enter base64 body here..."></textarea>
 <input type="file" onchange={(e) => handleFileChange(e)} />
+<button type="button" onclick={handleClear}>Clear</button>
