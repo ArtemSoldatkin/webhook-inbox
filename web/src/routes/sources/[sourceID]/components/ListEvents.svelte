@@ -8,7 +8,11 @@
 	import type { EventDTO } from '$lib/types';
 	import BodyView from './BodyView.svelte';
 
-	let { sourceID } = $props<{ sourceID: string }>();
+	type Props = {
+		sourceID: string;
+	};
+
+	let { sourceID }: Props = $props();
 
 	let data = $state<EventDTO[]>([]);
 	let loading = $state(false);

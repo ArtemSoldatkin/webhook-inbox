@@ -1,33 +1,19 @@
 <script lang="ts">
-	import hljs from 'highlight.js/lib/core';
-	import xml from 'highlight.js/lib/languages/xml';
-	import 'highlight.js/styles/github.css';
-	import formatXML from 'xml-formatter';
+	import type { ContentType } from '$lib/types';
+	import ByteBodyView from './BodyTypeViews/ByteBodyView.svelte';
+	import FormUrlEncodedBodyView from './BodyTypeViews/FormUrlEncodedBodyView.svelte';
+	import JSONBodyView from './BodyTypeViews/JSONBodyView.svelte';
+	import PlainTextBodyView from './BodyTypeViews/PlainTextBodyView.svelte';
+	import XMLBodyView from './BodyTypeViews/XMLBodyView.svelte';
 
-	hljs.registerLanguage('xml', xml);
+	type Props = {
+		body?: string;
+		contentType?: ContentType;
+	};
 
-	export let body: string | undefined;
-	export let contentType: string | undefined;
+	let { body, contentType }: Props = $props();
 
-	const parsedBody = body ? atob(body) : '';
-	const bodyByteLength = parsedBody.length;
-	const highlightedXml = contentType?.startsWith('application/xml')
-		? hljs.highlight(formatXML(parsedBody), { language: 'xml' }).value
-		: '';
-
-	function downloadBytes() {
-		const blob = new Blob([parsedBody], {
-			type: contentType || 'application/octet-stream'
-		});
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'request-body';
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
-	}
+	const parsedBody = $derived(body ? atob(body) : '');
 </script>
 
 <section>
@@ -37,13 +23,14 @@
 	{:else if !contentType}
 		<p>Content type unknown, cannot display body</p>
 	{:else if contentType.startsWith('application/json')}
-		<pre>{JSON.stringify(JSON.parse(parsedBody), null, 2)}</pre>
+		<JSONBodyView body={parsedBody} />
 	{:else if contentType.startsWith('application/x-www-form-urlencoded')}
-		<pre>{new URLSearchParams(parsedBody).toString()}</pre>
+		<FormUrlEncodedBodyView body={parsedBody} />
 	{:else if contentType.startsWith('application/xml')}
-		<pre><code class="hljs xml">{@html highlightedXml}</code></pre>
+		<XMLBodyView body={parsedBody} />
+	{:else if contentType.startsWith('text/plain')}
+		<PlainTextBodyView body={parsedBody} />
 	{:else}
-		<p>Size: {bodyByteLength} bytes</p>
-		<button on:click={downloadBytes} disabled={parsedBody === ''}>Download as file</button>
+		<ByteBodyView body={parsedBody} {contentType} />
 	{/if}
 </section>
