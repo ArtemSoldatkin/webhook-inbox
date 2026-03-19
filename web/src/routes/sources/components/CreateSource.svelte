@@ -111,10 +111,12 @@
 	{#if egressError}
 		<p class="error">{egressError}</p>
 	{/if}
-	<label
-		>Static Headers
-		<InputMap bind:json={data.static_headers} disabled={loading} />
-	</label>
+	{#if data.static_headers}
+		<label
+			>Static Headers
+			<InputMap bind:map={data.static_headers} disabled={loading} />
+		</label>
+	{/if}
 	<label
 		>Description
 		<textarea bind:value={data.description} placeholder="Optional description"></textarea>

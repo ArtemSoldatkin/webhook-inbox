@@ -9,11 +9,25 @@
 
 	let { body }: Props = $props();
 
-	const highlightedXml = $derived(
-		hljs.highlight(JSON.stringify(JSON.parse(body), null, 2), {
-			language: 'json'
-		}).value
-	);
+	const parsed = $derived.by(() => {
+		try {
+			const formatted = JSON.stringify(JSON.parse(body), null, 2);
+			const html = hljs.highlight(formatted, { language: 'json' }).value;
+
+			return {
+				html: DOMPurify.sanitize(html),
+				error: null
+			};
+		} catch {
+			return {
+				html: DOMPurify.sanitize(hljs.highlight(body, { language: 'json' }).value),
+				error: 'Invalid JSON'
+			};
+		}
+	});
 </script>
 
-<pre><code class="hljs xml">{@html DOMPurify.sanitize(highlightedXml)}</code></pre>
+{#if parsed.error}
+	<p>{parsed.error}</p>
+{/if}
+<pre><code class="hljs xml">{@html parsed.html}</code></pre>

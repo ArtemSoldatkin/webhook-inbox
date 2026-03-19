@@ -1,34 +1,38 @@
 <script lang="ts">
-	let key: string = '';
-	let value: string = '';
+	type Props = {
+		map: Record<string, string>;
+		disabled?: boolean;
+	};
 
-	export let json: Record<string, string> = {};
-	export let disabled: boolean = false;
+	let { map = $bindable(), disabled }: Props = $props();
+
+	let key = $state('');
+	let value = $state('');
 
 	function addKeyValue() {
-		if (key.trim() === '' || value.trim() === '' || json[key]) {
+		if (key.trim() === '' || value.trim() === '' || map[key]) {
 			return;
 		}
-		json = { ...json, [key]: value };
+		map = { ...map, [key]: value };
 		key = '';
 		value = '';
 	}
 
 	function removeKey(keyToRemove: string) {
-		delete json[keyToRemove];
-		json = { ...json };
+		delete map[keyToRemove];
+		map = { ...map };
 	}
 </script>
 
 <ul>
-	{#each Object.keys(json) as jsonKey}
+	{#each Object.keys(map) as mapKey (mapKey)}
 		<li>
-			<p>{jsonKey}</p>
-			<input type="text" placeholder="Value" bind:value={json[jsonKey]} {disabled} />
-			<button type="button" {disabled} on:click={() => removeKey(jsonKey)}>Remove</button>
+			<p>{mapKey}</p>
+			<input type="text" placeholder="Value" bind:value={map[mapKey]} {disabled} />
+			<button type="button" {disabled} onclick={() => removeKey(mapKey)}>Remove</button>
 		</li>
 	{/each}
 </ul>
 <input type="text" placeholder="Key" bind:value={key} {disabled} />
 <input type="text" placeholder="Value" bind:value {disabled} />
-<button type="button" {disabled} on:click={() => addKeyValue()}>Add</button>
+<button type="button" {disabled} onclick={() => addKeyValue()}>Add</button>

@@ -33,4 +33,4 @@
 
 <textarea bind:value={body} rows="10" cols="50" placeholder="Enter JSON body here..."></textarea>
 <button type="button" onclick={formatJSON} disabled={!!error}>Format</button>
-<button type="button" onclick={handleClear}>Clear</button>
+<button type="button" onclick={handleClear} disabled={!body}>Clear</button>

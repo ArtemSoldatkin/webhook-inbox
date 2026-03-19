@@ -51,4 +51,4 @@
 
 <textarea rows="10" cols="50" bind:value={body} placeholder="Enter base64 body here..."></textarea>
 <input type="file" onchange={(e) => handleFileChange(e)} />
-<button type="button" onclick={handleClear}>Clear</button>
+<button type="button" onclick={handleClear} disabled={!body}>Clear</button>

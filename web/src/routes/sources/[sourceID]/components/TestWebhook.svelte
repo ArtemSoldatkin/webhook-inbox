@@ -60,11 +60,11 @@
 	</label>
 	<label>
 		Headers (optional):
-		<InputMap bind:json={headers} disabled={loading} />
+		<InputMap bind:map={headers} disabled={loading} />
 	</label>
 	<label>
 		Query Parameters (optional):
-		<InputMap bind:json={queryParams} disabled={loading} />
+		<InputMap bind:map={queryParams} disabled={loading} />
 	</label>
 	{#if isBodyAllowed}<label>
 			Body (optional):

@@ -16,20 +16,24 @@
 	);
 
 	function downloadBytes() {
-		const blob = new Blob([body], {
-			type: contentType || 'application/octet-stream'
-		});
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = 'request-body';
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
+		try {
+			const blob = new Blob([body], {
+				type: contentType || 'application/octet-stream'
+			});
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'request-body';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error('Error downloading bytes:', error);
+		}
 	}
 </script>
 
 <p>Size: {bodyByteLength} bytes</p>
 <pre>{hexPreview}...</pre>
-<button on:click={downloadBytes} disabled={body === ''}>Download as file</button>
+<button onclick={downloadBytes} disabled={body === ''}>Download as file</button>

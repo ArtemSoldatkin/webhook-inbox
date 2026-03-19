@@ -12,9 +12,16 @@
 		contentType: ContentType;
 	};
 
-	let { body, contentType }: Props = $props();
+	let { body = $bindable(), contentType = $bindable() }: Props = $props();
 
 	let error = $state<string | null>(null);
+
+	$effect(() => {
+		if (contentType) {
+			body = '';
+			error = null;
+		}
+	});
 </script>
 
 <section>

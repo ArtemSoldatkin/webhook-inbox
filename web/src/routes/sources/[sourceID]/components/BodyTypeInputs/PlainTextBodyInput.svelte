@@ -5,6 +5,12 @@
 	};
 
 	let { body = $bindable(), error = $bindable() }: Props = $props();
+
+	function handleClear() {
+		body = '';
+		error = null;
+	}
 </script>
 
-<p>Body Plain Text Input</p>
+<textarea bind:value={body} rows="10" cols="50" placeholder="Enter body content here..."></textarea>
+<button type="button" onclick={handleClear} disabled={!body}>Clear</button>
