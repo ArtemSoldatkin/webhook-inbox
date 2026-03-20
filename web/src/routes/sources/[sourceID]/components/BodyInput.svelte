@@ -8,19 +8,24 @@
 	import XMLBodyInput from './BodyTypeInputs/XMLBodyInput.svelte';
 
 	type Props = {
-		body: string;
+		textBody: string;
+		formDataBody: FormData;
 		contentType: ContentType;
 	};
 
-	let { body = $bindable(), contentType = $bindable() }: Props = $props();
+	let {
+		textBody = $bindable(),
+		formDataBody = $bindable(),
+		contentType = $bindable()
+	}: Props = $props();
 
 	let error = $state<string | null>(null);
 
 	$effect(() => {
-		if (contentType) {
-			body = '';
-			error = null;
-		}
+		if (!contentType) return;
+		textBody = '';
+		formDataBody = new FormData();
+		error = null;
 	});
 </script>
 
@@ -35,17 +40,17 @@
 	</select>
 
 	{#if contentType === 'application/json'}
-		<JSONBodyInput bind:body bind:error />
+		<JSONBodyInput bind:body={textBody} bind:error />
 	{:else if contentType === 'application/x-www-form-urlencoded'}
-		<FormUrlEncodedBodyInput bind:body bind:error />
+		<FormUrlEncodedBodyInput bind:body={textBody} bind:error />
 	{:else if contentType === 'multipart/form-data'}
-		<FormDataBodyInput bind:body bind:error />
+		<FormDataBodyInput bind:body={formDataBody} bind:error />
 	{:else if contentType === 'text/plain'}
-		<PlainTextBodyInput bind:body bind:error />
+		<PlainTextBodyInput bind:body={textBody} bind:error />
 	{:else if contentType === 'application/xml'}
-		<XMLBodyInput bind:body bind:error />
+		<XMLBodyInput bind:body={textBody} bind:error />
 	{:else if contentType === 'application/octet-stream'}
-		<ByteBodyInput bind:body bind:error />
+		<ByteBodyInput bind:body={textBody} bind:error />
 	{:else}
 		<p>Selected Content Type is not supported</p>
 	{/if}

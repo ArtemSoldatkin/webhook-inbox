@@ -3,23 +3,32 @@
 	import type { ContentType } from '$lib/types';
 	import BodyInput from './BodyInput.svelte';
 
-	export let publicID: string;
-	export let staticHeaders: Record<string, string> = {};
+	type Props = {
+		publicID: string;
+		staticHeaders?: Record<string, string>;
+	};
+
+	let { publicID, staticHeaders }: Props = $props();
 
 	type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-	let method: HTTPMethod = 'GET';
-	let headers: Record<string, string> = {};
-	let queryParams: Record<string, string> = {};
-	let body: string = '';
-	let contentType: ContentType = 'application/json';
+	let method = $state<HTTPMethod>('GET');
+	let headers = $state<Record<string, string>>({});
+	let queryParams = $state<Record<string, string>>({});
+	let textBody = $state('');
+	let formDataBody = $state(new FormData());
 
-	let loading = false;
-	let error: string | null = null;
+	let contentType = $state<ContentType>('application/json');
 
-	$: isBodyAllowed = method !== 'GET';
+	let loading = $state(false);
+	let error = $state<string | null>(null);
 
-	async function testWebhook() {
+	let body = $derived(contentType === 'multipart/form-data' ? formDataBody : textBody);
+	let isBodyAllowed = $derived(method !== 'GET');
+	let isContentTypeAllowed = $derived(isBodyAllowed && contentType !== 'multipart/form-data');
+
+	async function testWebhook(event: SubmitEvent) {
+		event.preventDefault();
 		loading = true;
 		error = null;
 		try {
@@ -31,7 +40,7 @@
 				headers: {
 					...staticHeaders,
 					...headers,
-					...(isBodyAllowed && { 'Content-Type': contentType })
+					...(isContentTypeAllowed && { 'Content-Type': contentType })
 				},
 				...(isBodyAllowed && { body })
 			});
@@ -47,7 +56,7 @@
 	}
 </script>
 
-<form on:submit|preventDefault={testWebhook}>
+<form onsubmit={testWebhook}>
 	<label
 		>HTTP Method:
 		<select bind:value={method} disabled={loading}>
@@ -68,7 +77,7 @@
 	</label>
 	{#if isBodyAllowed}<label>
 			Body (optional):
-			<BodyInput bind:body bind:contentType />
+			<BodyInput bind:textBody bind:formDataBody bind:contentType />
 		</label>
 	{/if}
 	{#if error}
