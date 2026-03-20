@@ -15,9 +15,20 @@
 			.join(' ')
 	);
 
+	function binaryStringToUint8Array(str: string): Uint8Array<ArrayBuffer> {
+		const buffer = new ArrayBuffer(str.length);
+		const bytes = new Uint8Array(buffer);
+
+		for (let i = 0; i < str.length; i++) {
+			bytes[i] = str.charCodeAt(i) & 0xff;
+		}
+
+		return bytes;
+	}
 	function downloadBytes() {
 		try {
-			const blob = new Blob([body], {
+			const bytes = binaryStringToUint8Array(body);
+			const blob = new Blob([bytes], {
 				type: contentType || 'application/octet-stream'
 			});
 			const url = URL.createObjectURL(blob);

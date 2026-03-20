@@ -23,9 +23,27 @@
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 
-	let body = $derived(contentType === 'multipart/form-data' ? formDataBody : textBody);
+	let body = $derived(
+		contentType === 'multipart/form-data'
+			? formDataBody
+			: contentType === 'application/octet-stream' && textBody
+				? base64ToUint8Array(textBody)
+				: textBody
+	);
+
 	let isBodyAllowed = $derived(method !== 'GET');
 	let isContentTypeAllowed = $derived(isBodyAllowed && contentType !== 'multipart/form-data');
+
+	function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
+		if (!base64) return new Uint8Array(0);
+		const binaryString = atob(base64);
+		const buffer = new ArrayBuffer(binaryString.length);
+		const bytes = new Uint8Array(buffer);
+		for (let i = 0; i < binaryString.length; i++) {
+			bytes[i] = binaryString.charCodeAt(i) & 0xff;
+		}
+		return bytes;
+	}
 
 	async function testWebhook(event: SubmitEvent) {
 		event.preventDefault();

@@ -30,4 +30,4 @@
 {#if parsed.error}
 	<p>{parsed.error}</p>
 {/if}
-<pre><code class="hljs xml">{@html parsed.html}</code></pre>
+<pre><code class="hljs json">{@html parsed.html}</code></pre>
