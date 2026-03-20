@@ -1,4 +1,13 @@
 <script lang="ts">
+	type Props = {
+		searchQuery: string;
+		onSearch: () => void;
+		filterName?: string;
+		filterOptions?: string[];
+		filter?: string;
+		sortDirection: 'ASC' | 'DESC';
+	};
+
 	let {
 		searchQuery = $bindable(),
 		onSearch,
@@ -6,14 +15,7 @@
 		filterOptions,
 		filter = $bindable(),
 		sortDirection = $bindable()
-	} = $props<{
-		searchQuery: string;
-		onSearch: () => void;
-		filterName?: string;
-		filterOptions?: string[];
-		filter?: string;
-		sortDirection: 'ASC' | 'DESC';
-	}>();
+	}: Props = $props();
 
 	function toggleSortDirection() {
 		sortDirection = sortDirection === 'ASC' ? 'DESC' : 'ASC';

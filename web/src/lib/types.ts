@@ -1,4 +1,10 @@
-export type ContentType = 'application/json' | 'application/x-www-form-urlencoded' | 'text/plain';
+export type ContentType =
+	| 'application/json'
+	| 'application/x-www-form-urlencoded'
+	| 'text/plain'
+	| 'multipart/form-data'
+	| 'application/xml'
+	| 'application/octet-stream';
 
 export interface SourceDTO {
 	id: number;

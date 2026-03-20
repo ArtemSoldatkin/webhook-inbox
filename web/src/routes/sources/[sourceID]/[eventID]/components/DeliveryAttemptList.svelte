@@ -5,7 +5,12 @@
 	import { parseDeliveryAttemptDTO } from '$lib/dtoParsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 
-	let { sourceID, eventID } = $props<{ sourceID: string; eventID: string }>();
+	type Props = {
+		sourceID: string;
+		eventID: string;
+	};
+
+	let { sourceID, eventID }: Props = $props();
 
 	let data = $state<DeliveryAttemptDTO[]>([]);
 	let loading = $state(false);

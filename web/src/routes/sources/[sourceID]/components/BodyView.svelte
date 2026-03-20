@@ -1,6 +1,19 @@
 <script lang="ts">
-	export let body: string | undefined;
-	export let contentType: string | undefined;
+	import type { ContentType } from '$lib/types';
+	import ByteBodyView from './BodyTypeViews/ByteBodyView.svelte';
+	import FormUrlEncodedBodyView from './BodyTypeViews/FormUrlEncodedBodyView.svelte';
+	import JSONBodyView from './BodyTypeViews/JSONBodyView.svelte';
+	import PlainTextBodyView from './BodyTypeViews/PlainTextBodyView.svelte';
+	import XMLBodyView from './BodyTypeViews/XMLBodyView.svelte';
+
+	type Props = {
+		body?: string;
+		contentType?: ContentType;
+	};
+
+	let { body, contentType }: Props = $props();
+
+	const parsedBody = $derived(body ? atob(body) : '');
 </script>
 
 <section>
@@ -10,12 +23,14 @@
 	{:else if !contentType}
 		<p>Content type unknown, cannot display body</p>
 	{:else if contentType.startsWith('application/json')}
-		<pre>{JSON.stringify(JSON.parse(atob(body)), null, 2)}</pre>
+		<JSONBodyView body={parsedBody} />
 	{:else if contentType.startsWith('application/x-www-form-urlencoded')}
-		<pre>{new URLSearchParams(atob(body)).toString()}</pre>
+		<FormUrlEncodedBodyView body={parsedBody} />
+	{:else if contentType.startsWith('application/xml')}
+		<XMLBodyView body={parsedBody} />
 	{:else if contentType.startsWith('text/plain')}
-		<pre>{atob(body)}</pre>
+		<PlainTextBodyView body={parsedBody} />
 	{:else}
-		<p>Unsupported content type: {contentType}</p>
+		<ByteBodyView body={parsedBody} {contentType} />
 	{/if}
 </section>
