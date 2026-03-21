@@ -4,6 +4,7 @@
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
+	import { untrack } from 'svelte';
 
 	type Props = {
 		sourceID: string;
@@ -27,19 +28,30 @@
 
 	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
+	function collectUrlSearchParams() {
+		const params: Record<string, string> = {};
+		if (searchQuery) {
+			params.search = searchQuery;
+		}
+		if (filterState) {
+			params.filter_state = filterState;
+		}
+		if (sortDirection) {
+			params.sort_direction = sortDirection;
+		}
+		return params;
+	}
+
 	async function fetchDeliveryAttempts() {
 		loading = true;
 		error = null;
 		try {
+			const urlSearchParams = collectUrlSearchParams();
 			const result = await fetchPaginatedData(
 				`/api/sources/${sourceID}/events/${eventID}/delivery-attempts`,
 				pageSize,
 				nextCursor,
-				{
-					search: searchQuery,
-					filter_state: filterState,
-					sort_direction: sortDirection
-				}
+				urlSearchParams
 			);
 			data = [...data, ...result.data.map(parseDeliveryAttemptDTO)];
 			nextCursor = result.next_cursor;
@@ -65,7 +77,10 @@
 		pageSize;
 		filterState;
 		sortDirection;
-		resetAndFetchDeliveryAttempts();
+
+		untrack(() => {
+			resetAndFetchDeliveryAttempts();
+		});
 	});
 </script>
 
@@ -77,7 +92,7 @@
 	filterOptions={filterStateOptions}
 	onSearch={resetAndFetchDeliveryAttempts}
 />
-<button on:click={resetAndFetchDeliveryAttempts} disabled={loading}>Refresh Events</button>
+<button onclick={resetAndFetchDeliveryAttempts} disabled={loading}>Refresh Events</button>
 <h3>Delivery Attempts</h3>
 {#if loading}
 	<p>Loading event details...</p>
@@ -118,7 +133,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button on:click={fetchDeliveryAttempts} disabled={loading}>Load More</button>
+			<button onclick={fetchDeliveryAttempts} disabled={loading}>Load More</button>
 		{/if}
 	{/if}
 {:else}

@@ -5,6 +5,7 @@
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
+	import { untrack } from 'svelte';
 
 	let data = $state<SourceDTO[]>([]);
 	let loading = $state(false);
@@ -21,15 +22,31 @@
 
 	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
+	function collectUrlSearchParams() {
+		const params: Record<string, string> = {};
+		if (searchQuery) {
+			params.search = searchQuery;
+		}
+		if (filterStatus) {
+			params.filter_status = filterStatus;
+		}
+		if (sortDirection) {
+			params.sort_direction = sortDirection;
+		}
+		return params;
+	}
+
 	async function fetchSources() {
 		loading = true;
 		error = null;
 		try {
-			const result = await fetchPaginatedData('/api/sources', pageSize, nextCursor, {
-				search: searchQuery,
-				filter_status: filterStatus,
-				sort_direction: sortDirection
-			});
+			const urlSearchParams = collectUrlSearchParams();
+			const result = await fetchPaginatedData(
+				'/api/sources',
+				pageSize,
+				nextCursor,
+				urlSearchParams
+			);
 			data = [...data, ...result.data.map(parseSourceDTO)];
 			nextCursor = result.next_cursor;
 			hasNext = result.has_next;
@@ -52,7 +69,10 @@
 		pageSize;
 		filterStatus;
 		sortDirection;
-		resetAndFetchSources();
+
+		untrack(() => {
+			resetAndFetchSources();
+		});
 	});
 </script>
 
@@ -64,7 +84,7 @@
 	filterOptions={filterStatusOptions}
 	onSearch={resetAndFetchSources}
 />
-<button on:click={resetAndFetchSources} disabled={loading}>Refresh Sources</button>
+<button onclick={resetAndFetchSources} disabled={loading}>Refresh Sources</button>
 {#if loading}
 	<p>Loading sources...</p>
 {:else if error}
@@ -97,7 +117,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button on:click={fetchSources} disabled={loading}>Load More</button>
+			<button onclick={fetchSources} disabled={loading}>Load More</button>
 		{/if}
 	{:else}
 		<p>No sources found.</p>
