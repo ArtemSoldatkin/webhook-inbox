@@ -43,7 +43,7 @@
 
 			return {
 				content: body,
-				error: 'Failed to parse body as JSON, falling back to raw string'
+				error: 'Failed to parse body as Base64 string, falling back to raw string'
 			};
 		}
 	}
