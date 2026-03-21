@@ -17,9 +17,9 @@
 	};
 
 	let { body, contentType }: Props = $props();
-	const parsedBody = $derived(parseBody(body));
+	const parsedBody = $derived(parseBody(body, contentType));
 
-	function parseBody(body: string | undefined): ParsedBody {
+	function parseBody(body?: string, contentType?: ContentType): ParsedBody {
 		if (body === undefined)
 			return {
 				content: '',
@@ -33,17 +33,34 @@
 			};
 
 		try {
+			const binary = atob(body);
+			if (
+				!contentType ||
+				contentType.startsWith('multipart/form-data') ||
+				contentType.startsWith('application/octet-stream')
+			) {
+				return {
+					content: binary,
+					error: null
+				};
+			}
+
+			const bytes = new Uint8Array(binary.length);
+
+			for (let i = 0; i < binary.length; i++) {
+				bytes[i] = binary.charCodeAt(i);
+			}
+
 			return {
-				content: atob(body),
+				content: new TextDecoder('utf-8', { fatal: false }).decode(bytes),
 				error: null
 			};
 		} catch (err) {
-			const errorMessage = err instanceof Error ? err.message : String(err);
-			console.error(errorMessage);
+			console.error('Failed to parse body as Base64 string', err);
 
 			return {
 				content: body,
-				error: 'Failed to parse body as Base64 string, falling back to raw string'
+				error: 'Failed to parse body as Base64 string, falling back to raw content'
 			};
 		}
 	}
