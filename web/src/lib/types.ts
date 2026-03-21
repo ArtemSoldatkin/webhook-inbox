@@ -30,7 +30,7 @@ export interface EventDTO {
 	query_params?: Record<string, string[]>;
 	raw_headers?: Record<string, string[]>;
 	body?: string; // Base64-encoded string
-	body_content_type?: string;
+	body_content_type?: ContentType;
 	received_at: Date;
 }
 

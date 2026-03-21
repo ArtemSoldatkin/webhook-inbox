@@ -29,7 +29,7 @@
 		loading = true;
 		error = null;
 		try {
-			const result = await fetchPaginatedData(
+			const result = await fetchPaginatedData<EventDTO>(
 				`/api/sources/${sourceID}/events`,
 				pageSize,
 				nextCursor,
@@ -65,7 +65,7 @@
 </script>
 
 <FilterBar bind:searchQuery bind:sortDirection onSearch={resetAndFetchEvents} />
-<button on:click={resetAndFetchEvents} disabled={loading}>Refresh Events</button>
+<button onclick={resetAndFetchEvents} disabled={loading}>Refresh Events</button>
 {#if loading}
 	<p>Loading events...</p>
 {:else if error}
@@ -92,7 +92,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button on:click={fetchEvents} disabled={loading}>Load More</button>
+			<button onclick={fetchEvents} disabled={loading}>Load More</button>
 		{/if}
 	{/if}
 {:else}
