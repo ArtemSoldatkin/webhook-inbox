@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { ContentType } from '$lib/types';
-	import ByteBodyInput from './BodyTypeInputs/ByteBodyInput.svelte';
-	import FormDataBodyInput from './BodyTypeInputs/FormDataBodyInput.svelte';
-	import FormUrlEncodedBodyInput from './BodyTypeInputs/FormUrlEncodedBodyInput.svelte';
-	import JSONBodyInput from './BodyTypeInputs/JSONBodyInput.svelte';
-	import PlainTextBodyInput from './BodyTypeInputs/PlainTextBodyInput.svelte';
-	import XMLBodyInput from './BodyTypeInputs/XMLBodyInput.svelte';
+	import ByteBodyInput from './body/inputs/ByteBodyInput.svelte';
+	import FormDataBodyInput from './body/inputs/FormDataBodyInput.svelte';
+	import FormUrlEncodedBodyInput from './body/inputs/FormUrlEncodedBodyInput.svelte';
+	import JSONBodyInput from './body/inputs/JSONBodyInput.svelte';
+	import PlainTextBodyInput from './body/inputs/PlainTextBodyInput.svelte';
+	import XMLBodyInput from './body/inputs/XMLBodyInput.svelte';
 
 	type Props = {
 		textBody: string;

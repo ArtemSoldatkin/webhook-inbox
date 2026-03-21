@@ -3,7 +3,7 @@
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
-	import { parseSourceDTO } from '$lib/dtoParsers';
+	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 
 	let data = $state<SourceDTO[]>([]);

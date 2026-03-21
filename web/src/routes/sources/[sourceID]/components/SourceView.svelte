@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { parseSourceDTO } from '$lib/dtoParsers';
+	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import ListEvents from './ListEvents.svelte';
 	import TestWebhook from './TestWebhook.svelte';
