@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import SourceView from './components/SourceView.svelte';
 
-	const { sourceID } = page.params;
+	const sourceID = page.params.sourceID;
 </script>
 
 <nav>

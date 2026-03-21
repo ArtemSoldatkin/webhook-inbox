@@ -2,7 +2,7 @@
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
-	import { parseDeliveryAttemptDTO } from '$lib/dtoParsers';
+	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 
 	type Props = {

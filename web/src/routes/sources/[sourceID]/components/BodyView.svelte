@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { ContentType } from '$lib/types';
-	import ByteBodyView from './BodyTypeViews/ByteBodyView.svelte';
-	import FormUrlEncodedBodyView from './BodyTypeViews/FormUrlEncodedBodyView.svelte';
-	import JSONBodyView from './BodyTypeViews/JSONBodyView.svelte';
-	import PlainTextBodyView from './BodyTypeViews/PlainTextBodyView.svelte';
-	import XMLBodyView from './BodyTypeViews/XMLBodyView.svelte';
+	import ByteBodyView from './body/views/ByteBodyView.svelte';
+	import FormUrlEncodedBodyView from './body/views/FormUrlEncodedBodyView.svelte';
+	import JSONBodyView from './body/views/JSONBodyView.svelte';
+	import PlainTextBodyView from './body/views/PlainTextBodyView.svelte';
+	import XMLBodyView from './body/views/XMLBodyView.svelte';
 
 	type Props = {
 		body?: string;

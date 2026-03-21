@@ -1,6 +1,6 @@
 <script lang="ts">
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
-	import { parseEventDTO } from '$lib/dtoParsers';
+	import { parseEventDTO } from '$lib/dto-parsers';
 	import { type EventDTO } from '$lib/types';
 	import BodyView from '../../components/BodyView.svelte';
 	import DeliveryAttemptList from './DeliveryAttemptList.svelte';

@@ -2,7 +2,8 @@
 	import { page } from '$app/state';
 	import EventView from './components/EventView.svelte';
 
-	const { sourceID, eventID } = page.params;
+	const sourceID = page.params.sourceID;
+	const eventID = page.params.eventID;
 </script>
 
 {#if eventID && sourceID}

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import FormConstructor from '../FormConstructor/FormConstructor.svelte';
-	import type { FormField } from '../types';
+	import FormConstructor from '../../form-constructor/FormConstructor.svelte';
+	import type { FormField } from '../../types';
 
 	type Props = {
 		body: FormData;
