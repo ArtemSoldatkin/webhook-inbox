@@ -51,13 +51,13 @@
 
 <section>
 	<h3>Request body</h3>
-	{#if !contentType}
-		<p>Content type unknown, cannot display body</p>
-	{:else if parsedBody.error && parsedBody.content}
+	{#if parsedBody.error && parsedBody.content}
 		<p>{parsedBody.error}</p>
 		<p>Original body: {parsedBody.content}</p>
 	{:else if parsedBody.error}
 		<p>{parsedBody.error}</p>
+	{:else if !contentType}
+		<p>Content type unknown, cannot display body</p>
 	{:else if contentType.startsWith('application/json')}
 		<JSONBodyView body={parsedBody.content} />
 	{:else if contentType.startsWith('application/x-www-form-urlencoded')}
