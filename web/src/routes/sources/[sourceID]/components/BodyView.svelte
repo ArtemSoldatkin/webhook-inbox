@@ -12,7 +12,7 @@
 	};
 
 	type ParsedBody = {
-		content: string | null;
+		content: string;
 		error: string | null;
 	};
 
@@ -20,10 +20,16 @@
 	const parsedBody = $derived(parseBody(body));
 
 	function parseBody(body: string | undefined): ParsedBody {
-		if (!body)
+		if (body === undefined)
 			return {
-				content: null,
-				error: null
+				content: '',
+				error: 'No body provided, cannot display content'
+			};
+
+		if (body === '')
+			return {
+				content: '',
+				error: 'Body content is empty'
 			};
 
 		try {
@@ -47,13 +53,11 @@
 	<h3>Request body</h3>
 	{#if !contentType}
 		<p>Content type unknown, cannot display body</p>
-	{:else if parsedBody.error !== null && parsedBody.content === null}
-		<p>{parsedBody.error}</p>
-	{:else if parsedBody.error !== null}
+	{:else if parsedBody.error && parsedBody.content}
 		<p>{parsedBody.error}</p>
 		<p>Original body: {parsedBody.content}</p>
-	{:else if parsedBody.content === null}
-		<p>Body content is empty</p>
+	{:else if parsedBody.error}
+		<p>{parsedBody.error}</p>
 	{:else if contentType.startsWith('application/json')}
 		<JSONBodyView body={parsedBody.content} />
 	{:else if contentType.startsWith('application/x-www-form-urlencoded')}
