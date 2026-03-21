@@ -6,6 +6,7 @@
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import type { EventDTO } from '$lib/types';
+	import { untrack } from 'svelte';
 	import BodyView from './BodyView.svelte';
 
 	type Props = {
@@ -25,18 +26,27 @@
 	let searchQuery = $state('');
 	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
+	function collectUrlSearchParams() {
+		const params: Record<string, string> = {};
+		if (searchQuery) {
+			params.search = searchQuery;
+		}
+		if (sortDirection) {
+			params.sort_direction = sortDirection;
+		}
+		return params;
+	}
+
 	async function fetchEvents() {
 		loading = true;
 		error = null;
 		try {
-			const result = await fetchPaginatedData<EventDTO>(
+			const urlSearchParams = collectUrlSearchParams();
+			const result = await fetchPaginatedData(
 				`/api/sources/${sourceID}/events`,
 				pageSize,
 				nextCursor,
-				{
-					search: searchQuery,
-					sort_direction: sortDirection
-				}
+				urlSearchParams
 			);
 			data = [...data, ...result.data.map(parseEventDTO)];
 			nextCursor = result.next_cursor;
@@ -60,7 +70,10 @@
 		sourceID;
 		pageSize;
 		sortDirection;
-		resetAndFetchEvents();
+
+		untrack(() => {
+			resetAndFetchEvents();
+		});
 	});
 </script>
 

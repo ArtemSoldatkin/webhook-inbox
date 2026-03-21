@@ -8,13 +8,17 @@ export async function fetchPaginatedData<T>(
 ): Promise<PaginatedResponse<T>> {
 	const params = new URLSearchParams({
 		limit: pageSize.toString(),
-		cursor: nextCursor || '',
 		...urlSearchParams
 	});
+	if (nextCursor) {
+		params.append('cursor', nextCursor);
+	}
+
 	const response = await fetch(`${url}?${params.toString()}`);
 	if (!response.ok) {
 		throw new Error(`Failed to fetch data: ${response.statusText}`);
 	}
+
 	const result = await response.json();
 	return {
 		data: result.data as T[],
