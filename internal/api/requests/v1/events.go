@@ -6,7 +6,7 @@ import "github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 type ListEventsInput struct {
 	SourceID      int64        `url_param:"source_id,required,min:1"`
 	Search        string       `query_param:"search,max_length:512"`
-	SortDirection string       `query_param:"sort,allowed:ASC|DESC,default:DESC"`
+	SortDirection string       `query_param:"sort_direction,allowed:ASC|DESC,default:DESC"`
 	PageSize      int          `query_param:"limit,min:1,max:100,default:20"`
 	Cursor        types.Cursor `query_param:"cursor"`
 }

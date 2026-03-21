@@ -17,7 +17,7 @@ const (
 // ListSourcesInput defines the expected input parameters for listing sources.
 type ListSourcesInput struct {
 	Filter        string       `query_param:"filter_state,allowed:active|paused|quarantined|disabled|*,default:*"`
-	SortDirection string       `query_param:"sort,allowed:ASC|DESC,default:DESC"`
+	SortDirection string       `query_param:"sort_direction,allowed:ASC|DESC,default:DESC"`
 	Search        string       `query_param:"search,max_length:512"`
 	PageSize      int          `query_param:"limit,min:1,max:100,default:20"`
 	Cursor        types.Cursor `query_param:"cursor"`
