@@ -53,7 +53,7 @@ func listSources(svc *service.Service) http.HandlerFunc {
 
 		var nextCursor types.Cursor
 		if len(sourceDTOs) > input.PageSize {
-			lastSource := sourceDTOs[len(sourceDTOs)-1]
+			lastSource := sourceDTOs[input.PageSize-1]
 			nextCursor = types.NewCursor(
 				&lastSource.UpdatedAt,
 				&lastSource.ID,
