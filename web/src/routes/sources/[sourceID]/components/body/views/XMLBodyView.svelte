@@ -4,12 +4,15 @@
 	import 'highlight.js/styles/github.css';
 	import formatXML from 'xml-formatter';
 
+	/** Props for rendering XML request bodies. */
 	type Props = {
+		/** XML body content to render. */
 		body: string;
 	};
 
 	let { body }: Props = $props();
 
+	/** Highlighted XML output and any parse error. */
 	const parsed = $derived.by(() => {
 		try {
 			const formatted = formatXML(body);

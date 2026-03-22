@@ -7,27 +7,50 @@
 	import { untrack } from 'svelte';
 
 	type Props = {
+		/** Source id that owns the current event. */
 		sourceID: string;
+
+		/** Event id whose delivery attempts are shown. */
 		eventID: string;
 	};
 
 	let { sourceID, eventID }: Props = $props();
 
+	/** Loaded delivery attempts for the current event. */
 	let data = $state<DeliveryAttemptDTO[]>([]);
+
+	/** Tracks whether delivery attempts are loading. */
 	let loading = $state(false);
+
+	/** Holds the latest delivery attempt loading error. */
 	let error = $state<string | null>(null);
 
+	/** Requested page size for delivery attempts. */
 	let pageSize = $state(20);
+
+	/** Cursor used to fetch the next page of attempts. */
 	let nextCursor = $state<string | null>(null);
+
+	/** Indicates whether more delivery attempts are available. */
 	let hasNext = $state(false);
 
+	/** Free-text query applied to delivery attempts. */
 	let searchQuery = $state('');
 
+	/** Selected delivery state filter. */
 	let filterState = $state('*');
+
+	/** Available delivery attempt states for filtering. */
 	const filterStateOptions = ['pending', 'in_flight', 'succeeded', 'failed', 'aborted'];
 
+	/** Sort order used for delivery attempts. */
 	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
+	/**
+	 * Builds the query parameters for the delivery attempt request.
+	 *
+	 * @returns URL search params for the API call.
+	 */
 	function collectUrlSearchParams() {
 		const params: Record<string, string> = {};
 		if (searchQuery) {
@@ -42,6 +65,7 @@
 		return params;
 	}
 
+	/** Loads the next page of delivery attempts. */
 	async function fetchDeliveryAttempts() {
 		loading = true;
 		error = null;
@@ -64,6 +88,7 @@
 		}
 	}
 
+	/** Resets delivery attempt pagination and fetches from the start. */
 	async function resetAndFetchDeliveryAttempts() {
 		data = [];
 		nextCursor = null;

@@ -10,22 +10,42 @@
 	import BodyView from './BodyView.svelte';
 
 	type Props = {
+		/** Source id whose events are being loaded. */
 		sourceID: string;
 	};
 
+	/** Source id whose events are being listed. */
 	let { sourceID }: Props = $props();
 
+	/** Loaded events for the current source. */
 	let data = $state<EventDTO[]>([]);
+
+	/** Tracks whether events are loading. */
 	let loading = $state(false);
+
+	/** Holds the latest event loading error. */
 	let error = $state<string | null>(null);
 
+	/** Requested page size for events. */
 	let pageSize = $state(20);
+
+	/** Cursor used to fetch the next page of events. */
 	let nextCursor = $state<string | null>(null);
+
+	/** Indicates whether more events are available. */
 	let hasNext = $state(false);
 
+	/** Free-text query applied to events. */
 	let searchQuery = $state('');
+
+	/** Sort order used for event results. */
 	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
+	/**
+	 * Builds the query parameters for the current event filters.
+	 *
+	 * @returns URL search params for the list request.
+	 */
 	function collectUrlSearchParams() {
 		const params: Record<string, string> = {};
 		if (searchQuery) {
@@ -37,6 +57,7 @@
 		return params;
 	}
 
+	/** Loads the next page of events for the active source. */
 	async function fetchEvents() {
 		loading = true;
 		error = null;
@@ -59,6 +80,7 @@
 		}
 	}
 
+	/** Clears the current event list and reloads it from the first page. */
 	async function resetAndFetchEvents() {
 		data = [];
 		nextCursor = null;

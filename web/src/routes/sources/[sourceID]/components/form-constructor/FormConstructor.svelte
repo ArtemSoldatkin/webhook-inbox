@@ -2,12 +2,15 @@
 	import type { FormField } from '../types';
 	import InputConstructor from './InputConstructor.svelte';
 
+	/** Props for the form field constructor. */
 	type Props = {
+		/** Bound list of form fields in the constructor. */
 		fields: FormField[];
 	};
 
 	let { fields = $bindable() }: Props = $props();
 
+	/** Adds a new empty field to the multipart form builder. */
 	function handleAddField() {
 		fields = [...fields, { type: 'text', name: '', value: '' }];
 	}

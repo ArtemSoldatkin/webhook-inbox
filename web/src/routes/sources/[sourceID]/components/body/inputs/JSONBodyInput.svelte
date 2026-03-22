@@ -1,11 +1,16 @@
 <script lang="ts">
+	/** Props shared by JSON body input controls. */
 	type Props = {
+		/** Bound JSON body value. */
 		body: string;
+
+		/** Validation error shown by the input. */
 		error: string | null;
 	};
 
 	let { body = $bindable(), error = $bindable() }: Props = $props();
 
+	/** Pretty-prints the current JSON body when it is valid. */
 	function formatJSON() {
 		try {
 			const parsed = JSON.parse(body);
@@ -16,6 +21,7 @@
 		}
 	}
 
+	/** Clears the current JSON body. */
 	function handleClear() {
 		body = '';
 		error = null;

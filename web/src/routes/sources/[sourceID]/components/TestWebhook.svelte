@@ -4,25 +4,44 @@
 	import BodyInput from './BodyInput.svelte';
 
 	type Props = {
+		/** Public source identifier used by the ingest endpoint. */
 		publicID: string;
+
+		/** Static headers automatically sent with the test request. */
 		staticHeaders?: Record<string, string>;
 	};
 
+	/** Data required to send a test webhook request. */
 	let { publicID, staticHeaders }: Props = $props();
 
+	/** Supported HTTP methods for the test form. */
 	type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+	/** Selected HTTP method for the test request. */
 	let method = $state<HTTPMethod>('GET');
+
+	/** Additional request headers entered by the user. */
 	let headers = $state<Record<string, string>>({});
+
+	/** Query parameters appended to the test request. */
 	let queryParams = $state<Record<string, string>>({});
+
+	/** Text-based body value shared by non-form-data editors. */
 	let textBody = $state('');
+
+	/** Multipart body payload built by the form-data editor. */
 	let formDataBody = $state(new FormData());
 
+	/** Selected content type for the request body. */
 	let contentType = $state<ContentType>('application/json');
 
+	/** Tracks whether a test request is in flight. */
 	let loading = $state(false);
+
+	/** Holds the latest webhook test error. */
 	let error = $state<string | null>(null);
 
+	/** Normalized request body for the current content type. */
 	let body = $derived(
 		contentType === 'multipart/form-data'
 			? formDataBody
@@ -31,9 +50,18 @@
 				: textBody
 	);
 
+	/** Indicates whether the selected method accepts a body. */
 	let isBodyAllowed = $derived(method !== 'GET');
+
+	/** Indicates whether the form should send a Content-Type header. */
 	let isContentTypeAllowed = $derived(isBodyAllowed && contentType !== 'multipart/form-data');
 
+	/**
+	 * Decodes a base64 string into request bytes.
+	 *
+	 * @param base64 - Base64-encoded request body.
+	 * @returns Binary body as a byte array.
+	 */
 	function base64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
 		if (!base64) return new Uint8Array(0);
 		const binaryString = atob(base64);
@@ -45,6 +73,11 @@
 		return bytes;
 	}
 
+	/**
+	 * Sends the configured test webhook request.
+	 *
+	 * @param event - Form submission event.
+	 */
 	async function testWebhook(event: SubmitEvent) {
 		event.preventDefault();
 		loading = true;

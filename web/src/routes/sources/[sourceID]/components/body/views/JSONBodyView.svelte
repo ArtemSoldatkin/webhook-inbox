@@ -3,12 +3,15 @@
 	import hljs from 'highlight.js/lib/core';
 	import 'highlight.js/styles/github.css';
 
+	/** Props for rendering JSON request bodies. */
 	type Props = {
+		/** JSON body content to render. */
 		body: string;
 	};
 
 	let { body }: Props = $props();
 
+	/** Highlighted JSON output and any parse error. */
 	const parsed = $derived.by(() => {
 		try {
 			const formatted = JSON.stringify(JSON.parse(body), null, 2);

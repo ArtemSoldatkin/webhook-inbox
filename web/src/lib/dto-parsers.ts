@@ -1,5 +1,11 @@
 import type { DeliveryAttemptDTO, EventDTO, SourceDTO } from './types';
 
+/**
+ * Converts a raw source payload into the app's typed source model.
+ *
+ * @param raw - Source payload returned by the API.
+ * @returns A source with date fields parsed.
+ */
 export function parseSourceDTO(raw: any): SourceDTO {
 	return {
 		...raw,
@@ -9,6 +15,12 @@ export function parseSourceDTO(raw: any): SourceDTO {
 	};
 }
 
+/**
+ * Converts a raw event payload into the app's typed event model.
+ *
+ * @param raw - Event payload returned by the API.
+ * @returns An event with parsed timestamps.
+ */
 export function parseEventDTO(raw: any): EventDTO {
 	return {
 		...raw,
@@ -16,6 +28,12 @@ export function parseEventDTO(raw: any): EventDTO {
 	};
 }
 
+/**
+ * Converts a raw delivery attempt payload into the typed UI model.
+ *
+ * @param raw - Delivery attempt payload returned by the API.
+ * @returns A delivery attempt with parsed timestamps.
+ */
 export function parseDeliveryAttemptDTO(raw: any): DeliveryAttemptDTO {
 	return {
 		...raw,

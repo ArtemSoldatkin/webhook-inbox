@@ -1,8 +1,15 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import favicon from '$lib/assets/favicon.svg';
 	import '$lib/highlight-init';
+	import type { Snippet } from 'svelte';
 
-	let { children } = $props();
+	type Props = {
+		/** Route content rendered inside the shared layout. */
+		children: Snippet<[]>;
+	};
+
+	let { children }: Props = $props();
 </script>
 
 <svelte:head>
@@ -12,8 +19,8 @@
 <header>
 	<h1>Webhook Inbox</h1>
 	<nav>
-		<a href="/">Home</a>
-		<a href="/sources">Sources</a>
+		<a href={resolve('/')}>Home</a>
+		<a href={resolve('/sources')}>Sources</a>
 	</nav>
 </header>
 <main>

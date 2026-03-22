@@ -1,23 +1,35 @@
 <script lang="ts">
 	type Props = {
+		/** Bound search text for the list. */
 		searchQuery: string;
-		onSearch: () => void;
-		filterName?: string;
-		filterOptions?: string[];
-		filter?: string;
+
+		/** Active sort direction for the list. */
 		sortDirection: 'ASC' | 'DESC';
+
+		/** Label shown for the optional filter select. */
+		filterName?: string;
+
+		/** Available values for the optional filter select. */
+		filterOptions?: string[];
+
+		/** Currently selected filter value. */
+		filter?: string;
+
+		/** Callback used to apply the current filters. */
+		onSearch: () => void;
 	};
 
 	let {
 		searchQuery = $bindable(),
-		onSearch,
+		sortDirection = $bindable(),
 		filterName,
 		filterOptions,
 		filter = $bindable(),
-		sortDirection = $bindable()
+		onSearch
 	}: Props = $props();
 
-	function toggleSortDirection() {
+	/** Flips the active sort direction between ascending and descending. */
+	function toggleSortDirection(): void {
 		sortDirection = sortDirection === 'ASC' ? 'DESC' : 'ASC';
 	}
 </script>
@@ -25,7 +37,7 @@
 <section>
 	<div>
 		<input type="text" placeholder="Search..." bind:value={searchQuery} />
-		<button type="button" on:click={onSearch}>Search</button>
+		<button type="button" onclick={onSearch}>Search</button>
 	</div>
 	{#if filter && filterOptions}
 		<div>
@@ -41,7 +53,7 @@
 		</div>
 	{/if}
 	<div>
-		<button type="button" on:click={toggleSortDirection} aria-label="Toggle sort direction">
+		<button type="button" onclick={toggleSortDirection} aria-label="Toggle sort direction">
 			{sortDirection === 'ASC' ? '↑' : '↓'}
 		</button>
 	</div>

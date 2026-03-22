@@ -5,13 +5,22 @@
 	import BodyView from '../../components/BodyView.svelte';
 	import DeliveryAttemptList from './DeliveryAttemptList.svelte';
 
+	/** Source id owning the current event. */
 	export let sourceID: string;
+
+	/** Event id shown on the details page. */
 	export let eventID: string;
 
+	/** Loaded event details. */
 	let data: EventDTO | null = null;
+
+	/** Tracks whether the event request is in flight. */
 	let loading = false;
+
+	/** Holds the latest event loading error. */
 	let error: string | null = null;
 
+	/** Fetches the current event and normalizes its payload. */
 	async function fetchEventDetails() {
 		loading = true;
 		error = null;

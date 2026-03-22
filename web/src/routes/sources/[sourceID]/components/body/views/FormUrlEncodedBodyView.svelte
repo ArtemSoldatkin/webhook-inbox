@@ -1,10 +1,13 @@
 <script lang="ts">
+	/** Props for rendering URL-encoded request bodies. */
 	type Props = {
+		/** URL-encoded body content to render. */
 		body: string;
 	};
 
 	let { body }: Props = $props();
 
+	/** Parsed query parameter pairs from the encoded body. */
 	const params = $derived(Array.from(new URLSearchParams(body).entries()));
 </script>
 

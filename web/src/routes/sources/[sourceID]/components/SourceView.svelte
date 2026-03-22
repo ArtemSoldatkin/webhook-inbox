@@ -4,12 +4,19 @@
 	import ListEvents from './ListEvents.svelte';
 	import TestWebhook from './TestWebhook.svelte';
 
+	/** Source id shown on the details page. */
 	export let sourceID: string;
 
+	/** Loaded source details. */
 	let data: SourceDTO | null = null;
+
+	/** Tracks whether the source details are loading. */
 	let loading = false;
+
+	/** Holds the latest source loading error. */
 	let error: string | null = null;
 
+	/** Fetches the current source details from the API. */
 	async function fetchSource() {
 		loading = true;
 		error = null;
