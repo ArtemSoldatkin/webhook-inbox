@@ -14,6 +14,18 @@
 		sourceID: string;
 	};
 
+	/** Filters applied to the events list. */
+	type EventFilters = {
+		/** Source id whose events are being loaded. */
+		sourceID: string;
+		/** Requested page size for event results. */
+		pageSize: number;
+		/** Free-text query applied to the events endpoint. */
+		searchQuery: string;
+		/** Sort order used for event results. */
+		sortDirection: 'ASC' | 'DESC';
+	};
+
 	/** Source id whose events are being listed. */
 	let { sourceID }: Props = $props();
 
@@ -42,30 +54,35 @@
 	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
 	/**
-	 * Builds the query parameters for the current event filters.
+	 * Collects the current filters into a single object for easier passing to fetch functions.
 	 *
-	 * @returns URL search params for the list request.
+	 * @returns Current event filters.
 	 */
-	function collectUrlSearchParams() {
-		const params: Record<string, string> = {};
-		if (searchQuery) {
-			params.search = searchQuery;
-		}
-		if (sortDirection) {
-			params.sort_direction = sortDirection;
-		}
-		return params;
+	function getCurrentFilters(): EventFilters {
+		return {
+			sourceID,
+			pageSize,
+			searchQuery,
+			sortDirection
+		};
 	}
 
-	/** Loads the next page of events for the active source. */
-	async function fetchEvents() {
+	/**
+	 * Loads the next page of events for the active source.
+	 *
+	 * @param filters - Filters to apply when fetching events.
+	 */
+	async function fetchEvents(filters: EventFilters): Promise<void> {
 		loading = true;
 		error = null;
 		try {
-			const urlSearchParams = collectUrlSearchParams();
+			const urlSearchParams: Record<string, string> = {};
+			if (filters.searchQuery) urlSearchParams.search = filters.searchQuery;
+			if (filters.sortDirection) urlSearchParams.sort_direction = filters.sortDirection;
+
 			const result = await fetchPaginatedData(
-				`/api/sources/${sourceID}/events`,
-				pageSize,
+				`/api/sources/${filters.sourceID}/events`,
+				filters.pageSize,
 				nextCursor,
 				urlSearchParams
 			);
@@ -80,27 +97,43 @@
 		}
 	}
 
-	/** Clears the current event list and reloads it from the first page. */
-	async function resetAndFetchEvents() {
+	/** Clears the current event list and reloads it from the first page.
+	 *
+	 * @param filters - Filters to apply when fetching events.
+	 */
+	async function resetAndFetchEvents(filters: EventFilters): Promise<void> {
 		data = [];
 		nextCursor = null;
 		hasNext = false;
-		await fetchEvents();
+		await fetchEvents(filters);
+	}
+
+	/** Refreshes the event list with the current filters when the user clicks the "Refresh" button. */
+	function handleRefresh(): void {
+		void resetAndFetchEvents(getCurrentFilters());
+	}
+
+	/** Applies the current filters when the user clicks the "Search" button in the filter bar or presses Enter in the search input. */
+	function handleSearch(): void {
+		void resetAndFetchEvents(getCurrentFilters());
+	}
+
+	/** Loads the next page of events when the user clicks the "Load More" button. */
+	function handleLoadMore(): void {
+		void fetchEvents(getCurrentFilters());
 	}
 
 	$effect(() => {
-		sourceID;
-		pageSize;
-		sortDirection;
+		const filters = getCurrentFilters();
 
 		untrack(() => {
-			resetAndFetchEvents();
+			void resetAndFetchEvents(filters);
 		});
 	});
 </script>
 
-<FilterBar bind:searchQuery bind:sortDirection onSearch={resetAndFetchEvents} />
-<button onclick={resetAndFetchEvents} disabled={loading}>Refresh Events</button>
+<FilterBar bind:searchQuery bind:sortDirection onSearch={handleSearch} />
+<button onclick={handleRefresh} disabled={loading}>Refresh Events</button>
 {#if loading}
 	<p>Loading events...</p>
 {:else if error}
@@ -127,7 +160,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button onclick={fetchEvents} disabled={loading}>Load More</button>
+			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
 		{/if}
 	{/if}
 {:else}

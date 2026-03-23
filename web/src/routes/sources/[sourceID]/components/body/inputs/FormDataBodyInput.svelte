@@ -1,8 +1,7 @@
 <script lang="ts">
-	import FormConstructor from '../../form-constructor/FormConstructor.svelte';
-	import type { FormField } from '../../types';
+	import FormConstructor from './form-constructor/FormConstructor.svelte';
+	import type { FormField } from './types';
 
-	/** Props shared by the form-data body input. */
 	type Props = {
 		/** Bound multipart payload built from form fields. */
 		body: FormData;

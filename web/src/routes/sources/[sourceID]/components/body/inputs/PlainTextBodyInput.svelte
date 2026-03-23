@@ -1,5 +1,4 @@
 <script lang="ts">
-	/** Props shared by plain text body input controls. */
 	type Props = {
 		/** Bound plain text body value. */
 		body: string;
@@ -11,7 +10,7 @@
 	let { body = $bindable(), error = $bindable() }: Props = $props();
 
 	/** Clears the current plain text body. */
-	function handleClear() {
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

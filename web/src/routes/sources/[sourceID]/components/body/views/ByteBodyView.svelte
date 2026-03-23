@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { ContentType } from '$lib/types';
 
-	/** Props for rendering binary request bodies. */
 	type Props = {
 		/** Binary body content to render. */
 		body: string;
@@ -40,7 +39,7 @@
 	}
 
 	/** Downloads the current binary body as a file. */
-	function downloadBytes() {
+	function downloadBytes(): void {
 		try {
 			const bytes = binaryStringToUint8Array(body);
 			const blob = new Blob([bytes], {

@@ -3,7 +3,6 @@
 	import hljs from 'highlight.js/lib/core';
 	import 'highlight.js/styles/github.css';
 
-	/** Props for rendering JSON request bodies. */
 	type Props = {
 		/** JSON body content to render. */
 		body: string;
@@ -33,4 +32,5 @@
 {#if parsed.error}
 	<p>{parsed.error}</p>
 {/if}
+<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 <pre><code class="hljs json">{@html parsed.html}</code></pre>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	/** Props shared by JSON body input controls. */
 	type Props = {
 		/** Bound JSON body value. */
 		body: string;
@@ -11,7 +10,7 @@
 	let { body = $bindable(), error = $bindable() }: Props = $props();
 
 	/** Pretty-prints the current JSON body when it is valid. */
-	function formatJSON() {
+	function formatJSON(): void {
 		try {
 			const parsed = JSON.parse(body);
 			body = JSON.stringify(parsed, null, 2);
@@ -22,7 +21,7 @@
 	}
 
 	/** Clears the current JSON body. */
-	function handleClear() {
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

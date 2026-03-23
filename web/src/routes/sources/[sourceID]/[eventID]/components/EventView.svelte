@@ -2,30 +2,54 @@
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import { type EventDTO } from '$lib/types';
+	import { untrack } from 'svelte';
 	import BodyView from '../../components/BodyView.svelte';
 	import DeliveryAttemptList from './DeliveryAttemptList.svelte';
 
-	/** Source id owning the current event. */
-	export let sourceID: string;
+	type Props = {
+		/** Source id owning the current event. */
+		sourceID: string;
 
-	/** Event id shown on the details page. */
-	export let eventID: string;
+		/** Event id shown on the details page. */
+		eventID: string;
+	};
+
+	/** Filters applied to the event details view. */
+	type EventFilters = {
+		/** Source id owning the current event. */
+		sourceID: string;
+		/** Event id shown on the details page. */
+		eventID: string;
+	};
+
+	let { sourceID, eventID }: Props = $props();
 
 	/** Loaded event details. */
-	let data: EventDTO | null = null;
+	let data = $state<EventDTO | null>(null);
 
 	/** Tracks whether the event request is in flight. */
-	let loading = false;
+	let loading = $state(false);
 
 	/** Holds the latest event loading error. */
-	let error: string | null = null;
+	let error = $state<string | null>(null);
 
-	/** Fetches the current event and normalizes its payload. */
-	async function fetchEventDetails() {
+	/** Collects the current filters into a single object for easier passing to fetch functions. */
+	function getCurrentFilters(): EventFilters {
+		return {
+			sourceID,
+			eventID
+		};
+	}
+
+	/** Fetches the current event and normalizes its payload.
+	 *
+	 * @param filters - Filters to apply when fetching the event.
+	 */
+	async function fetchEventDetails(filters: EventFilters): Promise<void> {
 		loading = true;
 		error = null;
 		try {
-			const response = await fetch(`/api/sources/${sourceID}/events/${eventID}`);
+			const response = await fetch(`/api/sources/${filters.sourceID}/events/${filters.eventID}`);
 			if (!response.ok) {
 				throw new Error(`Failed to fetch event details: ${response.statusText}`);
 			}
@@ -39,9 +63,13 @@
 		}
 	}
 
-	$: if (eventID) {
-		fetchEventDetails();
-	}
+	$effect(() => {
+		const filters = getCurrentFilters();
+
+		untrack(() => {
+			void fetchEventDetails(filters);
+		});
+	});
 </script>
 
 {#if loading}

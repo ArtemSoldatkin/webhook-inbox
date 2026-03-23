@@ -4,7 +4,6 @@
 	import 'highlight.js/styles/github.css';
 	import formatXML from 'xml-formatter';
 
-	/** Props for rendering XML request bodies. */
 	type Props = {
 		/** XML body content to render. */
 		body: string;
@@ -33,4 +32,5 @@
 {#if parsed.error}
 	<p>{parsed.error}</p>
 {/if}
+<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 <pre><code class="hljs xml">{@html parsed.html}</code></pre>

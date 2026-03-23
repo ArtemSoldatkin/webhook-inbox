@@ -63,7 +63,11 @@
 		};
 	}
 
-	/** Loads the next page of sources for the active filters. */
+	/**
+	 * Loads the next page of sources for the active filters.
+	 *
+	 * @param filters - Filters to apply when fetching sources.
+	 */
 	async function fetchSources(filters: SourceFilters): Promise<void> {
 		loading = true;
 		error = null;
@@ -90,7 +94,10 @@
 		}
 	}
 
-	/** Clears the current source list and fetches the first page again. */
+	/** Clears the current source list and fetches the first page again.
+	 *
+	 * @param filters - Filters to apply when fetching sources.
+	 */
 	async function resetAndFetchSources(filters: SourceFilters): Promise<void> {
 		data = [];
 		nextCursor = null;

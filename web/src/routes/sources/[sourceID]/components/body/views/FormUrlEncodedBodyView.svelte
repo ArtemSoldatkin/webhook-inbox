@@ -1,5 +1,4 @@
 <script lang="ts">
-	/** Props for rendering URL-encoded request bodies. */
 	type Props = {
 		/** URL-encoded body content to render. */
 		body: string;

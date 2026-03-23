@@ -1,7 +1,6 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
 
-	/** Props shared by URL-encoded body input controls. */
 	type Props = {
 		/** Bound encoded body value. */
 		body: string;
@@ -16,7 +15,7 @@
 	let jsonBody = $state<Record<string, string>>({});
 
 	/** Clears the current URL-encoded body. */
-	function handleClear() {
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

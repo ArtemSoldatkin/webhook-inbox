@@ -1,5 +1,4 @@
 <script lang="ts">
-	/** Props shared by byte body input controls. */
 	type Props = {
 		/** Bound base64-encoded body value. */
 		body: string;
@@ -15,7 +14,7 @@
 	 *
 	 * @param event - File input change event.
 	 */
-	function handleFileChange(event: Event) {
+	function handleFileChange(event: Event): void {
 		const input = event.target as HTMLInputElement;
 		if (input.files && input.files[0]) {
 			const file = input.files[0];
@@ -42,7 +41,7 @@
 	 * @param str - String to validate.
 	 * @returns Whether the string can be decoded as base64.
 	 */
-	function isValidBase64(str: string) {
+	function isValidBase64(str: string): boolean {
 		try {
 			return btoa(atob(str)) === str.replace(/\s/g, '');
 		} catch {
@@ -51,7 +50,7 @@
 	}
 
 	/** Clears the current byte body input. */
-	function handleClear() {
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import formatXML from 'xml-formatter';
 
-	/** Props shared by XML body input controls. */
 	type Props = {
 		/** Bound XML body value. */
 		body: string;
@@ -31,7 +30,7 @@
 	}
 
 	/** Pretty-prints the current XML body when it is valid. */
-	function formatInput() {
+	function formatInput(): void {
 		try {
 			body = formatXML(body);
 		} catch (err) {
@@ -41,7 +40,7 @@
 	}
 
 	/** Clears the current XML body. */
-	function handleClear() {
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

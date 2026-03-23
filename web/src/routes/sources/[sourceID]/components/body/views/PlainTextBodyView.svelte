@@ -1,5 +1,4 @@
 <script lang="ts">
-	/** Props for rendering plain text request bodies. */
 	type Props = {
 		/** Plain text body content to render. */
 		body: string;

@@ -78,7 +78,7 @@
 	 *
 	 * @param event - Form submission event.
 	 */
-	async function testWebhook(event: SubmitEvent) {
+	async function testWebhook(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
 		loading = true;
 		error = null;

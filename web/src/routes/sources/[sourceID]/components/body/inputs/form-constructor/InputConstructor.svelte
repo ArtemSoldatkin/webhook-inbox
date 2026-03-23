@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { FormField } from '../types';
 
-	/** Props for a single dynamic form field editor. */
 	type Props = {
 		/** Bound field being edited by this constructor row. */
 		field: FormField;
