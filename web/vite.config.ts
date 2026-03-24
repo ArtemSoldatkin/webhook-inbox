@@ -1,10 +1,11 @@
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import fs from 'fs';
 import { defineConfig } from 'vite';
 import env from './env';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [sveltekit(), tailwindcss()],
 	server: {
 		host: env.UI_HOST,
 		port: Number(env.UI_PORT),
@@ -24,6 +25,9 @@ export default defineConfig({
 		}
 	},
 	define: {
-		'import.meta.env.VITE_ENV': JSON.stringify(env.ENV)
+		'import.meta.env.VITE_ENV': JSON.stringify(env.ENV),
+		'import.meta.env.VITE_API_BASE_URL': JSON.stringify(
+			`${env.API_PROTOCOL}://${env.API_HOST}:${env.API_PORT}/api/v1`
+		)
 	}
 });

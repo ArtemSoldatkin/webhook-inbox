@@ -3,6 +3,8 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import '$lib/highlight-init';
 	import type { Snippet } from 'svelte';
+	import '../app.css';
+	import ThemeToggle from './components/ThemeToggle.svelte';
 
 	type Props = {
 		/** Route content rendered inside the shared layout. */
@@ -16,14 +18,24 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<header>
-	<h1>Webhook Inbox</h1>
-	<nav>
-		<a href={resolve('/')}>Home</a>
-		<a href={resolve('/sources')}>Sources</a>
-	</nav>
-</header>
-<main>
-	{@render children()}
-</main>
-<footer>Webhook Inbox is an open-source project licensed under the MIT License.</footer>
+<div>
+	<header>
+		<div>
+			<div>
+				<a href={resolve('/')}>Webhook Inbox</a>
+				<p>Inspect webhook traffic without guessing.</p>
+			</div>
+			<nav>
+				<a href={resolve('/')}>Home</a>
+				<a href={resolve('/sources')}>Sources</a>
+			</nav>
+			<ThemeToggle />
+		</div>
+	</header>
+	<main>
+		{@render children()}
+	</main>
+	<footer>
+		<div>Webhook Inbox is an open-source project licensed under the MIT License.</div>
+	</footer>
+</div>
