@@ -63,7 +63,7 @@
 		const filters = getCurrentFilters();
 
 		untrack(() => {
-			fetchSource(filters);
+			void fetchSource(filters);
 		});
 	});
 </script>
