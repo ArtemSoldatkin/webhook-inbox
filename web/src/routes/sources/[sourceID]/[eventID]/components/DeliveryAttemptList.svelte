@@ -156,7 +156,7 @@
 	filterOptions={filterStateOptions}
 	onSearch={handleSearch}
 />
-<button onclick={handleRefresh} disabled={loading}>Refresh Events</button>
+<button onclick={handleRefresh} disabled={loading}>Refresh Delivery Attempts</button>
 <h3>Delivery Attempts</h3>
 {#if loading}
 	<p>Loading event details...</p>
