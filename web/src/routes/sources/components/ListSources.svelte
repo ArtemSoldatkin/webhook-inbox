@@ -110,7 +110,7 @@
 		void resetAndFetchSources(getCurrentFilters());
 	}
 
-	/** Applies the current filters when the user clicks the "Search" button in the filter bar or presses Enter in the search input. */
+	/** Applies the current filters when the user triggers a search from the filter bar (for example, by clicking the "Search" button). */
 	function handleSearch(): void {
 		void resetAndFetchSources(getCurrentFilters());
 	}
