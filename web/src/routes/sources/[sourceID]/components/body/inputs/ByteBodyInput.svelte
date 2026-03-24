@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
+
 	type Props = {
 		/** Bound base64-encoded body value. */
 		body: string;
@@ -66,4 +68,4 @@
 
 <textarea rows="10" cols="50" bind:value={body} placeholder="Enter base64 body here..."></textarea>
 <input type="file" onchange={(e) => handleFileChange(e)} />
-<button type="button" onclick={handleClear} disabled={!body}>Clear</button>
+<Button type="button" onclick={handleClear} disabled={!body}>Clear</Button>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import type { ContentType } from '$lib/types';
 	import BodyInput from './BodyInput.svelte';
 
@@ -134,5 +135,5 @@
 	{#if error}
 		<div class="error">{error}</div>
 	{/if}
-	<button type="submit" disabled={loading}>Test Webhook</button>
+	<Button type="submit" disabled={loading}>Test Webhook</Button>
 </form>

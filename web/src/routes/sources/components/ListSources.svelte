@@ -3,6 +3,7 @@
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -131,7 +132,7 @@
 	filterName="status"
 	filterOptions={filterStatusOptions}
 />
-<button onclick={handleRefresh} disabled={loading}>Refresh Sources</button>
+<Button onclick={handleRefresh} disabled={loading}>Refresh Sources</Button>
 {#if loading}
 	<p>Loading sources...</p>
 {:else if error}
@@ -164,7 +165,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
+			<Button onclick={handleLoadMore} disabled={loading}>Load More</Button>
 		{/if}
 	{:else}
 		<p>No sources found.</p>

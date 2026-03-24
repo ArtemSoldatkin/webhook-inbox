@@ -2,6 +2,7 @@
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -150,7 +151,7 @@
 	filterName="state"
 	filterOptions={filterStateOptions}
 />
-<button onclick={handleRefresh} disabled={loading}>Refresh Delivery Attempts</button>
+<Button onclick={handleRefresh} disabled={loading}>Refresh Delivery Attempts</Button>
 <h3>Delivery Attempts</h3>
 {#if loading}
 	<p>Loading event details...</p>
@@ -191,7 +192,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
+			<Button onclick={handleLoadMore} disabled={loading}>Load More</Button>
 		{/if}
 	{/if}
 {:else}

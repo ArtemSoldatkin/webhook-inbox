@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import type { FormField } from '../types';
 	import InputConstructor from './InputConstructor.svelte';
 
@@ -22,4 +23,4 @@
 {#each fields as _, index (index)}
 	<InputConstructor bind:field={fields[index]} />
 {/each}
-<button type="button" onclick={handleAddField}>Add field</button>
+<Button type="button" onclick={handleAddField}>Add field</Button>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import formatXML from 'xml-formatter';
 
 	type Props = {
@@ -51,5 +52,5 @@
 </script>
 
 <textarea bind:value={body} rows="10" cols="50" placeholder="Enter XML body here..."></textarea>
-<button type="button" onclick={formatInput} disabled={!!error}>Format</button>
-<button type="button" onclick={handleClear} disabled={!body}>Clear</button>
+<Button type="button" onclick={formatInput} disabled={!!error}>Format</Button>
+<Button type="button" onclick={handleClear} disabled={!body}>Clear</Button>

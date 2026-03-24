@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
+
 	type Props = {
 		/** Bound search text for the list. */
 		searchQuery: string;
@@ -40,7 +42,7 @@
 <section>
 	<div>
 		<input type="text" placeholder="Search..." bind:value={searchInput} />
-		<button type="button" onclick={handleSearch}>Search</button>
+		<Button type="button" onclick={handleSearch}>Search</Button>
 	</div>
 	{#if filter && filterOptions}
 		<div>
@@ -56,8 +58,8 @@
 		</div>
 	{/if}
 	<div>
-		<button type="button" onclick={toggleSortDirection} aria-label="Toggle sort direction">
+		<Button type="button" onclick={toggleSortDirection} aria-label="Toggle sort direction">
 			{sortDirection === 'ASC' ? '↑' : '↓'}
-		</button>
+		</Button>
 	</div>
 </section>

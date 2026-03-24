@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
+
 	type Props = {
 		/** Bound JSON body value. */
 		body: string;
@@ -37,5 +39,5 @@
 </script>
 
 <textarea bind:value={body} rows="10" cols="50" placeholder="Enter JSON body here..."></textarea>
-<button type="button" onclick={formatJSON} disabled={!!error}>Format</button>
-<button type="button" onclick={handleClear} disabled={!body}>Clear</button>
+<Button type="button" onclick={formatJSON} disabled={!!error}>Format</Button>
+<Button type="button" onclick={handleClear} disabled={!body}>Clear</Button>

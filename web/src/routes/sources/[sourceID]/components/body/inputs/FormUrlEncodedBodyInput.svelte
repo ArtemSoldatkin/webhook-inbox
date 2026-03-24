@@ -1,5 +1,6 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	type Props = {
 		/** Bound encoded body value. */
@@ -33,4 +34,4 @@
 </script>
 
 <InputMap bind:map={jsonBody} disabled={!!error} />
-<button type="button" onclick={handleClear} disabled={!body}>Clear</button>
+<Button type="button" onclick={handleClear} disabled={!body}>Clear</Button>

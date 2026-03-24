@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
+
 	type Props = {
 		/** Bound key-value pairs being edited. */
 		map: Record<string, string>;
@@ -41,10 +43,10 @@
 		<li>
 			<p>{mapKey}</p>
 			<input type="text" placeholder="Value" bind:value={map[mapKey]} {disabled} />
-			<button type="button" {disabled} onclick={() => removeKey(mapKey)}>Remove</button>
+			<Button type="button" {disabled} onclick={() => removeKey(mapKey)}>Remove</Button>
 		</li>
 	{/each}
 </ul>
 <input type="text" placeholder="Key" bind:value={key} {disabled} />
 <input type="text" placeholder="Value" bind:value {disabled} />
-<button type="button" {disabled} onclick={() => addKeyValue()}>Add</button>
+<Button type="button" {disabled} onclick={() => addKeyValue()}>Add</Button>

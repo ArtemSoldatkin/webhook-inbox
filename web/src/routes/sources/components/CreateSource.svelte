@@ -1,5 +1,6 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import env from '$lib/env';
 	import type { SourceDTO } from '$lib/types';
 
@@ -151,7 +152,7 @@
 		>Description
 		<textarea bind:value={data.description} placeholder="Optional description"></textarea>
 	</label>
-	<button type="submit" disabled={loading || Boolean(egressError)}>Create New Source</button>
+	<Button type="submit" disabled={loading || Boolean(egressError)}>Create New Source</Button>
 	{#if error}
 		<p class="error">Error: {error}</p>
 	{/if}

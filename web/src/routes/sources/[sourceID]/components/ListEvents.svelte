@@ -4,6 +4,7 @@
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import type { EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -128,7 +129,7 @@
 </script>
 
 <FilterBar bind:searchQuery bind:sortDirection />
-<button onclick={handleRefresh} disabled={loading}>Refresh Events</button>
+<Button onclick={handleRefresh} disabled={loading}>Refresh Events</Button>
 {#if loading}
 	<p>Loading events...</p>
 {:else if error}
@@ -155,7 +156,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
+			<Button onclick={handleLoadMore} disabled={loading}>Load More</Button>
 		{/if}
 	{/if}
 {:else}

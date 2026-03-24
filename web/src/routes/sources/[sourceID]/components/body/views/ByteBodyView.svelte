@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import type { ContentType } from '$lib/types';
 
 	type Props = {
@@ -61,4 +62,4 @@
 
 <p>Size: {bodyByteLength} bytes</p>
 <pre>{hexPreview}...</pre>
-<button onclick={downloadBytes} disabled={body === ''}>Download as file</button>
+<Button onclick={downloadBytes} disabled={body === ''}>Download as file</Button>
