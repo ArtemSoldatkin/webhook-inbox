@@ -4,11 +4,13 @@
 	import 'highlight.js/styles/github.css';
 
 	type Props = {
+		/** JSON body content to render. */
 		body: string;
 	};
 
 	let { body }: Props = $props();
 
+	/** Highlighted JSON output and any parse error. */
 	const parsed = $derived.by(() => {
 		try {
 			const formatted = JSON.stringify(JSON.parse(body), null, 2);
@@ -30,4 +32,5 @@
 {#if parsed.error}
 	<p>{parsed.error}</p>
 {/if}
+<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 <pre><code class="hljs json">{@html parsed.html}</code></pre>

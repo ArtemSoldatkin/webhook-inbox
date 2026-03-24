@@ -3,6 +3,7 @@
 	import env from '$lib/env';
 	import type { SourceDTO } from '$lib/types';
 
+	/** Source payload used by the create form. */
 	type NewSource = Omit<
 		SourceDTO,
 		| 'id'
@@ -15,15 +16,34 @@
 		| 'disable_at'
 	>;
 
-	let data = newData();
-	let loading = false;
-	let error: string | null = null;
+	/** Current form data for the new source. */
+	let data = $state<NewSource>(newData());
 
+	/** Tracks whether a source creation request is in flight. */
+	let loading = $state(false);
+
+	/** Holds the latest source creation error. */
+	let error = $state<string | null>(null);
+
+	/** Validation error for the current egress URL. */
+	let egressError = $derived.by<string | null>(() => {
+		if (data.egress_url.trim() !== '' && !validateEgressUrl(data.egress_url)) {
+			return 'Valid Egress URL is required';
+		}
+		return null;
+	});
+
+	/**
+	 * Creates a fresh source payload with default values.
+	 *
+	 * @returns Empty source form data.
+	 */
 	function newData(): NewSource {
 		return { egress_url: '', static_headers: {}, description: '' };
 	}
 
-	async function createSource() {
+	/** Sends the current source form to the API. */
+	async function createSource(): Promise<void> {
 		loading = true;
 		error = null;
 		try {
@@ -48,11 +68,22 @@
 		}
 	}
 
-	function validateInput() {
+	/**
+	 * Checks whether the form is ready to submit.
+	 *
+	 * @returns Whether the current input is valid.
+	 */
+	function validateInput(): boolean {
 		return validateEgressUrl(data.egress_url);
 	}
 
-	function handleSubmit() {
+	/**
+	 * Handles source creation form submission.
+	 *
+	 * @param event - Form submission event.
+	 */
+	function handleSubmit(event: SubmitEvent): void {
+		event.preventDefault();
 		const isValid = validateInput();
 		if (!isValid) {
 			console.warn('Invalid input, cannot create source');
@@ -61,6 +92,12 @@
 		createSource();
 	}
 
+	/**
+	 * Validates an egress URL against protocol and network rules.
+	 *
+	 * @param url - Egress URL to validate.
+	 * @returns Whether the URL is allowed.
+	 */
 	function validateEgressUrl(url: string): boolean {
 		try {
 			const parsedUrl = new URL(url);
@@ -76,7 +113,7 @@
 				!/^https?:\/\/(localhost|127\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})|0\.0\.0\.0|\[?::1\]?)(\/|:|$)/.test(
 					parsedUrl.href
 				) &&
-				!/^https?:\/\/\[\:\:ffff\:127\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\]/.test(parsedUrl.href) &&
+				!/^https?:\/\/\[::ffff:127\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\]/.test(parsedUrl.href) &&
 				!/^https?:\/\/10\./.test(parsedUrl.href) &&
 				!/^https?:\/\/192\.168\./.test(parsedUrl.href) &&
 				!/^https?:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./.test(parsedUrl.href) &&
@@ -88,16 +125,9 @@
 			return false;
 		}
 	}
-
-	let egressError: string | null = null;
-	$: if (data.egress_url.trim() !== '' && !validateEgressUrl(data.egress_url)) {
-		egressError = 'Valid Egress URL is required';
-	} else {
-		egressError = null;
-	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
 	<label
 		>Egress URL
 		<input

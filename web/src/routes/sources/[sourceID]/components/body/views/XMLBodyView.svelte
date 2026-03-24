@@ -5,11 +5,13 @@
 	import formatXML from 'xml-formatter';
 
 	type Props = {
+		/** XML body content to render. */
 		body: string;
 	};
 
 	let { body }: Props = $props();
 
+	/** Highlighted XML output and any parse error. */
 	const parsed = $derived.by(() => {
 		try {
 			const formatted = formatXML(body);
@@ -30,4 +32,5 @@
 {#if parsed.error}
 	<p>{parsed.error}</p>
 {/if}
+<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 <pre><code class="hljs xml">{@html parsed.html}</code></pre>

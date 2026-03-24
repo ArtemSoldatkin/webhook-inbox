@@ -8,17 +8,24 @@
 	import XMLBodyInput from './body/inputs/XMLBodyInput.svelte';
 
 	type Props = {
+		/** Bound text body used by text-based editors. */
 		textBody: string;
+
+		/** Bound multipart body used by the form-data editor. */
 		formDataBody: FormData;
+
+		/** Selected content type for the active body editor. */
 		contentType: ContentType;
 	};
 
+	/** Bound body inputs shared with the webhook form. */
 	let {
 		textBody = $bindable(),
 		formDataBody = $bindable(),
 		contentType = $bindable()
 	}: Props = $props();
 
+	/** Validation error returned by the active body editor. */
 	let error = $state<string | null>(null);
 
 	$effect(() => {

@@ -10,41 +10,79 @@
 	import BodyView from './BodyView.svelte';
 
 	type Props = {
+		/** Source id whose events are being loaded. */
 		sourceID: string;
 	};
 
+	/** Filters applied to the events list. */
+	type EventFilters = {
+		/** Source id whose events are being loaded. */
+		sourceID: string;
+		/** Requested page size for event results. */
+		pageSize: number;
+		/** Free-text query applied to the events endpoint. */
+		searchQuery: string;
+		/** Sort order used for event results. */
+		sortDirection: 'ASC' | 'DESC';
+	};
+
+	/** Source id whose events are being listed. */
 	let { sourceID }: Props = $props();
 
+	/** Loaded events for the current source. */
 	let data = $state<EventDTO[]>([]);
+
+	/** Tracks whether events are loading. */
 	let loading = $state(false);
+
+	/** Holds the latest event loading error. */
 	let error = $state<string | null>(null);
 
+	/** Requested page size for events. */
 	let pageSize = $state(20);
+
+	/** Cursor used to fetch the next page of events. */
 	let nextCursor = $state<string | null>(null);
+
+	/** Indicates whether more events are available. */
 	let hasNext = $state(false);
 
+	/** Free-text query applied to events. */
 	let searchQuery = $state('');
+
+	/** Sort order used for event results. */
 	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
-	function collectUrlSearchParams() {
-		const params: Record<string, string> = {};
-		if (searchQuery) {
-			params.search = searchQuery;
-		}
-		if (sortDirection) {
-			params.sort_direction = sortDirection;
-		}
-		return params;
+	/**
+	 * Collects the current filters into a single object for easier passing to fetch functions.
+	 *
+	 * @returns Current event filters.
+	 */
+	function getCurrentFilters(): EventFilters {
+		return {
+			sourceID,
+			pageSize,
+			searchQuery,
+			sortDirection
+		};
 	}
 
-	async function fetchEvents() {
+	/**
+	 * Loads the next page of events for the active source.
+	 *
+	 * @param filters - Filters to apply when fetching events.
+	 */
+	async function fetchEvents(filters: EventFilters): Promise<void> {
 		loading = true;
 		error = null;
 		try {
-			const urlSearchParams = collectUrlSearchParams();
+			const urlSearchParams: Record<string, string> = {};
+			if (filters.searchQuery) urlSearchParams.search = filters.searchQuery;
+			if (filters.sortDirection) urlSearchParams.sort_direction = filters.sortDirection;
+
 			const result = await fetchPaginatedData(
-				`/api/sources/${sourceID}/events`,
-				pageSize,
+				`/api/sources/${filters.sourceID}/events`,
+				filters.pageSize,
 				nextCursor,
 				urlSearchParams
 			);
@@ -59,26 +97,38 @@
 		}
 	}
 
-	async function resetAndFetchEvents() {
+	/** Clears the current event list and reloads it from the first page.
+	 *
+	 * @param filters - Filters to apply when fetching events.
+	 */
+	async function resetAndFetchEvents(filters: EventFilters): Promise<void> {
 		data = [];
 		nextCursor = null;
 		hasNext = false;
-		await fetchEvents();
+		await fetchEvents(filters);
+	}
+
+	/** Refreshes the event list with the current filters when the user clicks the "Refresh" button. */
+	function handleRefresh(): void {
+		void resetAndFetchEvents(getCurrentFilters());
+	}
+
+	/** Loads the next page of events when the user clicks the "Load More" button. */
+	function handleLoadMore(): void {
+		void fetchEvents(getCurrentFilters());
 	}
 
 	$effect(() => {
-		sourceID;
-		pageSize;
-		sortDirection;
+		const filters = getCurrentFilters();
 
 		untrack(() => {
-			resetAndFetchEvents();
+			void resetAndFetchEvents(filters);
 		});
 	});
 </script>
 
-<FilterBar bind:searchQuery bind:sortDirection onSearch={resetAndFetchEvents} />
-<button onclick={resetAndFetchEvents} disabled={loading}>Refresh Events</button>
+<FilterBar bind:searchQuery bind:sortDirection />
+<button onclick={handleRefresh} disabled={loading}>Refresh Events</button>
 {#if loading}
 	<p>Loading events...</p>
 {:else if error}
@@ -105,7 +155,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button onclick={fetchEvents} disabled={loading}>Load More</button>
+			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
 		{/if}
 	{/if}
 {:else}

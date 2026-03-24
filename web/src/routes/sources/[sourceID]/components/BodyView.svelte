@@ -7,18 +7,31 @@
 	import XMLBodyView from './body/views/XMLBodyView.svelte';
 
 	type Props = {
+		/** Raw stored body value to display. */
 		body?: string;
+
+		/** Content type associated with the stored body. */
 		contentType?: ContentType;
 	};
 
+	/** Normalized body content ready for display. */
 	type ParsedBody = {
 		content: string;
 		error: string | null;
 	};
 
 	let { body, contentType }: Props = $props();
+
+	/** Parsed version of the current body payload. */
 	const parsedBody = $derived(parseBody(body, contentType));
 
+	/**
+	 * Decodes the stored body into displayable text or binary content.
+	 *
+	 * @param body - Raw stored body value.
+	 * @param contentType - Content type associated with the body.
+	 * @returns Parsed body content and any display error.
+	 */
 	function parseBody(body?: string, contentType?: ContentType): ParsedBody {
 		if (body === undefined)
 			return {

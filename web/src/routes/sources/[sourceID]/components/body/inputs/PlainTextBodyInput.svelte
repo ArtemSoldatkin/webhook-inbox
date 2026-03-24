@@ -1,12 +1,16 @@
 <script lang="ts">
 	type Props = {
+		/** Bound plain text body value. */
 		body: string;
+
+		/** Validation error shown by the input. */
 		error: string | null;
 	};
 
 	let { body = $bindable(), error = $bindable() }: Props = $props();
 
-	function handleClear() {
+	/** Clears the current plain text body. */
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

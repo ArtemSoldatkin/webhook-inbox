@@ -1,20 +1,51 @@
 <script lang="ts">
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
+	import { untrack } from 'svelte';
 	import ListEvents from './ListEvents.svelte';
 	import TestWebhook from './TestWebhook.svelte';
 
-	export let sourceID: string;
+	type Props = {
+		/** Source id shown on the details page. */
+		sourceID: string;
+	};
 
-	let data: SourceDTO | null = null;
-	let loading = false;
-	let error: string | null = null;
+	/** Filters used to load source details. */
+	type SourceFilters = {
+		/** Source id shown on the details page. */
+		sourceID: string;
+	};
 
-	async function fetchSource() {
+	let { sourceID }: Props = $props();
+
+	/** Loaded source details. */
+	let data = $state<SourceDTO | null>(null);
+
+	/** Tracks whether the source details are loading. */
+	let loading = $state(false);
+
+	/** Holds the latest source loading error. */
+	let error = $state<string | null>(null);
+
+	/**
+	 * Collects the current filters into a single object for easier passing to fetch functions.
+	 *
+	 * @returns Current source filters.
+	 */
+	function getCurrentFilters(): SourceFilters {
+		return { sourceID };
+	}
+
+	/**
+	 * Fetches the current source details from the API.
+	 *
+	 * @param filters - Filters to apply when fetching the source details.
+	 */
+	async function fetchSource(filters: SourceFilters): Promise<void> {
 		loading = true;
 		error = null;
 		try {
-			const response = await fetch(`/api/sources/${sourceID}`);
+			const response = await fetch(`/api/sources/${filters.sourceID}`);
 			if (!response.ok) {
 				throw new Error(`Failed to fetch source: ${response.statusText}`);
 			}
@@ -28,9 +59,13 @@
 		}
 	}
 
-	$: if (sourceID) {
-		fetchSource();
-	}
+	$effect(() => {
+		const filters = getCurrentFilters();
+
+		untrack(() => {
+			void fetchSource(filters);
+		});
+	});
 </script>
 
 {#if loading}
@@ -44,7 +79,7 @@
 		<p>{data.ingress_url}</p>
 		<p>{data.egress_url}</p>
 		<p>Static headers:</p>
-		{#each Object.entries(data.static_headers ?? {}) as [key, value]}
+		{#each Object.entries(data.static_headers ?? {}) as [key, value] (key)}
 			<p>{key}: {value}</p>
 		{/each}
 		<p>{data.status}</p>

@@ -2,12 +2,21 @@
 	import formatXML from 'xml-formatter';
 
 	type Props = {
+		/** Bound XML body value. */
 		body: string;
+
+		/** Validation error shown by the input. */
 		error: string | null;
 	};
 
 	let { body = $bindable(), error = $bindable() }: Props = $props();
 
+	/**
+	 * Validates the current XML body.
+	 *
+	 * @param xml - XML string to validate.
+	 * @returns Validation error message or `null`.
+	 */
 	function validateXML(xml: string): string | null {
 		if (!xml.trim()) {
 			return null;
@@ -20,7 +29,8 @@
 		return parserError ? 'Invalid XML format' : null;
 	}
 
-	function formatInput() {
+	/** Pretty-prints the current XML body when it is valid. */
+	function formatInput(): void {
 		try {
 			body = formatXML(body);
 		} catch (err) {
@@ -29,7 +39,8 @@
 		}
 	}
 
-	function handleClear() {
+	/** Clears the current XML body. */
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

@@ -1,5 +1,14 @@
 import type { PaginatedResponse } from './types';
 
+/**
+ * Fetches a paginated API resource and normalizes the response shape.
+ *
+ * @param url - API endpoint without query parameters.
+ * @param pageSize - Number of items to request per page.
+ * @param nextCursor - Cursor for the next page, if present.
+ * @param urlSearchParams - Additional filters appended to the request.
+ * @returns The parsed paginated payload.
+ */
 export async function fetchPaginatedData<T>(
 	url: string,
 	pageSize: number,

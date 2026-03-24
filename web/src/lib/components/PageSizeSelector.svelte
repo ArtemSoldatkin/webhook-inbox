@@ -1,5 +1,10 @@
 <script lang="ts">
-	export let pageSize: number = 20;
+	type Props = {
+		/** Bound page size for paginated lists. */
+		pageSize: number;
+	};
+
+	let { pageSize = $bindable() }: Props = $props();
 </script>
 
 <select bind:value={pageSize}>

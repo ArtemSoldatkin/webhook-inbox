@@ -2,14 +2,20 @@
 	import InputMap from '$lib/components/InputMap.svelte';
 
 	type Props = {
+		/** Bound encoded body value. */
 		body: string;
+
+		/** Validation error shown by the input. */
 		error: string | null;
 	};
 
 	let { body = $bindable(), error = $bindable() }: Props = $props();
+
+	/** Editable key-value entries before serialization. */
 	let jsonBody = $state<Record<string, string>>({});
 
-	function handleClear() {
+	/** Clears the current URL-encoded body. */
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

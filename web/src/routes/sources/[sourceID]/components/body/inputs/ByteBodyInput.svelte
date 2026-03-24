@@ -1,12 +1,20 @@
 <script lang="ts">
 	type Props = {
+		/** Bound base64-encoded body value. */
 		body: string;
+
+		/** Validation error shown by the input. */
 		error: string | null;
 	};
 
 	let { body = $bindable(), error = $bindable() }: Props = $props();
 
-	function handleFileChange(event: Event) {
+	/**
+	 * Reads a selected file and stores it as base64 text.
+	 *
+	 * @param event - File input change event.
+	 */
+	function handleFileChange(event: Event): void {
 		const input = event.target as HTMLInputElement;
 		if (input.files && input.files[0]) {
 			const file = input.files[0];
@@ -27,7 +35,13 @@
 		}
 	}
 
-	function isValidBase64(str: string) {
+	/**
+	 * Checks whether a string is valid base64.
+	 *
+	 * @param str - String to validate.
+	 * @returns Whether the string can be decoded as base64.
+	 */
+	function isValidBase64(str: string): boolean {
 		try {
 			return btoa(atob(str)) === str.replace(/\s/g, '');
 		} catch {
@@ -35,7 +49,8 @@
 		}
 	}
 
-	function handleClear() {
+	/** Clears the current byte body input. */
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

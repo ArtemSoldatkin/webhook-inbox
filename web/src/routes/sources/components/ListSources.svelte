@@ -7,43 +7,79 @@
 	import type { SourceDTO } from '$lib/types';
 	import { untrack } from 'svelte';
 
+	/** Filters applied to the sources list. */
+	type SourceFilters = {
+		/** Requested page size for source results. */
+		pageSize: number;
+		/** Free-text query applied to the sources endpoint. */
+		searchQuery: string;
+		/** Selected source status filter. Supported values are 'active', 'paused', 'quarantined', 'disabled', and '*' for no filtering. */
+		filterStatus: string;
+		/** Sort order used for source results. */
+		sortDirection: 'ASC' | 'DESC';
+	};
+
+	/** Loaded source rows for the current filters. */
 	let data = $state<SourceDTO[]>([]);
+
+	/** Tracks whether a source request is in flight. */
 	let loading = $state(false);
+
+	/** Holds the latest source loading error. */
 	let error = $state<string | null>(null);
 
+	/** Requested page size for the sources list. */
 	let pageSize = $state(20);
+
+	/** Cursor used to fetch the next page of sources. */
 	let nextCursor = $state<string | null>(null);
+
+	/** Indicates whether more source pages are available. */
 	let hasNext = $state(false);
 
+	/** Free-text query applied to the sources endpoint. */
 	let searchQuery = $state('');
 
+	/** Selected source status filter. */
 	let filterStatus = $state('*');
+
+	/** Available source status filter values. */
 	const filterStatusOptions = ['active', 'paused', 'quarantined', 'disabled'];
 
+	/** Sort order used for source results. */
 	let sortDirection = $state<'ASC' | 'DESC'>('DESC');
 
-	function collectUrlSearchParams() {
-		const params: Record<string, string> = {};
-		if (searchQuery) {
-			params.search = searchQuery;
-		}
-		if (filterStatus) {
-			params.filter_status = filterStatus;
-		}
-		if (sortDirection) {
-			params.sort_direction = sortDirection;
-		}
-		return params;
+	/**
+	 * Collects the current filters into a single object for easier passing to fetch functions.
+	 *
+	 * @returns Current source filters.
+	 */
+	function getCurrentFilters(): SourceFilters {
+		return {
+			pageSize,
+			searchQuery,
+			filterStatus,
+			sortDirection
+		};
 	}
 
-	async function fetchSources() {
+	/**
+	 * Loads the next page of sources for the active filters.
+	 *
+	 * @param filters - Filters to apply when fetching sources.
+	 */
+	async function fetchSources(filters: SourceFilters): Promise<void> {
 		loading = true;
 		error = null;
 		try {
-			const urlSearchParams = collectUrlSearchParams();
+			const urlSearchParams: Record<string, string> = {};
+			if (filters.searchQuery) urlSearchParams.search = filters.searchQuery;
+			if (filters.filterStatus) urlSearchParams.filter_status = filters.filterStatus;
+			if (filters.sortDirection) urlSearchParams.sort_direction = filters.sortDirection;
+
 			const result = await fetchPaginatedData(
 				'/api/sources',
-				pageSize,
+				filters.pageSize,
 				nextCursor,
 				urlSearchParams
 			);
@@ -58,20 +94,32 @@
 		}
 	}
 
-	async function resetAndFetchSources() {
+	/** Clears the current source list and fetches the first page again.
+	 *
+	 * @param filters - Filters to apply when fetching sources.
+	 */
+	async function resetAndFetchSources(filters: SourceFilters): Promise<void> {
 		data = [];
 		nextCursor = null;
 		hasNext = false;
-		await fetchSources();
+		await fetchSources(filters);
+	}
+
+	/** Refreshes the source list with the current filters when the user clicks the "Refresh" button. */
+	function handleRefresh(): void {
+		void resetAndFetchSources(getCurrentFilters());
+	}
+
+	/** Loads the next page of sources when the user clicks the "Load More" button. */
+	function handleLoadMore(): void {
+		void fetchSources(getCurrentFilters());
 	}
 
 	$effect(() => {
-		pageSize;
-		filterStatus;
-		sortDirection;
+		const filters = getCurrentFilters();
 
 		untrack(() => {
-			resetAndFetchSources();
+			void resetAndFetchSources(filters);
 		});
 	});
 </script>
@@ -82,9 +130,8 @@
 	bind:sortDirection
 	filterName="status"
 	filterOptions={filterStatusOptions}
-	onSearch={resetAndFetchSources}
 />
-<button onclick={resetAndFetchSources} disabled={loading}>Refresh Sources</button>
+<button onclick={handleRefresh} disabled={loading}>Refresh Sources</button>
 {#if loading}
 	<p>Loading sources...</p>
 {:else if error}
@@ -117,7 +164,7 @@
 			{/each}
 		</ul>
 		{#if hasNext}
-			<button onclick={fetchSources} disabled={loading}>Load More</button>
+			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
 		{/if}
 	{:else}
 		<p>No sources found.</p>

@@ -1,12 +1,16 @@
 <script lang="ts">
 	type Props = {
+		/** Bound JSON body value. */
 		body: string;
+
+		/** Validation error shown by the input. */
 		error: string | null;
 	};
 
 	let { body = $bindable(), error = $bindable() }: Props = $props();
 
-	function formatJSON() {
+	/** Pretty-prints the current JSON body when it is valid. */
+	function formatJSON(): void {
 		try {
 			const parsed = JSON.parse(body);
 			body = JSON.stringify(parsed, null, 2);
@@ -16,7 +20,8 @@
 		}
 	}
 
-	function handleClear() {
+	/** Clears the current JSON body. */
+	function handleClear(): void {
 		body = '';
 		error = null;
 	}

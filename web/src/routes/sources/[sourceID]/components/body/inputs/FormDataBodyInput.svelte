@@ -1,14 +1,18 @@
 <script lang="ts">
-	import FormConstructor from '../../form-constructor/FormConstructor.svelte';
-	import type { FormField } from '../../types';
+	import FormConstructor from './form-constructor/FormConstructor.svelte';
+	import type { FormField } from './types';
 
 	type Props = {
+		/** Bound multipart payload built from form fields. */
 		body: FormData;
+
+		/** Validation error shown by the input. */
 		error: string | null;
 	};
 
 	let { body = $bindable(), error = $bindable() }: Props = $props();
 
+	/** Dynamic fields used to build the multipart payload. */
 	let fields = $state<FormField[]>([]);
 
 	$effect(() => {

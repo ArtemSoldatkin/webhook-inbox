@@ -2,19 +2,31 @@
 	import type { ContentType } from '$lib/types';
 
 	type Props = {
+		/** Binary body content to render. */
 		body: string;
+
+		/** Content type used when downloading the body. */
 		contentType?: ContentType;
 	};
 
 	let { body, contentType }: Props = $props();
 
+	/** Size of the current binary body in bytes. */
 	const bodyByteLength = $derived(body.length);
+
+	/** Hex preview of the first bytes in the body. */
 	const hexPreview = $derived(
 		Array.from(body.slice(0, 16))
 			.map((c) => c.charCodeAt(0).toString(16).padStart(2, '0'))
 			.join(' ')
 	);
 
+	/**
+	 * Converts a binary string into a byte array.
+	 *
+	 * @param str - Binary string to convert.
+	 * @returns Byte array for the provided string.
+	 */
 	function binaryStringToUint8Array(str: string): Uint8Array<ArrayBuffer> {
 		const buffer = new ArrayBuffer(str.length);
 		const bytes = new Uint8Array(buffer);
@@ -25,7 +37,9 @@
 
 		return bytes;
 	}
-	function downloadBytes() {
+
+	/** Downloads the current binary body as a file. */
+	function downloadBytes(): void {
 		try {
 			const bytes = binaryStringToUint8Array(body);
 			const blob = new Blob([bytes], {

@@ -1,15 +1,22 @@
 <script lang="ts">
 	type Props = {
+		/** Bound key-value pairs being edited. */
 		map: Record<string, string>;
+
+		/** Disables all map inputs when true. */
 		disabled?: boolean;
 	};
 
 	let { map = $bindable(), disabled }: Props = $props();
 
+	/** Draft key for the next map entry. */
 	let key = $state('');
+
+	/** Draft value for the next map entry. */
 	let value = $state('');
 
-	function addKeyValue() {
+	/** Adds the current draft entry when both fields are valid. */
+	function addKeyValue(): void {
 		if (key.trim() === '' || value.trim() === '' || map[key]) {
 			return;
 		}
@@ -18,7 +25,12 @@
 		value = '';
 	}
 
-	function removeKey(keyToRemove: string) {
+	/**
+	 * Removes a single entry from the bound map.
+	 *
+	 * @param keyToRemove - Map key to delete.
+	 */
+	function removeKey(keyToRemove: string): void {
 		delete map[keyToRemove];
 		map = { ...map };
 	}
