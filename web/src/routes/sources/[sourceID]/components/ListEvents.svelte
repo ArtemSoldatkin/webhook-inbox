@@ -113,11 +113,6 @@
 		void resetAndFetchEvents(getCurrentFilters());
 	}
 
-	/** Applies the current filters when the user triggers a search from the filter bar (for example, by clicking the "Search" button). */
-	function handleSearch(): void {
-		void resetAndFetchEvents(getCurrentFilters());
-	}
-
 	/** Loads the next page of events when the user clicks the "Load More" button. */
 	function handleLoadMore(): void {
 		void fetchEvents(getCurrentFilters());
@@ -132,7 +127,7 @@
 	});
 </script>
 
-<FilterBar bind:searchQuery bind:sortDirection onSearch={handleSearch} />
+<FilterBar bind:searchQuery bind:sortDirection />
 <button onclick={handleRefresh} disabled={loading}>Refresh Events</button>
 {#if loading}
 	<p>Loading events...</p>

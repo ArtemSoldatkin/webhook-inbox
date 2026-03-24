@@ -14,9 +14,6 @@
 
 		/** Currently selected filter value. */
 		filter?: string;
-
-		/** Callback used to apply the current filters. */
-		onSearch: () => void;
 	};
 
 	let {
@@ -24,9 +21,15 @@
 		sortDirection = $bindable(),
 		filterName,
 		filterOptions,
-		filter = $bindable(),
-		onSearch
+		filter = $bindable()
 	}: Props = $props();
+
+	let searchInput = $state('');
+
+	/** Applies the current search input as a filter. */
+	function handleSearch(): void {
+		searchQuery = searchInput;
+	}
 
 	/** Flips the active sort direction between ascending and descending. */
 	function toggleSortDirection(): void {
@@ -36,8 +39,8 @@
 
 <section>
 	<div>
-		<input type="text" placeholder="Search..." bind:value={searchQuery} />
-		<button type="button" onclick={onSearch}>Search</button>
+		<input type="text" placeholder="Search..." bind:value={searchInput} />
+		<button type="button" onclick={handleSearch}>Search</button>
 	</div>
 	{#if filter && filterOptions}
 		<div>

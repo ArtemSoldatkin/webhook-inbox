@@ -129,11 +129,6 @@
 		void resetAndFetchDeliveryAttempts(getCurrentFilters());
 	}
 
-	/** Applies the current filters when the user triggers a search from the filter bar (for example, by clicking the "Search" button). */
-	function handleSearch(): void {
-		void resetAndFetchDeliveryAttempts(getCurrentFilters());
-	}
-
 	/** Loads the next page of delivery attempts when the user clicks the "Load More" button. */
 	function handleLoadMore(): void {
 		void fetchDeliveryAttempts(getCurrentFilters());
@@ -154,7 +149,6 @@
 	bind:sortDirection
 	filterName="state"
 	filterOptions={filterStateOptions}
-	onSearch={handleSearch}
 />
 <button onclick={handleRefresh} disabled={loading}>Refresh Delivery Attempts</button>
 <h3>Delivery Attempts</h3>

@@ -110,11 +110,6 @@
 		void resetAndFetchSources(getCurrentFilters());
 	}
 
-	/** Applies the current filters when the user triggers a search from the filter bar (for example, by clicking the "Search" button). */
-	function handleSearch(): void {
-		void resetAndFetchSources(getCurrentFilters());
-	}
-
 	/** Loads the next page of sources when the user clicks the "Load More" button. */
 	function handleLoadMore(): void {
 		void fetchSources(getCurrentFilters());
@@ -135,7 +130,6 @@
 	bind:sortDirection
 	filterName="status"
 	filterOptions={filterStatusOptions}
-	onSearch={handleSearch}
 />
 <button onclick={handleRefresh} disabled={loading}>Refresh Sources</button>
 {#if loading}
