@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Link from '$lib/components/ui/Link.svelte';
 	import { page } from '$app/state';
 	import SourceView from './components/SourceView.svelte';
 
@@ -9,7 +10,7 @@
 
 <nav>
 	<ul>
-		<li><a href={resolve('/sources')}>Sources</a></li>
+		<li><Link href={resolve('/sources')} variant="inline">Sources</Link></li>
 	</ul>
 </nav>
 <h2>Source ID: {sourceID}</h2>

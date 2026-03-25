@@ -5,6 +5,7 @@
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Link from '$lib/components/ui/Link.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import type { EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -141,10 +142,12 @@
 		<ul>
 			{#each data as event (event.id)}
 				<li>
-					<section>
-						<h3>
-							<a href={resolve(`/sources/${event.source_id}/${event.id}`)}>Event ID: {event.id}</a>
-						</h3>
+						<section>
+							<h3>
+								<Link href={resolve(`/sources/${event.source_id}/${event.id}`)} variant="inline">
+									Event ID: {event.id}
+								</Link>
+							</h3>
 						<p>Source ID: {event.source_id}</p>
 						<p>Deduplication Hash: {event.dedup_hash ?? 'N/A'}</p>
 						<p>Method: {event.method}</p>

@@ -4,6 +4,7 @@
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Link from '$lib/components/ui/Link.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -141,12 +142,12 @@
 	{#if data.length > 0}
 		<ul>
 			{#each data as source (source.id)}
-				<li>
-					<section>
-						<h2><a href={resolve(`/sources/${source.id}`)}>{source.id}</a></h2>
-						<p>{source.description}</p>
-						<p>{source.ingress_url}</p>
-						<p>{source.egress_url}</p>
+					<li>
+						<section>
+							<h2><Link href={resolve(`/sources/${source.id}`)} variant="inline">{source.id}</Link></h2>
+							<p>{source.description}</p>
+							<p>{source.ingress_url}</p>
+							<p>{source.egress_url}</p>
 						<p>Static headers:</p>
 						{#each Object.entries(source.static_headers ?? {}) as [key, value] (key)}
 							<p>{key}: {value}</p>

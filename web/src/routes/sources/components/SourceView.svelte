@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Link from '$lib/components/ui/Link.svelte';
 	import { type SourceDTO } from '$lib/types';
 
 	type Props = {
@@ -10,7 +11,7 @@
 	let { source }: Props = $props();
 </script>
 
-<h2><a href={resolve(`/sources/${source.id}`)}>{source.id}</a></h2>
+<h2><Link href={resolve(`/sources/${source.id}`)} variant="inline">{source.id}</Link></h2>
 <p>{source.description}</p>
 <p>{source.ingress_url}</p>
 <p>{source.egress_url}</p>
