@@ -30,7 +30,7 @@
 </script>
 
 {#if parsed.error}
-	<p>{parsed.error}</p>
+	<p class="mt-3 text-sm text-warning">{parsed.error}</p>
 {/if}
 <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-<pre><code class="hljs xml">{@html parsed.html}</code></pre>
+<pre class="mt-3 overflow-x-auto rounded-md border border-border-muted bg-elevated p-4 text-sm leading-6 text-fg shadow-sm"><code class="hljs xml">{@html parsed.html}</code></pre>

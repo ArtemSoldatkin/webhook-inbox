@@ -144,58 +144,138 @@
 	});
 </script>
 
-<FilterBar
-	bind:searchQuery
-	bind:filter={filterState}
-	bind:sortDirection
-	filterName="state"
-	filterOptions={filterStateOptions}
-/>
-<Button onclick={handleRefresh} disabled={loading}>Refresh Delivery Attempts</Button>
-<h3>Delivery Attempts</h3>
-{#if loading}
-	<p>Loading event details...</p>
-{:else if error}
-	<p class="error">Error: {error}</p>
-{:else if data}
-	{#if data.length === 0}
-		<p>No delivery attempts found for this event.</p>
-	{:else}
-		<ul>
-			{#each data as attempt (attempt.id)}
-				<li>
-					<section>
-						<h3>Attempt ID: {attempt.id}</h3>
-						<p>Event ID: {attempt.event_id}</p>
-						<p>Attempt Number: {attempt.attempt_number}</p>
-						<p>Delivery State: {attempt.state}</p>
-						<p>Status code: {attempt.status_code}</p>
-						<p>Error Type: {attempt.error_type}</p>
-						<p>Error Message: {attempt.error_message}</p>
-						<p>
-							Started at: {attempt.started_at
-								? new Date(attempt.started_at).toLocaleString()
-								: 'N/A'}
-						</p>
-						<p>
-							Finished at: {attempt.finished_at
-								? new Date(attempt.finished_at).toLocaleString()
-								: 'N/A'}
-						</p>
-						<p>Created at: {new Date(attempt.created_at).toLocaleString()}</p>
-						<p>
-							Next attempt at:
-							{attempt.next_attempt_at ? new Date(attempt.next_attempt_at).toLocaleString() : 'N/A'}
-						</p>
-					</section>
-				</li>
-			{/each}
-		</ul>
-		{#if hasNext}
-			<Button onclick={handleLoadMore} disabled={loading}>Load More</Button>
+<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+	<div class="flex flex-col gap-6">
+		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+			<div>
+				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Delivery attempts</p>
+				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">Delivery history for this event</h3>
+				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+					Review retries, status codes, and error information for each outbound delivery attempt.
+				</p>
+			</div>
+			<Button onclick={handleRefresh} disabled={loading} variant="secondary">
+				Refresh Delivery Attempts
+			</Button>
+		</div>
+
+		<div class="rounded-lg border border-border-muted bg-elevated p-4">
+			<FilterBar
+				bind:searchQuery
+				bind:filter={filterState}
+				bind:sortDirection
+				filterName="state"
+				filterOptions={filterStateOptions}
+			/>
+		</div>
+
+		{#if loading}
+			<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
+				Loading delivery attempts...
+			</div>
+		{:else if error}
+			<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">
+				Error: {error}
+			</div>
+		{:else if data.length === 0}
+			<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
+				No delivery attempts found for this event.
+			</div>
+		{:else}
+			<ul class="grid gap-4">
+				{#each data as attempt (attempt.id)}
+					<li>
+						<article class="rounded-lg border border-border bg-elevated p-5 shadow-sm">
+							<div class="flex flex-col gap-5">
+								<div class="flex flex-wrap items-center gap-3">
+									<h4 class="text-xl font-semibold tracking-tight text-fg">Attempt ID: {attempt.id}</h4>
+									<span
+										class="inline-flex w-fit rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
+									>
+										{attempt.state}
+									</span>
+								</div>
+
+								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+									<div class="rounded-md border border-border-muted bg-surface p-4">
+										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Event ID</p>
+										<p class="mt-2 break-all text-sm text-fg">{attempt.event_id}</p>
+									</div>
+									<div class="rounded-md border border-border-muted bg-surface p-4">
+										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Attempt number
+										</p>
+										<p class="mt-2 text-sm text-fg">{attempt.attempt_number}</p>
+									</div>
+									<div class="rounded-md border border-border-muted bg-surface p-4">
+										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Status code
+										</p>
+										<p class="mt-2 text-sm text-fg">{attempt.status_code ?? 'N/A'}</p>
+									</div>
+								</div>
+
+								<div class="grid gap-4 lg:grid-cols-2">
+									<div class="rounded-md border border-border-muted bg-surface p-4">
+										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Errors</p>
+										<div class="mt-3 flex flex-col gap-3 text-sm">
+											<div class="flex items-start justify-between gap-4">
+												<span class="text-muted">Error type</span>
+												<span class="text-right text-fg">{attempt.error_type || 'N/A'}</span>
+											</div>
+											<div class="flex items-start justify-between gap-4">
+												<span class="text-muted">Error message</span>
+												<span class="text-right text-fg">{attempt.error_message || 'N/A'}</span>
+											</div>
+										</div>
+									</div>
+									<div class="rounded-md border border-border-muted bg-surface p-4">
+										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Timing</p>
+										<div class="mt-3 flex flex-col gap-3 text-sm">
+											<div class="flex items-start justify-between gap-4">
+												<span class="text-muted">Started at</span>
+												<span class="text-right text-fg">
+													{attempt.started_at ? new Date(attempt.started_at).toLocaleString() : 'N/A'}
+												</span>
+											</div>
+											<div class="flex items-start justify-between gap-4">
+												<span class="text-muted">Finished at</span>
+												<span class="text-right text-fg">
+													{attempt.finished_at ? new Date(attempt.finished_at).toLocaleString() : 'N/A'}
+												</span>
+											</div>
+											<div class="flex items-start justify-between gap-4">
+												<span class="text-muted">Created at</span>
+												<span class="text-right text-fg">
+													{new Date(attempt.created_at).toLocaleString()}
+												</span>
+											</div>
+											<div class="flex items-start justify-between gap-4">
+												<span class="text-muted">Next attempt at</span>
+												<span class="text-right text-fg">
+													{attempt.next_attempt_at
+														? new Date(attempt.next_attempt_at).toLocaleString()
+														: 'N/A'}
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</article>
+					</li>
+				{/each}
+			</ul>
+
+			{#if hasNext}
+				<div class="flex justify-center pt-2">
+					<Button onclick={handleLoadMore} disabled={loading} variant="secondary">Load More</Button>
+				</div>
+			{/if}
 		{/if}
-	{/if}
-{:else}
-	<p>No details found for this event.</p>
-{/if}
-<PageSizeSelector bind:pageSize />
+
+		<div class="border-t border-border-muted pt-4">
+			<PageSizeSelector bind:pageSize />
+		</div>
+	</div>
+</section>

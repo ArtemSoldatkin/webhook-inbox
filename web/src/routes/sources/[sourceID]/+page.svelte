@@ -8,14 +8,25 @@
 	const sourceID = page.params.sourceID;
 </script>
 
-<nav>
-	<ul>
-		<li><Link href={resolve('/sources')} variant="inline">Sources</Link></li>
-	</ul>
-</nav>
-<h2>Source ID: {sourceID}</h2>
+<div class="flex flex-col gap-6">
+	<nav class="rounded-md border border-border-muted bg-surface px-4 py-3 text-sm shadow-sm">
+		<ul class="flex items-center gap-2 text-muted">
+			<li><Link href={resolve('/sources')} variant="inline">Sources</Link></li>
+			<li>/</li>
+			<li class="text-fg">{sourceID || 'Unknown source'}</li>
+		</ul>
+	</nav>
+
+	<div class="flex flex-col gap-2">
+		<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Source details</p>
+		<h1 class="text-3xl font-semibold tracking-tight text-fg">Source ID: {sourceID}</h1>
+	</div>
+
 {#if !sourceID}
-	<p>No source ID provided.</p>
+		<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
+			No source ID provided.
+		</div>
 {:else}
-	<SourceView {sourceID} />
+		<SourceView {sourceID} />
 {/if}
+</div>

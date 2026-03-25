@@ -108,32 +108,62 @@
 	}
 </script>
 
-<form onsubmit={testWebhook}>
-	<label
-		>HTTP Method:
-		<select bind:value={method} disabled={loading}>
+<form onsubmit={testWebhook} class="flex flex-col gap-6">
+	<div class="grid gap-6 lg:grid-cols-[minmax(0,0.36fr)_minmax(0,0.64fr)]">
+		<div class="flex flex-col gap-2">
+			<label for="http-method" class="text-sm font-medium text-fg">HTTP Method</label>
+			<select
+				id="http-method"
+				bind:value={method}
+				disabled={loading}
+				class="rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+			>
 			<option value="GET">GET</option>
 			<option value="POST">POST</option>
 			<option value="PUT">PUT</option>
 			<option value="PATCH">PATCH</option>
 			<option value="DELETE">DELETE</option>
-		</select>
-	</label>
-	<label>
-		Headers (optional):
+			</select>
+		</div>
+		<div class="rounded-md border border-border-muted bg-elevated px-4 py-3 text-sm text-muted">
+			Requests are sent to the source ingest endpoint using the selected method, merged static
+			headers, and any overrides you add below.
+		</div>
+	</div>
+
+	<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
+		<div>
+			<p class="text-sm font-medium text-fg">Headers</p>
+			<p class="mt-1 text-sm text-muted">Optional headers included with the test request.</p>
+		</div>
 		<InputMap bind:map={headers} disabled={loading} />
-	</label>
-	<label>
-		Query Parameters (optional):
+	</div>
+
+	<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
+		<div>
+			<p class="text-sm font-medium text-fg">Query parameters</p>
+			<p class="mt-1 text-sm text-muted">Optional query string values appended to the request URL.</p>
+		</div>
 		<InputMap bind:map={queryParams} disabled={loading} />
-	</label>
-	{#if isBodyAllowed}<label>
-			Body (optional):
+	</div>
+
+	{#if isBodyAllowed}
+		<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
+			<div>
+				<p class="text-sm font-medium text-fg">Request body</p>
+				<p class="mt-1 text-sm text-muted">Choose a content type and compose the request payload.</p>
+			</div>
 			<BodyInput bind:textBody bind:formDataBody bind:contentType />
-		</label>
+		</div>
 	{/if}
+
 	{#if error}
-		<div class="error">{error}</div>
+		<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">{error}</div>
 	{/if}
-	<Button type="submit" disabled={loading}>Test Webhook</Button>
+
+	<div class="flex justify-end border-t border-border-muted pt-6">
+		<Button type="submit" disabled={loading}>
+			{loading ? 'Sending Test Webhook...' : 'Test Webhook'}
+		</Button>
+	</div>
 </form>

@@ -37,4 +37,6 @@
 	});
 </script>
 
-<FormConstructor bind:fields />
+<div class="flex flex-col gap-4">
+	<FormConstructor bind:fields />
+</div>

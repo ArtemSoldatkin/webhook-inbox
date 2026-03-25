@@ -33,5 +33,9 @@
 	});
 </script>
 
-<InputMap bind:map={jsonBody} disabled={!!error} />
-<Button type="button" onclick={handleClear} disabled={!body}>Clear</Button>
+<div class="flex flex-col gap-4">
+	<InputMap bind:map={jsonBody} disabled={!!error} />
+	<div class="flex justify-end">
+		<Button type="button" onclick={handleClear} disabled={!body} variant="secondary">Clear</Button>
+	</div>
+</div>

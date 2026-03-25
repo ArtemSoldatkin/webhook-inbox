@@ -17,10 +17,16 @@
 </script>
 
 {#if fields.length === 0}
-	<p>No fields added yet. Click "Add field" to start building your form.</p>
+	<div class="rounded-md border border-border-muted bg-surface px-4 py-3 text-sm text-muted">
+		No fields added yet. Click "Add field" to start building your form.
+	</div>
 {/if}
-<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-{#each fields as _, index (index)}
-	<InputConstructor bind:field={fields[index]} />
-{/each}
-<Button type="button" onclick={handleAddField}>Add field</Button>
+<div class="flex flex-col gap-4">
+	<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+	{#each fields as _, index (index)}
+		<InputConstructor bind:field={fields[index]} />
+	{/each}
+	<div class="flex justify-end">
+		<Button type="button" onclick={handleAddField}>Add field</Button>
+	</div>
+</div>

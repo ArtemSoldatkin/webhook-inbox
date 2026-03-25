@@ -60,6 +60,20 @@
 	}
 </script>
 
-<p>Size: {bodyByteLength} bytes</p>
-<pre>{hexPreview}...</pre>
-<Button onclick={downloadBytes} disabled={body === ''}>Download as file</Button>
+<div class="mt-3 flex flex-col gap-4">
+	<div class="rounded-md border border-border-muted bg-elevated p-4">
+		<div class="grid gap-3 sm:grid-cols-2">
+			<div>
+				<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Size</p>
+				<p class="mt-2 text-sm text-fg">{bodyByteLength} bytes</p>
+			</div>
+			<div>
+				<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Preview</p>
+				<pre class="mt-2 overflow-x-auto text-sm leading-6 text-fg">{hexPreview}...</pre>
+			</div>
+		</div>
+	</div>
+	<div class="flex justify-end">
+		<Button onclick={downloadBytes} disabled={body === ''} variant="secondary">Download as file</Button>
+	</div>
+</div>

@@ -73,20 +73,55 @@
 </script>
 
 {#if loading}
-	<p>Loading event details...</p>
+	<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
+		Loading event details...
+	</div>
 {:else if error}
-	<p class="error">Error: {error}</p>
+	<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">
+		Error: {error}
+	</div>
 {:else if data}
-	<section>
-		<h2>Event ID: {data.id}</h2>
-		<p>Source ID: {data.source_id}</p>
-		<p>Deduplication Hash: {data.dedup_hash ?? 'N/A'}</p>
-		<p>Method: {data.method}</p>
-		<DisplayMapOfStringArrays title="Query Parameters" data={data.query_params ?? {}} />
-		<DisplayMapOfStringArrays title="Raw Headers" data={data.raw_headers ?? {}} />
-		<BodyView body={data.body} contentType={data.body_content_type} />
-	</section>
-	<DeliveryAttemptList {sourceID} {eventID} />
+	<div class="flex flex-col gap-8">
+		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+			<div class="flex flex-col gap-6">
+				<div class="flex flex-col gap-3">
+					<div class="flex flex-wrap items-center gap-3">
+						<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Captured event</p>
+						<span
+							class="inline-flex w-fit rounded-full border border-border bg-elevated px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
+						>
+							{data.method}
+						</span>
+					</div>
+					<h2 class="text-3xl font-semibold tracking-tight text-fg">Event ID: {data.id}</h2>
+				</div>
+
+				<div class="grid gap-4 sm:grid-cols-2">
+					<div class="rounded-md border border-border-muted bg-elevated p-4">
+						<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Source ID</p>
+						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.source_id}</p>
+					</div>
+					<div class="rounded-md border border-border-muted bg-elevated p-4">
+						<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+							Deduplication hash
+						</p>
+						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.dedup_hash ?? 'N/A'}</p>
+					</div>
+				</div>
+
+				<div class="grid gap-4 lg:grid-cols-2">
+					<DisplayMapOfStringArrays title="Query Parameters" data={data.query_params ?? {}} />
+					<DisplayMapOfStringArrays title="Raw Headers" data={data.raw_headers ?? {}} />
+				</div>
+
+				<BodyView body={data.body} contentType={data.body_content_type} />
+			</div>
+		</section>
+
+		<DeliveryAttemptList {sourceID} {eventID} />
+	</div>
 {:else}
-	<p>No details found for this event.</p>
+	<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
+		No details found for this event.
+	</div>
 {/if}

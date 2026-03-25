@@ -79,15 +79,17 @@
 	}
 </script>
 
-<section>
-	<h3>Request body</h3>
+<section class="rounded-md border border-border-muted bg-surface p-4">
+	<h3 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Request body</h3>
 	{#if parsedBody.error && parsedBody.content}
-		<p>{parsedBody.error}</p>
-		<p>Original body: {parsedBody.content}</p>
+		<div class="mt-3 rounded-md border border-warning bg-elevated px-4 py-3 text-sm text-fg">
+			<p class="font-medium text-warning">{parsedBody.error}</p>
+			<p class="mt-2 break-all text-muted">Original body: {parsedBody.content}</p>
+		</div>
 	{:else if parsedBody.error}
-		<p>{parsedBody.error}</p>
+		<p class="mt-3 text-sm text-muted">{parsedBody.error}</p>
 	{:else if !contentType}
-		<p>Content type unknown, cannot display body</p>
+		<p class="mt-3 text-sm text-muted">Content type unknown, cannot display body.</p>
 	{:else if contentType.startsWith('application/json')}
 		<JSONBodyView body={parsedBody.content} />
 	{:else if contentType.startsWith('application/x-www-form-urlencoded')}

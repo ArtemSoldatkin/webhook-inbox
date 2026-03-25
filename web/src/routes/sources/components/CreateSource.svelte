@@ -128,32 +128,70 @@
 	}
 </script>
 
-<form onsubmit={handleSubmit}>
-	<label
-		>Egress URL
-		<input
-			type="text"
-			bind:value={data.egress_url}
-			placeholder="https://example.com/egress"
-			required
-			disabled={loading}
-		/>
-	</label>
-	{#if egressError}
-		<p class="error">{egressError}</p>
-	{/if}
-	{#if data.static_headers}
-		<label
-			>Static Headers
-			<InputMap bind:map={data.static_headers} disabled={loading} />
-		</label>
-	{/if}
-	<label
-		>Description
-		<textarea bind:value={data.description} placeholder="Optional description"></textarea>
-	</label>
-	<Button type="submit" disabled={loading || Boolean(egressError)}>Create New Source</Button>
-	{#if error}
-		<p class="error">Error: {error}</p>
-	{/if}
-</form>
+<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+	<div class="max-w-3xl">
+		<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Create source</p>
+		<h1 class="mt-4 text-3xl font-semibold tracking-tight text-fg">Add a webhook destination</h1>
+		<p class="mt-3 text-sm leading-6 text-muted sm:text-base">
+			Create a unique ingest endpoint and define where captured webhook traffic should be forwarded.
+		</p>
+	</div>
+
+	<form onsubmit={handleSubmit} class="mt-8 flex flex-col gap-6">
+		<div class="flex flex-col gap-2">
+			<label for="egress-url" class="text-sm font-medium text-fg">Egress URL</label>
+			<input
+				id="egress-url"
+				type="text"
+				bind:value={data.egress_url}
+				placeholder="https://example.com/egress"
+				required
+				disabled={loading}
+				class="w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+			/>
+			<p class="text-sm text-muted">Use an `http` or `https` endpoint that should receive forwarded requests.</p>
+			{#if egressError}
+				<p class="text-sm text-error">{egressError}</p>
+			{/if}
+		</div>
+
+		{#if data.static_headers}
+			<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
+				<div>
+					<label class="text-sm font-medium text-fg">Static headers</label>
+					<p class="mt-1 text-sm text-muted">
+						Attach fixed headers to every forwarded request for this source.
+					</p>
+				</div>
+				<InputMap bind:map={data.static_headers} disabled={loading} />
+			</div>
+		{/if}
+
+		<div class="flex flex-col gap-2">
+			<label for="description" class="text-sm font-medium text-fg">Description</label>
+			<textarea
+				id="description"
+				bind:value={data.description}
+				placeholder="Optional description"
+				disabled={loading}
+				rows="4"
+				class="min-h-28 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+			></textarea>
+		</div>
+
+		<div class="flex flex-col gap-3 border-t border-border-muted pt-6 sm:flex-row sm:items-center sm:justify-between">
+			<p class="text-sm text-muted">
+				The source will be created immediately and appear in the sources list below.
+			</p>
+			<Button type="submit" disabled={loading || Boolean(egressError)}>
+				{loading ? 'Creating Source...' : 'Create New Source'}
+			</Button>
+		</div>
+
+		{#if error}
+			<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">
+				Error: {error}
+			</div>
+		{/if}
+	</form>
+</section>

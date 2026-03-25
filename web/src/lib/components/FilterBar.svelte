@@ -39,27 +39,47 @@
 	}
 </script>
 
-<section>
-	<div>
-		<input type="text" placeholder="Search..." bind:value={searchInput} />
+<section class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+	<div class="flex flex-1 flex-col gap-4 sm:flex-row sm:items-end">
+		<div class="min-w-0 flex-1">
+			<label for="search-query" class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+				Search
+			</label>
+			<input
+				id="search-query"
+				type="text"
+				placeholder="Search..."
+				bind:value={searchInput}
+				class="mt-1 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			/>
+		</div>
 		<Button type="button" onclick={handleSearch}>Search</Button>
 	</div>
-	{#if filter && filterOptions}
-		<div>
-			<label for="filter"
-				>Filter by {filterName ?? 'category'}:
-				<select bind:value={filter}>
+
+	<div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+		{#if filterOptions}
+			<div class="min-w-0 sm:min-w-44">
+				<label for="filter" class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+					Filter by {filterName ?? 'category'}
+				</label>
+				<select
+					id="filter"
+					bind:value={filter}
+					class="mt-1 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				>
 					<option value="*">All</option>
 					{#each filterOptions as category (category)}
 						<option value={category}>{category}</option>
 					{/each}
 				</select>
-			</label>
+			</div>
+		{/if}
+
+		<div>
+			<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Sort</p>
+			<Button type="button" onclick={toggleSortDirection} aria-label="Toggle sort direction" variant="secondary">
+				{sortDirection === 'ASC' ? 'Ascending' : 'Descending'}
+			</Button>
 		</div>
-	{/if}
-	<div>
-		<Button type="button" onclick={toggleSortDirection} aria-label="Toggle sort direction">
-			{sortDirection === 'ASC' ? '↑' : '↓'}
-		</Button>
 	</div>
 </section>

@@ -36,15 +36,22 @@
 	});
 </script>
 
-<section>
-	<select bind:value={contentType}>
+<section class="flex flex-col gap-4">
+	<div>
+		<label for="content-type" class="text-sm font-medium text-fg">Content type</label>
+		<select
+			id="content-type"
+			bind:value={contentType}
+			class="mt-2 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+		>
 		<option value="application/json">JSON</option>
 		<option value="application/x-www-form-urlencoded">Form URL Encoded</option>
 		<option value="multipart/form-data">Multipart Form Data</option>
 		<option value="text/plain">Plain Text</option>
 		<option value="application/xml">XML</option>
 		<option value="application/octet-stream">Binary Data</option>
-	</select>
+		</select>
+	</div>
 
 	{#if contentType === 'application/json'}
 		<JSONBodyInput bind:body={textBody} bind:error />
@@ -59,9 +66,9 @@
 	{:else if contentType === 'application/octet-stream'}
 		<ByteBodyInput bind:body={textBody} bind:error />
 	{:else}
-		<p>Selected Content Type is not supported</p>
+		<p class="text-sm text-muted">Selected content type is not supported.</p>
 	{/if}
 	{#if error}
-		<div class="error">{error}</div>
+		<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">{error}</div>
 	{/if}
 </section>

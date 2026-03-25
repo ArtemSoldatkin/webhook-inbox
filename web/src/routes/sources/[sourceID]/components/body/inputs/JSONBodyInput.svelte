@@ -38,6 +38,15 @@
 	});
 </script>
 
-<textarea bind:value={body} rows="10" cols="50" placeholder="Enter JSON body here..."></textarea>
-<Button type="button" onclick={formatJSON} disabled={!!error}>Format</Button>
-<Button type="button" onclick={handleClear} disabled={!body}>Clear</Button>
+<div class="flex flex-col gap-4">
+	<textarea
+		bind:value={body}
+		rows="10"
+		placeholder="Enter JSON body here..."
+		class="min-h-56 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+	></textarea>
+	<div class="flex flex-wrap justify-end gap-3">
+		<Button type="button" onclick={formatJSON} disabled={!!error} variant="secondary">Format</Button>
+		<Button type="button" onclick={handleClear} disabled={!body} variant="secondary">Clear</Button>
+	</div>
+</div>

@@ -129,40 +129,87 @@
 	});
 </script>
 
-<FilterBar bind:searchQuery bind:sortDirection />
-<Button onclick={handleRefresh} disabled={loading}>Refresh Events</Button>
-{#if loading}
-	<p>Loading events...</p>
-{:else if error}
-	<p class="error">Error: {error}</p>
-{:else if data}
-	{#if data.length === 0}
-		<p>No events found for this source.</p>
-	{:else}
-		<ul>
-			{#each data as event (event.id)}
-				<li>
-						<section>
-							<h3>
-								<Link href={resolve(`/sources/${event.source_id}/${event.id}`)} variant="inline">
-									Event ID: {event.id}
-								</Link>
-							</h3>
-						<p>Source ID: {event.source_id}</p>
-						<p>Deduplication Hash: {event.dedup_hash ?? 'N/A'}</p>
-						<p>Method: {event.method}</p>
-						<DisplayMapOfStringArrays title="Query Parameters" data={event.query_params ?? {}} />
-						<DisplayMapOfStringArrays title="Raw Headers" data={event.raw_headers ?? {}} />
-						<BodyView body={event.body} contentType={event.body_content_type} />
-					</section>
-				</li>
-			{/each}
-		</ul>
-		{#if hasNext}
-			<Button onclick={handleLoadMore} disabled={loading}>Load More</Button>
+<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+	<div class="flex flex-col gap-6">
+		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+			<div>
+				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Events</p>
+				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">Captured traffic for this source</h3>
+				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+					Inspect recorded requests, query parameters, headers, and request bodies in arrival order.
+				</p>
+			</div>
+			<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Events</Button>
+		</div>
+
+		<div class="rounded-lg border border-border-muted bg-elevated p-4">
+			<FilterBar bind:searchQuery bind:sortDirection />
+		</div>
+
+		{#if loading}
+			<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
+				Loading events...
+			</div>
+		{:else if error}
+			<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">
+				Error: {error}
+			</div>
+		{:else if data.length === 0}
+			<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
+				No events found for this source.
+			</div>
+		{:else}
+			<ul class="grid gap-4">
+				{#each data as event (event.id)}
+					<li>
+						<article class="rounded-lg border border-border bg-elevated p-5 shadow-sm">
+							<div class="flex flex-col gap-5">
+								<div class="flex flex-col gap-2">
+									<div class="flex flex-wrap items-center gap-3">
+										<h4 class="text-xl font-semibold tracking-tight text-fg">
+											<Link href={resolve(`/sources/${event.source_id}/${event.id}`)} variant="inline">
+												Event ID: {event.id}
+											</Link>
+										</h4>
+										<span
+											class="inline-flex w-fit rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
+										>
+											{event.method}
+										</span>
+									</div>
+									<div class="grid gap-3 text-sm sm:grid-cols-2">
+										<div class="rounded-md border border-border-muted bg-surface px-3 py-2">
+											<span class="text-muted">Source ID</span>
+											<p class="mt-1 break-all text-fg">{event.source_id}</p>
+										</div>
+										<div class="rounded-md border border-border-muted bg-surface px-3 py-2">
+											<span class="text-muted">Deduplication hash</span>
+											<p class="mt-1 break-all text-fg">{event.dedup_hash ?? 'N/A'}</p>
+										</div>
+									</div>
+								</div>
+
+								<div class="grid gap-4 lg:grid-cols-2">
+									<DisplayMapOfStringArrays title="Query Parameters" data={event.query_params ?? {}} />
+									<DisplayMapOfStringArrays title="Raw Headers" data={event.raw_headers ?? {}} />
+								</div>
+
+								<BodyView body={event.body} contentType={event.body_content_type} />
+							</div>
+						</article>
+					</li>
+				{/each}
+			</ul>
+
+			{#if hasNext}
+				<div class="flex justify-center pt-2">
+					<Button onclick={handleLoadMore} disabled={loading} variant="secondary">Load More</Button>
+				</div>
+			{/if}
 		{/if}
-	{/if}
-{:else}
-	<p>No events found for this source.</p>
-{/if}
-<PageSizeSelector bind:pageSize />
+
+		<div class="border-t border-border-muted pt-4">
+			<PageSizeSelector bind:pageSize />
+		</div>
+	</div>
+</section>
