@@ -1,6 +1,7 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import type { ContentType } from '$lib/types';
 	import BodyInput from './BodyInput.svelte';
 
@@ -112,18 +113,19 @@
 	<div class="grid gap-6 lg:grid-cols-[minmax(0,0.36fr)_minmax(0,0.64fr)]">
 		<div class="flex flex-col gap-2">
 			<label for="http-method" class="text-sm font-medium text-fg">HTTP Method</label>
-			<select
+			<Select
 				id="http-method"
 				bind:value={method}
 				disabled={loading}
+				options={[
+					{ value: 'GET', label: 'GET' },
+					{ value: 'POST', label: 'POST' },
+					{ value: 'PUT', label: 'PUT' },
+					{ value: 'PATCH', label: 'PATCH' },
+					{ value: 'DELETE', label: 'DELETE' }
+				]}
 				class="rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-			>
-			<option value="GET">GET</option>
-			<option value="POST">POST</option>
-			<option value="PUT">PUT</option>
-			<option value="PATCH">PATCH</option>
-			<option value="DELETE">DELETE</option>
-			</select>
+			/>
 		</div>
 		<div class="rounded-md border border-border-muted bg-elevated px-4 py-3 text-sm text-muted">
 			Requests are sent to the source ingest endpoint using the selected method, merged static

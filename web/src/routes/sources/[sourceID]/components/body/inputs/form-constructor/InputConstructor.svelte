@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import type { FormField } from '../types';
 
 	type Props = {
@@ -50,17 +51,18 @@
 			<label for={`field-type-${field.name || 'new'}`} class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 				Type
 			</label>
-			<select
+			<Select
 				id={`field-type-${field.name || 'new'}`}
 				bind:value={field.type}
+				options={[
+					{ value: 'text', label: 'Text' },
+					{ value: 'number', label: 'Number' },
+					{ value: 'checkbox', label: 'Checkbox' },
+					{ value: 'file', label: 'File' },
+					{ value: 'date', label: 'Date' }
+				]}
 				class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			>
-				<option value="text">Text</option>
-				<option value="number">Number</option>
-				<option value="checkbox">Checkbox</option>
-				<option value="file">File</option>
-				<option value="date">Date</option>
-			</select>
+			/>
 		</div>
 
 		<div>

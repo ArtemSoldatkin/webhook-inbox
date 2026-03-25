@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 
 	/**
 	 * Defines the possible theme options for the application.
@@ -37,9 +38,12 @@
 </script>
 
 {#if mounted}
-	<select bind:value={theme}>
-		<option value="light">Light</option>
-		<option value="dark">Dark</option>
-		<option value="system">System</option>
-	</select>
+	<Select
+		bind:value={theme}
+		options={[
+			{ value: 'light', label: 'Light' },
+			{ value: 'dark', label: 'Dark' },
+			{ value: 'system', label: 'System' }
+		]}
+	/>
 {/if}

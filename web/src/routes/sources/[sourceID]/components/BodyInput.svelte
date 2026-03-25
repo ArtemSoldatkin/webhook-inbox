@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Select from '$lib/components/ui/Select.svelte';
 	import type { ContentType } from '$lib/types';
 	import ByteBodyInput from './body/inputs/ByteBodyInput.svelte';
 	import FormDataBodyInput from './body/inputs/FormDataBodyInput.svelte';
@@ -39,18 +40,19 @@
 <section class="flex flex-col gap-4">
 	<div>
 		<label for="content-type" class="text-sm font-medium text-fg">Content type</label>
-		<select
+		<Select
 			id="content-type"
 			bind:value={contentType}
+			options={[
+				{ value: 'application/json', label: 'JSON' },
+				{ value: 'application/x-www-form-urlencoded', label: 'Form URL Encoded' },
+				{ value: 'multipart/form-data', label: 'Multipart Form Data' },
+				{ value: 'text/plain', label: 'Plain Text' },
+				{ value: 'application/xml', label: 'XML' },
+				{ value: 'application/octet-stream', label: 'Binary Data' }
+			]}
 			class="mt-2 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-		>
-		<option value="application/json">JSON</option>
-		<option value="application/x-www-form-urlencoded">Form URL Encoded</option>
-		<option value="multipart/form-data">Multipart Form Data</option>
-		<option value="text/plain">Plain Text</option>
-		<option value="application/xml">XML</option>
-		<option value="application/octet-stream">Binary Data</option>
-		</select>
+		/>
 	</div>
 
 	{#if contentType === 'application/json'}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 
 	type Props = {
 		/** Bound search text for the list. */
@@ -62,16 +63,15 @@
 				<label for="filter" class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 					Filter by {filterName ?? 'category'}
 				</label>
-				<select
+				<Select
 					id="filter"
 					bind:value={filter}
+					options={[
+						{ value: '*', label: 'All' },
+						...(filterOptions?.map((category) => ({ value: category, label: category })) ?? [])
+					]}
 					class="mt-1 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				>
-					<option value="*">All</option>
-					{#each filterOptions as category (category)}
-						<option value={category}>{category}</option>
-					{/each}
-				</select>
+				/>
 			</div>
 		{/if}
 
