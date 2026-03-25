@@ -3,6 +3,7 @@
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import KayValueList from '$lib/components/ui/KayValueList.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -218,47 +219,41 @@
 								<div class="grid gap-4 lg:grid-cols-2">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
 										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Errors</p>
-										<div class="mt-3 flex flex-col gap-3 text-sm">
-											<div class="flex items-start justify-between gap-4">
-												<span class="text-muted">Error type</span>
-												<span class="text-right text-fg">{attempt.error_type || 'N/A'}</span>
-											</div>
-											<div class="flex items-start justify-between gap-4">
-												<span class="text-muted">Error message</span>
-												<span class="text-right text-fg">{attempt.error_message || 'N/A'}</span>
-											</div>
-										</div>
+										<KayValueList
+											items={[
+												{ label: 'Error type', value: attempt.error_type },
+												{ label: 'Error message', value: attempt.error_message }
+											]}
+										/>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
 										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Timing</p>
-										<div class="mt-3 flex flex-col gap-3 text-sm">
-											<div class="flex items-start justify-between gap-4">
-												<span class="text-muted">Started at</span>
-												<span class="text-right text-fg">
-													{attempt.started_at ? new Date(attempt.started_at).toLocaleString() : 'N/A'}
-												</span>
-											</div>
-											<div class="flex items-start justify-between gap-4">
-												<span class="text-muted">Finished at</span>
-												<span class="text-right text-fg">
-													{attempt.finished_at ? new Date(attempt.finished_at).toLocaleString() : 'N/A'}
-												</span>
-											</div>
-											<div class="flex items-start justify-between gap-4">
-												<span class="text-muted">Created at</span>
-												<span class="text-right text-fg">
-													{new Date(attempt.created_at).toLocaleString()}
-												</span>
-											</div>
-											<div class="flex items-start justify-between gap-4">
-												<span class="text-muted">Next attempt at</span>
-												<span class="text-right text-fg">
-													{attempt.next_attempt_at
+										<KayValueList
+											items={[
+												{
+													label: 'Started at',
+													value: attempt.started_at
+														? new Date(attempt.started_at).toLocaleString()
+														: 'N/A'
+												},
+												{
+													label: 'Finished at',
+													value: attempt.finished_at
+														? new Date(attempt.finished_at).toLocaleString()
+														: 'N/A'
+												},
+												{
+													label: 'Created at',
+													value: new Date(attempt.created_at).toLocaleString()
+												},
+												{
+													label: 'Next attempt at',
+													value: attempt.next_attempt_at
 														? new Date(attempt.next_attempt_at).toLocaleString()
-														: 'N/A'}
-												</span>
-											</div>
-										</div>
+														: 'N/A'
+												}
+											]}
+										/>
 									</div>
 								</div>
 							</div>

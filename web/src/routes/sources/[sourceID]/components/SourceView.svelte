@@ -1,4 +1,5 @@
 <script lang="ts">
+	import KayValueList from '$lib/components/ui/KayValueList.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -127,26 +128,17 @@
 
 					<div class="rounded-md border border-border-muted bg-elevated p-4">
 						<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Metadata</p>
-						<div class="mt-3 flex flex-col gap-3 text-sm">
-							<div class="flex items-start justify-between gap-4">
-								<span class="text-muted">Status reason</span>
-								<span class="text-right text-fg">{data.status_reason || 'N/A'}</span>
-							</div>
-							<div class="flex items-start justify-between gap-4">
-								<span class="text-muted">Created at</span>
-								<span class="text-right text-fg">{new Date(data.created_at).toLocaleString()}</span>
-							</div>
-							<div class="flex items-start justify-between gap-4">
-								<span class="text-muted">Updated at</span>
-								<span class="text-right text-fg">{new Date(data.updated_at).toLocaleString()}</span>
-							</div>
-							<div class="flex items-start justify-between gap-4">
-								<span class="text-muted">Disabled at</span>
-								<span class="text-right text-fg">
-									{data.disable_at ? new Date(data.disable_at).toLocaleString() : 'N/A'}
-								</span>
-							</div>
-						</div>
+						<KayValueList
+							items={[
+								{ label: 'Status reason', value: data.status_reason },
+								{ label: 'Created at', value: new Date(data.created_at).toLocaleString() },
+								{ label: 'Updated at', value: new Date(data.updated_at).toLocaleString() },
+								{
+									label: 'Disabled at',
+									value: data.disable_at ? new Date(data.disable_at).toLocaleString() : 'N/A'
+								}
+							]}
+						/>
 					</div>
 				</div>
 			</div>
