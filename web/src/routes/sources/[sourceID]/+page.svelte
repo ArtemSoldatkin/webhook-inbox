@@ -2,8 +2,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Alert from '$lib/components/ui/Alert.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
-	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import SourceView from './components/SourceView.svelte';
 
 	/** Source id read from the current route. */
@@ -20,7 +20,7 @@
 	</nav>
 
 	<div class="flex flex-col gap-2">
-		<SectionEyebrow variant="strong">Source details</SectionEyebrow>
+		<Eyebrow variant="strong">Source details</Eyebrow>
 		<h1 class="text-3xl font-semibold tracking-tight text-fg">Source ID: {sourceID}</h1>
 	</div>
 

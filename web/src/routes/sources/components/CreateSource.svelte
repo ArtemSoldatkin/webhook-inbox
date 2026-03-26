@@ -2,7 +2,7 @@
 	import InputMap from '$lib/components/InputMap.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import env from '$lib/env';
 	import type { SourceDTO } from '$lib/types';
 
@@ -132,7 +132,7 @@
 
 <section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
 	<div class="max-w-3xl">
-		<SectionEyebrow variant="strong">Create source</SectionEyebrow>
+		<Eyebrow variant="strong">Create source</Eyebrow>
 		<h1 class="mt-4 text-3xl font-semibold tracking-tight text-fg">Add a webhook destination</h1>
 		<p class="mt-3 text-sm leading-6 text-muted sm:text-base">
 			Create a unique ingest endpoint and define where captured webhook traffic should be forwarded.

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
-	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -82,7 +82,7 @@
 			<div class="flex flex-col gap-6">
 				<div class="flex flex-col gap-3">
 					<div class="flex flex-wrap items-center gap-3">
-						<SectionEyebrow variant="strong">Configuration</SectionEyebrow>
+						<Eyebrow variant="strong">Configuration</Eyebrow>
 						<Badge variant="neutral" appearance="soft" class="bg-elevated">{data.status}</Badge>
 					</div>
 					<h2 class="text-3xl font-semibold tracking-tight text-fg">{data.id}</h2>
@@ -93,18 +93,18 @@
 
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div class="rounded-md border border-border-muted bg-elevated p-4">
-						<SectionEyebrow>Ingress URL</SectionEyebrow>
+						<Eyebrow>Ingress URL</Eyebrow>
 						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.ingress_url}</p>
 					</div>
 					<div class="rounded-md border border-border-muted bg-elevated p-4">
-						<SectionEyebrow>Egress URL</SectionEyebrow>
+						<Eyebrow>Egress URL</Eyebrow>
 						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.egress_url}</p>
 					</div>
 				</div>
 
 				<div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
 					<div class="rounded-md border border-border-muted bg-elevated p-4">
-						<SectionEyebrow>Static headers</SectionEyebrow>
+						<Eyebrow>Static headers</Eyebrow>
 						{#if Object.keys(data.static_headers ?? {}).length > 0}
 							<div class="mt-3 flex flex-col gap-2">
 								{#each Object.entries(data.static_headers ?? {}) as [key, value] (key)}
@@ -122,7 +122,7 @@
 					</div>
 
 					<div class="rounded-md border border-border-muted bg-elevated p-4">
-						<SectionEyebrow>Metadata</SectionEyebrow>
+						<Eyebrow>Metadata</Eyebrow>
 						<KeyValueList
 							items={[
 								{ label: 'Status reason', value: data.status_reason },
@@ -141,7 +141,7 @@
 
 		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
 			<div class="mb-6">
-				<SectionEyebrow variant="strong">Testing</SectionEyebrow>
+				<Eyebrow variant="strong">Testing</Eyebrow>
 				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">Send a test webhook</h3>
 				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
 					Exercise the ingest endpoint directly from the UI and verify the event appears below.

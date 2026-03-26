@@ -5,8 +5,8 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
-	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -152,7 +152,7 @@
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 			<div>
-				<SectionEyebrow variant="strong">Delivery attempts</SectionEyebrow>
+				<Eyebrow variant="strong">Delivery attempts</Eyebrow>
 				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">
 					Delivery history for this event
 				</h3>
@@ -196,22 +196,22 @@
 
 								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Event ID</SectionEyebrow>
+										<Eyebrow>Event ID</Eyebrow>
 										<p class="mt-2 break-all text-sm text-fg">{attempt.event_id}</p>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Attempt number</SectionEyebrow>
+										<Eyebrow>Attempt number</Eyebrow>
 										<p class="mt-2 text-sm text-fg">{attempt.attempt_number}</p>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Status code</SectionEyebrow>
+										<Eyebrow>Status code</Eyebrow>
 										<p class="mt-2 text-sm text-fg">{attempt.status_code ?? 'N/A'}</p>
 									</div>
 								</div>
 
 								<div class="grid gap-4 lg:grid-cols-2">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Errors</SectionEyebrow>
+										<Eyebrow>Errors</Eyebrow>
 										<KeyValueList
 											items={[
 												{ label: 'Error type', value: attempt.error_type },
@@ -220,7 +220,7 @@
 										/>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Timing</SectionEyebrow>
+										<Eyebrow>Timing</Eyebrow>
 										<KeyValueList
 											items={[
 												{

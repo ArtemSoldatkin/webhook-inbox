@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import type { ContentType } from '$lib/types';
 
 	type Props = {
@@ -65,16 +65,18 @@
 	<div class="rounded-md border border-border-muted bg-elevated p-4">
 		<div class="grid gap-3 sm:grid-cols-2">
 			<div>
-				<SectionEyebrow>Size</SectionEyebrow>
+				<Eyebrow>Size</Eyebrow>
 				<p class="mt-2 text-sm text-fg">{bodyByteLength} bytes</p>
 			</div>
 			<div>
-				<SectionEyebrow>Preview</SectionEyebrow>
+				<Eyebrow>Preview</Eyebrow>
 				<pre class="mt-2 overflow-x-auto text-sm leading-6 text-fg">{hexPreview}...</pre>
 			</div>
 		</div>
 	</div>
 	<div class="flex justify-end">
-		<Button onclick={downloadBytes} disabled={body === ''} variant="secondary">Download as file</Button>
+		<Button onclick={downloadBytes} disabled={body === ''} variant="secondary"
+			>Download as file</Button
+		>
 	</div>
 </div>

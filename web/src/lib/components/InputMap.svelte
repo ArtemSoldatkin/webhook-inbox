@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import Input from './ui/Input.svelte';
 
 	type Props = {
 		/** Bound key-value pairs being edited. */
@@ -44,31 +45,27 @@
 	{#if Object.keys(map).length > 0}
 		<ul class="flex flex-col gap-3">
 			{#each Object.keys(map) as mapKey (mapKey)}
-				<li
-					class="rounded-md border border-border-muted bg-surface p-4 shadow-sm"
-				>
-					<div class="flex flex-col gap-3 sm:flex-row sm:items-start">
-						<div class="min-w-0 flex-1">
-							<SectionEyebrow>Header key</SectionEyebrow>
-							<p class="mt-1 break-all text-sm font-medium text-fg">{mapKey}</p>
+				<li class="rounded-md border border-border-muted bg-surface p-4">
+					<div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+						<div>
+							<Eyebrow>Header key</Eyebrow>
+							<p class="mt-1 py-3 break-all text-sm font-medium text-fg">{mapKey}</p>
 						</div>
-						<div class="min-w-0 flex-1">
-							<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-								Header value
-								<input
-									type="text"
-									placeholder="Value"
-									bind:value={map[mapKey]}
-									{disabled}
-									class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-								/>
-							</label>
+						<div>
+							<Eyebrow as="label"
+								>Header value
+								<Input type="text" placeholder="Value" bind:value={map[mapKey]} {disabled} />
+							</Eyebrow>
 						</div>
-						<div class="sm:pt-6">
-							<Button type="button" {disabled} onclick={() => removeKey(mapKey)} variant="secondary">
-								Remove
-							</Button>
-						</div>
+						<Button
+							type="button"
+							variant="secondary"
+							class="py-3 border border-transparent"
+							{disabled}
+							onclick={() => removeKey(mapKey)}
+						>
+							x
+						</Button>
 					</div>
 				</li>
 			{/each}
@@ -80,31 +77,24 @@
 	<div class="rounded-md border border-border-muted bg-surface p-4">
 		<div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
 			<div>
-				<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-					Key
-					<input
-						type="text"
-						placeholder="Authorization"
-						bind:value={key}
-						{disabled}
-						class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-					/>
-				</label>
+				<Eyebrow as="label"
+					>Key
+					<Input type="text" placeholder="Key" bind:value={key} {disabled} />
+				</Eyebrow>
 			</div>
 			<div>
-				<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-					Value
-					<input
-						type="text"
-						placeholder="Bearer secret"
-						bind:value
-						{disabled}
-						class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-					/>
-				</label>
+				<Eyebrow as="label"
+					>Value
+					<Input type="text" placeholder="Value" bind:value {disabled} />
+				</Eyebrow>
 			</div>
-			<Button type="button" {disabled} onclick={() => addKeyValue()}>
-				Add
+			<Button
+				type="button"
+				class="py-3 border border-transparent"
+				disabled={disabled || !key || key in map}
+				onclick={() => addKeyValue()}
+			>
+				+
 			</Button>
 		</div>
 	</div>

@@ -6,9 +6,9 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
-	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -134,7 +134,7 @@
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 			<div>
-				<SectionEyebrow variant="strong">Sources</SectionEyebrow>
+				<Eyebrow variant="strong">Sources</Eyebrow>
 				<h2 class="mt-4 text-3xl font-semibold tracking-tight text-fg">
 					Manage registered endpoints
 				</h2>
@@ -183,18 +183,18 @@
 
 								<div class="grid gap-4 sm:grid-cols-2">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Ingress URL</SectionEyebrow>
+										<Eyebrow>Ingress URL</Eyebrow>
 										<p class="mt-2 break-all text-sm leading-6 text-fg">{source.ingress_url}</p>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Egress URL</SectionEyebrow>
+										<Eyebrow>Egress URL</Eyebrow>
 										<p class="mt-2 break-all text-sm leading-6 text-fg">{source.egress_url}</p>
 									</div>
 								</div>
 
 								<div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Static headers</SectionEyebrow>
+										<Eyebrow>Static headers</Eyebrow>
 										{#if Object.keys(source.static_headers ?? {}).length > 0}
 											<div class="mt-3 flex flex-col gap-2">
 												{#each Object.entries(source.static_headers ?? {}) as [key, value] (key)}
@@ -212,7 +212,7 @@
 									</div>
 
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<SectionEyebrow>Metadata</SectionEyebrow>
+										<Eyebrow>Metadata</Eyebrow>
 										<KeyValueList
 											items={[
 												{ label: 'Status reason', value: source.status_reason },

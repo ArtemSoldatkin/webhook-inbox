@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
-	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import type { FormField } from '../types';
 
 	type Props = {
@@ -79,7 +79,7 @@
 		</div>
 
 		<div>
-			<SectionEyebrow>Value</SectionEyebrow>
+			<Eyebrow>Value</Eyebrow>
 			{#if field.name.trim() === ''}
 				<Alert variant="warning" class="mt-1 shadow-none">Name is required.</Alert>
 			{:else if field.type === 'text'}
@@ -99,7 +99,9 @@
 					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				/>
 			{:else if field.type === 'checkbox'}
-				<label class="mt-1 flex items-center gap-3 rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm">
+				<label
+					class="mt-1 flex items-center gap-3 rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm"
+				>
 					<input type="checkbox" name={field.name} bind:checked={field.value} />
 					<span>Checked</span>
 				</label>
