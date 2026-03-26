@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { fetchPaginatedData } from '$lib/api';
-	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
+	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import type { EventDTO } from '$lib/types';
@@ -136,7 +137,9 @@
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 			<div>
 				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Events</p>
-				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">Captured traffic for this source</h3>
+				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">
+					Captured traffic for this source
+				</h3>
 				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
 					Inspect recorded requests, query parameters, headers, and request bodies in arrival order.
 				</p>
@@ -163,7 +166,10 @@
 								<div class="flex flex-col gap-2">
 									<div class="flex flex-wrap items-center gap-3">
 										<h4 class="text-xl font-semibold tracking-tight text-fg">
-											<Link href={resolve(`/sources/${event.source_id}/${event.id}`)} variant="inline">
+											<Link
+												href={resolve(`/sources/${event.source_id}/${event.id}`)}
+												variant="inline"
+											>
 												Event ID: {event.id}
 											</Link>
 										</h4>
@@ -182,8 +188,24 @@
 								</div>
 
 								<div class="grid gap-4 lg:grid-cols-2">
-									<DisplayMapOfStringArrays title="Query Parameters" data={event.query_params ?? {}} />
-									<DisplayMapOfStringArrays title="Raw Headers" data={event.raw_headers ?? {}} />
+									<section class="rounded-md border border-border-muted bg-surface p-4">
+										<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Query Parameters
+										</h4>
+										<KayValueList
+											items={stringArrayRecordToKeyValueItems(event.query_params ?? {})}
+											emptyStateText="No values recorded."
+										/>
+									</section>
+									<section class="rounded-md border border-border-muted bg-surface p-4">
+										<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Raw Headers
+										</h4>
+										<KayValueList
+											items={stringArrayRecordToKeyValueItems(event.raw_headers ?? {})}
+											emptyStateText="No values recorded."
+										/>
+									</section>
 								</div>
 
 								<BodyView body={event.body} contentType={event.body_content_type} />

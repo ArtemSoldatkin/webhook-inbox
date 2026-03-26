@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import Badge from '$lib/components/ui/Badge.svelte';
-	import KayValueList from '$lib/components/ui/KayValueList.svelte';
+	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import { type SourceDTO } from '$lib/types';
 

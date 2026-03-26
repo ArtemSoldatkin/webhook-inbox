@@ -5,7 +5,7 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import KayValueList from '$lib/components/ui/KayValueList.svelte';
+	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -151,8 +151,12 @@
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 			<div>
-				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Delivery attempts</p>
-				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">Delivery history for this event</h3>
+				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+					Delivery attempts
+				</p>
+				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">
+					Delivery history for this event
+				</h3>
 				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
 					Review retries, status codes, and error information for each outbound delivery attempt.
 				</p>
@@ -185,13 +189,17 @@
 						<article class="rounded-lg border border-border bg-elevated p-5 shadow-sm">
 							<div class="flex flex-col gap-5">
 								<div class="flex flex-wrap items-center gap-3">
-									<h4 class="text-xl font-semibold tracking-tight text-fg">Attempt ID: {attempt.id}</h4>
+									<h4 class="text-xl font-semibold tracking-tight text-fg">
+										Attempt ID: {attempt.id}
+									</h4>
 									<Badge variant="neutral" appearance="soft">{attempt.state}</Badge>
 								</div>
 
 								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Event ID</p>
+										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Event ID
+										</p>
 										<p class="mt-2 break-all text-sm text-fg">{attempt.event_id}</p>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
@@ -210,7 +218,9 @@
 
 								<div class="grid gap-4 lg:grid-cols-2">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Errors</p>
+										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Errors
+										</p>
 										<KayValueList
 											items={[
 												{ label: 'Error type', value: attempt.error_type },
@@ -219,7 +229,9 @@
 										/>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Timing</p>
+										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Timing
+										</p>
 										<KayValueList
 											items={[
 												{

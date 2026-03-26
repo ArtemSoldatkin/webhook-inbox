@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
-	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
+	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
+	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import { type EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -84,7 +85,9 @@
 			<div class="flex flex-col gap-6">
 				<div class="flex flex-col gap-3">
 					<div class="flex flex-wrap items-center gap-3">
-						<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Captured event</p>
+						<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+							Captured event
+						</p>
 						<Badge variant="neutral" appearance="soft" class="bg-elevated">{data.method}</Badge>
 					</div>
 					<h2 class="text-3xl font-semibold tracking-tight text-fg">Event ID: {data.id}</h2>
@@ -104,8 +107,22 @@
 				</div>
 
 				<div class="grid gap-4 lg:grid-cols-2">
-					<DisplayMapOfStringArrays title="Query Parameters" data={data.query_params ?? {}} />
-					<DisplayMapOfStringArrays title="Raw Headers" data={data.raw_headers ?? {}} />
+					<section class="rounded-md border border-border-muted bg-surface p-4">
+						<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+							Query Parameters
+						</h4>
+						<KayValueList
+							items={stringArrayRecordToKeyValueItems(data.query_params ?? {})}
+							emptyStateText="No values recorded."
+						/>
+					</section>
+					<section class="rounded-md border border-border-muted bg-surface p-4">
+						<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Raw Headers</h4>
+						<KayValueList
+							items={stringArrayRecordToKeyValueItems(data.raw_headers ?? {})}
+							emptyStateText="No values recorded."
+						/>
+					</section>
 				</div>
 
 				<BodyView body={data.body} contentType={data.body_content_type} />

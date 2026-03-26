@@ -6,7 +6,7 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import KayValueList from '$lib/components/ui/KayValueList.svelte';
+	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
@@ -134,13 +134,16 @@
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 			<div>
 				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Sources</p>
-				<h2 class="mt-4 text-3xl font-semibold tracking-tight text-fg">Manage registered endpoints</h2>
+				<h2 class="mt-4 text-3xl font-semibold tracking-tight text-fg">
+					Manage registered endpoints
+				</h2>
 				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
 					Browse created sources, inspect forwarding settings, and drill into event history for each
 					endpoint.
 				</p>
 			</div>
-			<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Sources</Button>
+			<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Sources</Button
+			>
 		</div>
 
 		<div class="rounded-lg border border-border-muted bg-elevated p-4">
@@ -166,7 +169,9 @@
 								<div class="flex flex-col gap-2">
 									<div class="flex flex-wrap items-center gap-3">
 										<h3 class="text-xl font-semibold tracking-tight text-fg">
-											<Link href={resolve(`/sources/${source.id}`)} variant="inline">{source.id}</Link>
+											<Link href={resolve(`/sources/${source.id}`)} variant="inline"
+												>{source.id}</Link
+											>
 										</h3>
 										<Badge variant="neutral" appearance="soft">{source.status}</Badge>
 									</div>
@@ -218,8 +223,14 @@
 										<KayValueList
 											items={[
 												{ label: 'Status reason', value: source.status_reason },
-												{ label: 'Created at', value: new Date(source.created_at).toLocaleString() },
-												{ label: 'Updated at', value: new Date(source.updated_at).toLocaleString() },
+												{
+													label: 'Created at',
+													value: new Date(source.created_at).toLocaleString()
+												},
+												{
+													label: 'Updated at',
+													value: new Date(source.updated_at).toLocaleString()
+												},
 												{
 													label: 'Disabled at',
 													value: source.disable_at

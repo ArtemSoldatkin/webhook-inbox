@@ -34,12 +34,12 @@
 	} as const;
 
 	type Props =
-		| (HTMLAttributes<HTMLSpanElement> & {
+		| (Omit<HTMLAttributes<HTMLSpanElement>, 'contentEditable'> & {
 				variant?: Variant;
 				appearance?: Appearance;
 				as?: 'span';
 		  })
-		| (HTMLAttributes<HTMLDivElement> & {
+		| (Omit<HTMLAttributes<HTMLDivElement>, 'contentEditable'> & {
 				variant?: Variant;
 				appearance?: Appearance;
 				as: 'div';

@@ -1,7 +1,9 @@
 <script lang="ts">
+	import type { KeyValueItem } from './key-value-list';
+
 	type Props = {
 		/** An array of objects representing the key-value pairs to be displayed. Each object should have a `label` (the key) and a `value` (the corresponding value).*/
-		items: Array<{ label: string; value?: string | number | null }>;
+		items: Array<KeyValueItem>;
 
 		/** Optional text to display when the items object is empty or undefined. If not provided, no message will be shown in the empty state.*/
 		emptyStateText?: string;
