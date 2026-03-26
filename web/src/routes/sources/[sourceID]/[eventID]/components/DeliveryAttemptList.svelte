@@ -5,7 +5,7 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
+	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
 	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
@@ -212,7 +212,7 @@
 								<div class="grid gap-4 lg:grid-cols-2">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
 										<SectionEyebrow>Errors</SectionEyebrow>
-										<KayValueList
+										<KeyValueList
 											items={[
 												{ label: 'Error type', value: attempt.error_type },
 												{ label: 'Error message', value: attempt.error_message }
@@ -221,7 +221,7 @@
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
 										<SectionEyebrow>Timing</SectionEyebrow>
-										<KayValueList
+										<KeyValueList
 											items={[
 												{
 													label: 'Started at',

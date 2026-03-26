@@ -6,7 +6,7 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
+	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
@@ -213,7 +213,7 @@
 
 									<div class="rounded-md border border-border-muted bg-surface p-4">
 										<SectionEyebrow>Metadata</SectionEyebrow>
-										<KayValueList
+										<KeyValueList
 											items={[
 												{ label: 'Status reason', value: source.status_reason },
 												{

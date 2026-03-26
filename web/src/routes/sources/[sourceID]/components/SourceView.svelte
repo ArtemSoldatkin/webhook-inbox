@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
-	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
+	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
 	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
@@ -123,7 +123,7 @@
 
 					<div class="rounded-md border border-border-muted bg-elevated p-4">
 						<SectionEyebrow>Metadata</SectionEyebrow>
-						<KayValueList
+						<KeyValueList
 							items={[
 								{ label: 'Status reason', value: data.status_reason },
 								{ label: 'Created at', value: new Date(data.created_at).toLocaleString() },

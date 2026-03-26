@@ -2,7 +2,7 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
-	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
+	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
 	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import { type EventDTO } from '$lib/types';
@@ -108,14 +108,14 @@
 						<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 							Query Parameters
 						</h4>
-						<KayValueList
+						<KeyValueList
 							items={stringArrayRecordToKeyValueItems(data.query_params ?? {})}
 							emptyStateText="No values recorded."
 						/>
 					</section>
 					<section class="rounded-md border border-border-muted bg-surface p-4">
 						<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Raw Headers</h4>
-						<KayValueList
+						<KeyValueList
 							items={stringArrayRecordToKeyValueItems(data.raw_headers ?? {})}
 							emptyStateText="No values recorded."
 						/>
