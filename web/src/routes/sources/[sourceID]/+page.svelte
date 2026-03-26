@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import { page } from '$app/state';
 	import SourceView from './components/SourceView.svelte';
@@ -23,9 +24,7 @@
 	</div>
 
 {#if !sourceID}
-		<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
-			No source ID provided.
-		</div>
+		<Alert>No source ID provided.</Alert>
 {:else}
 		<SourceView {sourceID} />
 {/if}

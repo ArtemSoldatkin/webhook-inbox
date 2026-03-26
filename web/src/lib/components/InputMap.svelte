@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 
 	type Props = {
@@ -72,9 +73,7 @@
 			{/each}
 		</ul>
 	{:else}
-		<div class="rounded-md border border-border-muted bg-surface px-4 py-3 text-sm text-muted">
-			No static headers added yet.
-		</div>
+		<Alert class="bg-surface shadow-none">No static headers added yet.</Alert>
 	{/if}
 
 	<div class="rounded-md border border-border-muted bg-surface p-4">

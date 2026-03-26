@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import type { ContentType } from '$lib/types';
 	import ByteBodyView from './body/views/ByteBodyView.svelte';
 	import FormUrlEncodedBodyView from './body/views/FormUrlEncodedBodyView.svelte';
@@ -82,10 +83,10 @@
 <section class="rounded-md border border-border-muted bg-surface p-4">
 	<h3 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Request body</h3>
 	{#if parsedBody.error && parsedBody.content}
-		<div class="mt-3 rounded-md border border-warning bg-elevated px-4 py-3 text-sm text-fg">
-			<p class="font-medium text-warning">{parsedBody.error}</p>
-			<p class="mt-2 break-all text-muted">Original body: {parsedBody.content}</p>
-		</div>
+		<Alert variant="warning" class="mt-3">
+			<p class="font-medium">{parsedBody.error}</p>
+			<p class="break-all text-muted">Original body: {parsedBody.content}</p>
+		</Alert>
 	{:else if parsedBody.error}
 		<p class="mt-3 text-sm text-muted">{parsedBody.error}</p>
 	{:else if !contentType}

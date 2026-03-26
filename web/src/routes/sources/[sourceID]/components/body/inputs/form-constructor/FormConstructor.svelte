@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { FormField } from '../types';
 	import InputConstructor from './InputConstructor.svelte';
@@ -17,9 +18,9 @@
 </script>
 
 {#if fields.length === 0}
-	<div class="rounded-md border border-border-muted bg-surface px-4 py-3 text-sm text-muted">
+	<Alert class="bg-surface shadow-none">
 		No fields added yet. Click "Add field" to start building your form.
-	</div>
+	</Alert>
 {/if}
 <div class="flex flex-col gap-4">
 	<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import { page } from '$app/state';
 	import EventView from './components/EventView.svelte';
@@ -32,8 +33,6 @@
 	{#if eventID && sourceID}
 		<EventView {sourceID} {eventID} />
 	{:else}
-		<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
-			No source/event ID provided.
-		</div>
+		<Alert>No source/event ID provided.</Alert>
 	{/if}
 </div>

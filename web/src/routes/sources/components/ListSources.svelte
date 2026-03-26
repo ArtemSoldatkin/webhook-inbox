@@ -3,6 +3,7 @@
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import KayValueList from '$lib/components/ui/KayValueList.svelte';
@@ -153,13 +154,9 @@
 		</div>
 
 		{#if loading}
-			<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
-				Loading sources...
-			</div>
+			<Alert>Loading sources...</Alert>
 		{:else if error}
-			<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">
-				Error: {error}
-			</div>
+			<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 		{:else if data.length > 0}
 			<ul class="grid gap-4">
 				{#each data as source (source.id)}
@@ -244,9 +241,7 @@
 				</div>
 			{/if}
 		{:else}
-			<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
-				No sources found.
-			</div>
+			<Alert>No sources found.</Alert>
 		{/if}
 
 		<div class="border-t border-border-muted pt-4">

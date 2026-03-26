@@ -4,6 +4,7 @@
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
@@ -148,17 +149,11 @@
 		</div>
 
 		{#if loading}
-			<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
-				Loading events...
-			</div>
+			<Alert>Loading events...</Alert>
 		{:else if error}
-			<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">
-				Error: {error}
-			</div>
+			<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 		{:else if data.length === 0}
-			<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
-				No events found for this source.
-			</div>
+			<Alert>No events found for this source.</Alert>
 		{:else}
 			<ul class="grid gap-4">
 				{#each data as event (event.id)}

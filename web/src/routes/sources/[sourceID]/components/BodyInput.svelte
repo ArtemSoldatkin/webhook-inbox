@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import type { ContentType } from '$lib/types';
 	import ByteBodyInput from './body/inputs/ByteBodyInput.svelte';
@@ -72,6 +73,6 @@
 		<p class="text-sm text-muted">Selected content type is not supported.</p>
 	{/if}
 	{#if error}
-		<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">{error}</div>
+		<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 	{/if}
 </section>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import type { FormField } from '../types';
@@ -79,9 +80,7 @@
 		<div>
 			<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Value</p>
 			{#if field.name.trim() === ''}
-				<div class="mt-1 rounded-md border border-warning bg-elevated px-4 py-3 text-sm text-warning">
-					Name is required.
-				</div>
+				<Alert variant="warning" class="mt-1 shadow-none">Name is required.</Alert>
 			{:else if field.type === 'text'}
 				<input
 					type="text"
@@ -118,9 +117,7 @@
 					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				/>
 			{:else}
-				<div class="mt-1 rounded-md border border-warning bg-elevated px-4 py-3 text-sm text-warning">
-					Unsupported input type.
-				</div>
+				<Alert variant="warning" class="mt-1 shadow-none">Unsupported input type.</Alert>
 			{/if}
 		</div>
 	</div>

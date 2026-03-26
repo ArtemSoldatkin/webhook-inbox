@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import KayValueList from '$lib/components/ui/KayValueList.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
@@ -71,13 +72,9 @@
 </script>
 
 {#if loading}
-	<div class="rounded-md border border-border-muted bg-elevated px-4 py-6 text-sm text-muted">
-		Loading source data...
-	</div>
+	<Alert>Loading source data...</Alert>
 {:else if error}
-	<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">
-		Error: {error}
-	</div>
+	<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 {:else if data}
 	<div class="flex flex-col gap-8">
 		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">

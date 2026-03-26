@@ -1,5 +1,6 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import type { ContentType } from '$lib/types';
@@ -128,10 +129,10 @@
 				/>
 			</label>
 		</div>
-		<div class="rounded-md border border-border-muted bg-elevated px-4 py-3 text-sm text-muted">
+		<Alert>
 			Requests are sent to the source ingest endpoint using the selected method, merged static
 			headers, and any overrides you add below.
-		</div>
+		</Alert>
 	</div>
 
 	<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
@@ -161,7 +162,7 @@
 	{/if}
 
 	{#if error}
-		<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">{error}</div>
+		<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 	{/if}
 
 	<div class="flex justify-end border-t border-border-muted pt-6">

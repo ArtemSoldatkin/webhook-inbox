@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import InputMap from '$lib/components/InputMap.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import env from '$lib/env';
@@ -191,9 +192,7 @@
 		</div>
 
 		{#if error}
-			<div class="rounded-md border border-error bg-surface px-4 py-3 text-sm text-error">
-				Error: {error}
-			</div>
+			<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 		{/if}
 	</form>
 </section>
