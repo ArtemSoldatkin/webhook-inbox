@@ -3,6 +3,7 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
 	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import { type EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -85,9 +86,7 @@
 			<div class="flex flex-col gap-6">
 				<div class="flex flex-col gap-3">
 					<div class="flex flex-wrap items-center gap-3">
-						<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-							Captured event
-						</p>
+						<SectionEyebrow variant="strong">Captured event</SectionEyebrow>
 						<Badge variant="neutral" appearance="soft" class="bg-elevated">{data.method}</Badge>
 					</div>
 					<h2 class="text-3xl font-semibold tracking-tight text-fg">Event ID: {data.id}</h2>
@@ -95,13 +94,11 @@
 
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div class="rounded-md border border-border-muted bg-elevated p-4">
-						<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Source ID</p>
+						<SectionEyebrow>Source ID</SectionEyebrow>
 						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.source_id}</p>
 					</div>
 					<div class="rounded-md border border-border-muted bg-elevated p-4">
-						<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-							Deduplication hash
-						</p>
+						<SectionEyebrow>Deduplication hash</SectionEyebrow>
 						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.dedup_hash ?? 'N/A'}</p>
 					</div>
 				</div>

@@ -2,6 +2,7 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import type { FormField } from '../types';
 
 	type Props = {
@@ -78,7 +79,7 @@
 		</div>
 
 		<div>
-			<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Value</p>
+			<SectionEyebrow>Value</SectionEyebrow>
 			{#if field.name.trim() === ''}
 				<Alert variant="warning" class="mt-1 shadow-none">Name is required.</Alert>
 			{:else if field.type === 'text'}

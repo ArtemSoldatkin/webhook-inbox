@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 
 	type Props = {
 		/** Bound search text for the list. */
@@ -74,7 +75,7 @@
 		{/if}
 
 		<div>
-			<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Sort</p>
+			<SectionEyebrow>Sort</SectionEyebrow>
 			<Button type="button" onclick={toggleSortDirection} aria-label="Toggle sort direction" variant="secondary">
 				{sortDirection === 'ASC' ? 'Ascending' : 'Descending'}
 			</Button>

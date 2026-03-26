@@ -1,7 +1,8 @@
 <script lang="ts">
-	import Alert from '$lib/components/ui/Alert.svelte';
 	import InputMap from '$lib/components/InputMap.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import env from '$lib/env';
 	import type { SourceDTO } from '$lib/types';
 
@@ -131,7 +132,7 @@
 
 <section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
 	<div class="max-w-3xl">
-		<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Create source</p>
+		<SectionEyebrow variant="strong">Create source</SectionEyebrow>
 		<h1 class="mt-4 text-3xl font-semibold tracking-tight text-fg">Add a webhook destination</h1>
 		<p class="mt-3 text-sm leading-6 text-muted sm:text-base">
 			Create a unique ingest endpoint and define where captured webhook traffic should be forwarded.
@@ -151,7 +152,9 @@
 					class="mt-2 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 				/>
 			</label>
-			<p class="text-sm text-muted">Use an `http` or `https` endpoint that should receive forwarded requests.</p>
+			<p class="text-sm text-muted">
+				Use an `http` or `https` endpoint that should receive forwarded requests.
+			</p>
 			{#if egressError}
 				<p class="text-sm text-error">{egressError}</p>
 			{/if}
@@ -182,7 +185,9 @@
 			</label>
 		</div>
 
-		<div class="flex flex-col gap-3 border-t border-border-muted pt-6 sm:flex-row sm:items-center sm:justify-between">
+		<div
+			class="flex flex-col gap-3 border-t border-border-muted pt-6 sm:flex-row sm:items-center sm:justify-between"
+		>
 			<p class="text-sm text-muted">
 				The source will be created immediately and appear in the sources list below.
 			</p>

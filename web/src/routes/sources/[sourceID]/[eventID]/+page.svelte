@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
-	import { page } from '$app/state';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import EventView from './components/EventView.svelte';
 
 	/** Source id read from the current route. */
@@ -26,7 +27,7 @@
 	</nav>
 
 	<div class="flex flex-col gap-2">
-		<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Event details</p>
+		<SectionEyebrow variant="strong">Event details</SectionEyebrow>
 		<h1 class="text-3xl font-semibold tracking-tight text-fg">Event ID: {eventID}</h1>
 	</div>
 

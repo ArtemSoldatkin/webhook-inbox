@@ -6,6 +6,7 @@
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -151,9 +152,7 @@
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 			<div>
-				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-					Delivery attempts
-				</p>
+				<SectionEyebrow variant="strong">Delivery attempts</SectionEyebrow>
 				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">
 					Delivery history for this event
 				</h3>
@@ -197,30 +196,22 @@
 
 								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-											Event ID
-										</p>
+										<SectionEyebrow>Event ID</SectionEyebrow>
 										<p class="mt-2 break-all text-sm text-fg">{attempt.event_id}</p>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-											Attempt number
-										</p>
+										<SectionEyebrow>Attempt number</SectionEyebrow>
 										<p class="mt-2 text-sm text-fg">{attempt.attempt_number}</p>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-											Status code
-										</p>
+										<SectionEyebrow>Status code</SectionEyebrow>
 										<p class="mt-2 text-sm text-fg">{attempt.status_code ?? 'N/A'}</p>
 									</div>
 								</div>
 
 								<div class="grid gap-4 lg:grid-cols-2">
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-											Errors
-										</p>
+										<SectionEyebrow>Errors</SectionEyebrow>
 										<KayValueList
 											items={[
 												{ label: 'Error type', value: attempt.error_type },
@@ -229,9 +220,7 @@
 										/>
 									</div>
 									<div class="rounded-md border border-border-muted bg-surface p-4">
-										<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
-											Timing
-										</p>
+										<SectionEyebrow>Timing</SectionEyebrow>
 										<KayValueList
 											items={[
 												{

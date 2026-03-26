@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import type { ContentType } from '$lib/types';
 
 	type Props = {
@@ -64,11 +65,11 @@
 	<div class="rounded-md border border-border-muted bg-elevated p-4">
 		<div class="grid gap-3 sm:grid-cols-2">
 			<div>
-				<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Size</p>
+				<SectionEyebrow>Size</SectionEyebrow>
 				<p class="mt-2 text-sm text-fg">{bodyByteLength} bytes</p>
 			</div>
 			<div>
-				<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Preview</p>
+				<SectionEyebrow>Preview</SectionEyebrow>
 				<pre class="mt-2 overflow-x-auto text-sm leading-6 text-fg">{hexPreview}...</pre>
 			</div>
 		</div>

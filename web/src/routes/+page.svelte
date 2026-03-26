@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import env from '$lib/env';
 
 	/**
@@ -101,9 +102,9 @@
 				</Badge>
 
 				<div class="flex max-w-3xl flex-col gap-5">
-					<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+					<SectionEyebrow variant="strong">
 						Receive, inspect, and replay webhook traffic
-					</p>
+					</SectionEyebrow>
 					<h1 class="max-w-3xl text-4xl font-semibold tracking-tight text-fg sm:text-5xl">
 						See every webhook the way your provider actually sent it.
 					</h1>
@@ -114,12 +115,8 @@
 				</div>
 
 				<div class="flex flex-col gap-3 sm:flex-row">
-					<Link href={resolve('/sources')} variant="primary">
-						Open Sources
-					</Link>
-					<Link href="#how-it-works" variant="secondary">
-						How It Works
-					</Link>
+					<Link href={resolve('/sources')} variant="primary">Open Sources</Link>
+					<Link href="#how-it-works" variant="secondary">How It Works</Link>
 				</div>
 
 				<div class="grid gap-4 sm:grid-cols-3">
@@ -148,9 +145,7 @@
 				<div class="flex flex-col gap-6">
 					<div class="flex items-center justify-between gap-4">
 						<div>
-							<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-								Example request
-							</p>
+							<SectionEyebrow variant="strong">Example request</SectionEyebrow>
 							<p class="mt-2 text-sm leading-6 text-muted">
 								Point a provider or a local script at your generated ingest URL and inspect the
 								event a few seconds later.
@@ -184,7 +179,7 @@
 
 		<section id="how-it-works" class="border-t border-border-muted pt-16">
 			<div class="flex flex-col gap-4 lg:max-w-3xl">
-				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Start in 3 steps</p>
+				<SectionEyebrow variant="strong">Start in 3 steps</SectionEyebrow>
 				<h2 class="text-3xl font-semibold tracking-tight text-fg sm:text-4xl">
 					A homepage that acts like onboarding.
 				</h2>
@@ -207,9 +202,7 @@
 
 		<section class="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
 			<article class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
-				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-					What gets captured
-				</p>
+				<SectionEyebrow variant="strong">What gets captured</SectionEyebrow>
 				<h2 class="mt-4 text-3xl font-semibold tracking-tight text-fg">
 					Everything you need to debug the handoff.
 				</h2>
@@ -230,9 +223,7 @@
 			</article>
 
 			<article class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
-				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
-					Built for inspection and debugging
-				</p>
+				<SectionEyebrow variant="strong">Built for inspection and debugging</SectionEyebrow>
 				<div class="mt-6 grid gap-4 sm:grid-cols-2">
 					{#each features as feature (feature.title)}
 						<section class="rounded-md border border-border-muted bg-elevated p-5">
@@ -248,9 +239,9 @@
 			<div class="rounded-lg bg-primary px-6 py-8 text-inverted shadow-lg sm:px-8 sm:py-10">
 				<div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
 					<div class="max-w-3xl">
-						<p class="text-sm font-medium uppercase tracking-[0.18em] text-inverted">
+						<SectionEyebrow class="text-sm tracking-[0.18em] text-inverted">
 							Ready to start?
-						</p>
+						</SectionEyebrow>
 						<h2 class="mt-4 text-3xl font-semibold tracking-tight text-inverted sm:text-4xl">
 							Create a source, send a sample payload, and inspect the first event.
 						</h2>
@@ -260,12 +251,8 @@
 						</p>
 					</div>
 					<div class="flex flex-col gap-3 sm:flex-row">
-						<Link href={resolve('/sources')} variant="secondary">
-							Go To Sources
-						</Link>
-						<Link href={resolve('/sources')} variant="inverse">
-							Create Your First Source
-						</Link>
+						<Link href={resolve('/sources')} variant="secondary">Go To Sources</Link>
+						<Link href={resolve('/sources')} variant="inverse">Create Your First Source</Link>
 					</div>
 				</div>
 			</div>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 
 	type Props = {
 		/** Bound key-value pairs being edited. */
@@ -48,7 +49,7 @@
 				>
 					<div class="flex flex-col gap-3 sm:flex-row sm:items-start">
 						<div class="min-w-0 flex-1">
-							<p class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Header key</p>
+							<SectionEyebrow>Header key</SectionEyebrow>
 							<p class="mt-1 break-all text-sm font-medium text-fg">{mapKey}</p>
 						</div>
 						<div class="min-w-0 flex-1">

@@ -9,6 +9,7 @@
 	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
 	import KayValueList from '$lib/components/ui/KeyValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
+	import SectionEyebrow from '$lib/components/ui/SectionEyebrow.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import type { EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -136,7 +137,7 @@
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 			<div>
-				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Events</p>
+				<SectionEyebrow variant="strong">Events</SectionEyebrow>
 				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">
 					Captured traffic for this source
 				</h3>
