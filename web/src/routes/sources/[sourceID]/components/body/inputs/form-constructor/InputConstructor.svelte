@@ -48,34 +48,32 @@
 <section class="rounded-md border border-border-muted bg-surface p-4">
 	<div class="grid gap-4 lg:grid-cols-[minmax(0,0.24fr)_minmax(0,0.3fr)_minmax(0,1fr)]">
 		<div>
-			<label for={`field-type-${field.name || 'new'}`} class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+			<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 				Type
+				<Select
+					bind:value={field.type}
+					options={[
+						{ value: 'text', label: 'Text' },
+						{ value: 'number', label: 'Number' },
+						{ value: 'checkbox', label: 'Checkbox' },
+						{ value: 'file', label: 'File' },
+						{ value: 'date', label: 'Date' }
+					]}
+					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				/>
 			</label>
-			<Select
-				id={`field-type-${field.name || 'new'}`}
-				bind:value={field.type}
-				options={[
-					{ value: 'text', label: 'Text' },
-					{ value: 'number', label: 'Number' },
-					{ value: 'checkbox', label: 'Checkbox' },
-					{ value: 'file', label: 'File' },
-					{ value: 'date', label: 'Date' }
-				]}
-				class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			/>
 		</div>
 
 		<div>
-			<label for={`field-name-${field.name || 'new'}`} class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+			<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 				Name
+				<input
+					type="text"
+					placeholder="Enter name"
+					bind:value={field.name}
+					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				/>
 			</label>
-			<input
-				id={`field-name-${field.name || 'new'}`}
-				type="text"
-				placeholder="Enter name"
-				bind:value={field.name}
-				class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			/>
 		</div>
 
 		<div>

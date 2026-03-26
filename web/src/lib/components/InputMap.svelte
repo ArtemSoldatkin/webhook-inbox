@@ -51,17 +51,16 @@
 							<p class="mt-1 break-all text-sm font-medium text-fg">{mapKey}</p>
 						</div>
 						<div class="min-w-0 flex-1">
-							<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle" for={`value-${mapKey}`}>
+							<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 								Header value
+								<input
+									type="text"
+									placeholder="Value"
+									bind:value={map[mapKey]}
+									{disabled}
+									class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+								/>
 							</label>
-							<input
-								id={`value-${mapKey}`}
-								type="text"
-								placeholder="Value"
-								bind:value={map[mapKey]}
-								{disabled}
-								class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-							/>
 						</div>
 						<div class="sm:pt-6">
 							<Button type="button" {disabled} onclick={() => removeKey(mapKey)} variant="secondary">
@@ -81,30 +80,28 @@
 	<div class="rounded-md border border-border-muted bg-surface p-4">
 		<div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
 			<div>
-				<label for="new-map-key" class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+				<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 					Key
+					<input
+						type="text"
+						placeholder="Authorization"
+						bind:value={key}
+						{disabled}
+						class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+					/>
 				</label>
-				<input
-					id="new-map-key"
-					type="text"
-					placeholder="Authorization"
-					bind:value={key}
-					{disabled}
-					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-				/>
 			</div>
 			<div>
-				<label for="new-map-value" class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+				<label class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 					Value
+					<input
+						type="text"
+						placeholder="Bearer secret"
+						bind:value
+						{disabled}
+						class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+					/>
 				</label>
-				<input
-					id="new-map-value"
-					type="text"
-					placeholder="Bearer secret"
-					bind:value
-					{disabled}
-					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-				/>
 			</div>
 			<Button type="button" {disabled} onclick={() => addKeyValue()}>
 				Add

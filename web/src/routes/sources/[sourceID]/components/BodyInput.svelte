@@ -39,20 +39,21 @@
 
 <section class="flex flex-col gap-4">
 	<div>
-		<label for="content-type" class="text-sm font-medium text-fg">Content type</label>
-		<Select
-			id="content-type"
-			bind:value={contentType}
-			options={[
-				{ value: 'application/json', label: 'JSON' },
-				{ value: 'application/x-www-form-urlencoded', label: 'Form URL Encoded' },
-				{ value: 'multipart/form-data', label: 'Multipart Form Data' },
-				{ value: 'text/plain', label: 'Plain Text' },
-				{ value: 'application/xml', label: 'XML' },
-				{ value: 'application/octet-stream', label: 'Binary Data' }
-			]}
-			class="mt-2 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-		/>
+		<label class="text-sm font-medium text-fg">
+			Content type
+			<Select
+				bind:value={contentType}
+				options={[
+					{ value: 'application/json', label: 'JSON' },
+					{ value: 'application/x-www-form-urlencoded', label: 'Form URL Encoded' },
+					{ value: 'multipart/form-data', label: 'Multipart Form Data' },
+					{ value: 'text/plain', label: 'Plain Text' },
+					{ value: 'application/xml', label: 'XML' },
+					{ value: 'application/octet-stream', label: 'Binary Data' }
+				]}
+				class="mt-2 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+			/>
+		</label>
 	</div>
 
 	{#if contentType === 'application/json'}

@@ -139,16 +139,17 @@
 
 	<form onsubmit={handleSubmit} class="mt-8 flex flex-col gap-6">
 		<div class="flex flex-col gap-2">
-			<label for="egress-url" class="text-sm font-medium text-fg">Egress URL</label>
-			<input
-				id="egress-url"
-				type="text"
-				bind:value={data.egress_url}
-				placeholder="https://example.com/egress"
-				required
-				disabled={loading}
-				class="w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-			/>
+			<label class="text-sm font-medium text-fg">
+				Egress URL
+				<input
+					type="text"
+					bind:value={data.egress_url}
+					placeholder="https://example.com/egress"
+					required
+					disabled={loading}
+					class="mt-2 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+				/>
+			</label>
 			<p class="text-sm text-muted">Use an `http` or `https` endpoint that should receive forwarded requests.</p>
 			{#if egressError}
 				<p class="text-sm text-error">{egressError}</p>
@@ -168,15 +169,16 @@
 		{/if}
 
 		<div class="flex flex-col gap-2">
-			<label for="description" class="text-sm font-medium text-fg">Description</label>
-			<textarea
-				id="description"
-				bind:value={data.description}
-				placeholder="Optional description"
-				disabled={loading}
-				rows="4"
-				class="min-h-28 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-			></textarea>
+			<label class="text-sm font-medium text-fg">
+				Description
+				<textarea
+					bind:value={data.description}
+					placeholder="Optional description"
+					disabled={loading}
+					rows="4"
+					class="mt-2 min-h-28 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+				></textarea>
+			</label>
 		</div>
 
 		<div class="flex flex-col gap-3 border-t border-border-muted pt-6 sm:flex-row sm:items-center sm:justify-between">

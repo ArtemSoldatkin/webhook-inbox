@@ -112,20 +112,21 @@
 <form onsubmit={testWebhook} class="flex flex-col gap-6">
 	<div class="grid gap-6 lg:grid-cols-[minmax(0,0.36fr)_minmax(0,0.64fr)]">
 		<div class="flex flex-col gap-2">
-			<label for="http-method" class="text-sm font-medium text-fg">HTTP Method</label>
-			<Select
-				id="http-method"
-				bind:value={method}
-				disabled={loading}
-				options={[
-					{ value: 'GET', label: 'GET' },
-					{ value: 'POST', label: 'POST' },
-					{ value: 'PUT', label: 'PUT' },
-					{ value: 'PATCH', label: 'PATCH' },
-					{ value: 'DELETE', label: 'DELETE' }
-				]}
-				class="rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-			/>
+			<label class="text-sm font-medium text-fg">
+				HTTP Method
+				<Select
+					bind:value={method}
+					disabled={loading}
+					options={[
+						{ value: 'GET', label: 'GET' },
+						{ value: 'POST', label: 'POST' },
+						{ value: 'PUT', label: 'PUT' },
+						{ value: 'PATCH', label: 'PATCH' },
+						{ value: 'DELETE', label: 'DELETE' }
+					]}
+					class="mt-2 rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+				/>
+			</label>
 		</div>
 		<div class="rounded-md border border-border-muted bg-elevated px-4 py-3 text-sm text-muted">
 			Requests are sent to the source ingest endpoint using the selected method, merged static
