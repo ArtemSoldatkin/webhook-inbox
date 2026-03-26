@@ -3,6 +3,7 @@
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import KayValueList from '$lib/components/ui/KayValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
@@ -170,11 +171,7 @@
 										<h3 class="text-xl font-semibold tracking-tight text-fg">
 											<Link href={resolve(`/sources/${source.id}`)} variant="inline">{source.id}</Link>
 										</h3>
-										<span
-											class="inline-flex w-fit rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
-										>
-											{source.status}
-										</span>
+										<Badge variant="neutral" appearance="soft">{source.status}</Badge>
 									</div>
 									<p class="text-sm leading-6 text-muted">
 										{source.description || 'No description provided.'}

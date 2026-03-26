@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import KayValueList from '$lib/components/ui/KayValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import { type SourceDTO } from '$lib/types';
@@ -17,11 +18,7 @@
 		<div class="flex flex-col gap-3">
 			<div class="flex flex-wrap items-center gap-3">
 				<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Source</p>
-				<span
-					class="inline-flex w-fit rounded-full border border-border bg-elevated px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
-				>
-					{source.status}
-				</span>
+				<Badge variant="neutral" appearance="soft" class="bg-elevated">{source.status}</Badge>
 			</div>
 			<h1 class="text-3xl font-semibold tracking-tight text-fg">
 				<Link href={resolve(`/sources/${source.id}`)} variant="inline">{source.id}</Link>

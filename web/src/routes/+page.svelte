@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import env from '$lib/env';
 
@@ -90,11 +91,14 @@
 	<div class="mx-auto flex max-w-7xl flex-col gap-20 px-6 py-12 sm:px-8 lg:px-12 lg:py-16">
 		<section class="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)] lg:items-start">
 			<div class="flex flex-col gap-8">
-				<div
-					class="inline-flex w-fit items-center rounded-md border border-border bg-elevated px-3 py-1 text-sm font-medium text-muted shadow-sm"
+				<Badge
+					as="div"
+					variant="neutral"
+					appearance="soft"
+					class="rounded-md bg-elevated text-sm normal-case tracking-normal shadow-sm"
 				>
 					Minimal webhook recorder
-				</div>
+				</Badge>
 
 				<div class="flex max-w-3xl flex-col gap-5">
 					<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">
@@ -152,11 +156,14 @@
 								event a few seconds later.
 							</p>
 						</div>
-						<div
-							class="hidden rounded-md border border-border bg-elevated px-3 py-1 text-xs font-medium text-subtle shadow-sm sm:block"
+						<Badge
+							as="div"
+							variant="neutral"
+							appearance="soft"
+							class="hidden rounded-md bg-elevated text-subtle normal-case tracking-normal shadow-sm sm:block"
 						>
 							curl
-						</div>
+						</Badge>
 					</div>
 
 					<pre

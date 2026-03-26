@@ -4,6 +4,7 @@
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
@@ -171,11 +172,7 @@
 												Event ID: {event.id}
 											</Link>
 										</h4>
-										<span
-											class="inline-flex w-fit rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
-										>
-											{event.method}
-										</span>
+										<Badge variant="neutral" appearance="soft">{event.method}</Badge>
 									</div>
 									<div class="grid gap-3 text-sm sm:grid-cols-2">
 										<div class="rounded-md border border-border-muted bg-surface px-3 py-2">

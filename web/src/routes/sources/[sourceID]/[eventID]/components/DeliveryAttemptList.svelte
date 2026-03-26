@@ -2,6 +2,7 @@
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import KayValueList from '$lib/components/ui/KayValueList.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
@@ -190,11 +191,7 @@
 							<div class="flex flex-col gap-5">
 								<div class="flex flex-wrap items-center gap-3">
 									<h4 class="text-xl font-semibold tracking-tight text-fg">Attempt ID: {attempt.id}</h4>
-									<span
-										class="inline-flex w-fit rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
-									>
-										{attempt.state}
-									</span>
+									<Badge variant="neutral" appearance="soft">{attempt.state}</Badge>
 								</div>
 
 								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

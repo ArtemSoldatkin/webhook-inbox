@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import { type EventDTO } from '$lib/types';
@@ -87,11 +88,7 @@
 				<div class="flex flex-col gap-3">
 					<div class="flex flex-wrap items-center gap-3">
 						<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Captured event</p>
-						<span
-							class="inline-flex w-fit rounded-full border border-border bg-elevated px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
-						>
-							{data.method}
-						</span>
+						<Badge variant="neutral" appearance="soft" class="bg-elevated">{data.method}</Badge>
 					</div>
 					<h2 class="text-3xl font-semibold tracking-tight text-fg">Event ID: {data.id}</h2>
 				</div>

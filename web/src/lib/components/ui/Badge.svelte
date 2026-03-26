@@ -37,7 +37,7 @@
 		| (HTMLAttributes<HTMLSpanElement> & {
 				variant?: Variant;
 				appearance?: Appearance;
-				as: 'span';
+				as?: 'span';
 		  })
 		| (HTMLAttributes<HTMLDivElement> & {
 				variant?: Variant;

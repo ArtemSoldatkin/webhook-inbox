@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Badge from '$lib/components/ui/Badge.svelte';
 	import KayValueList from '$lib/components/ui/KayValueList.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
@@ -84,11 +85,7 @@
 				<div class="flex flex-col gap-3">
 					<div class="flex flex-wrap items-center gap-3">
 						<p class="text-sm font-medium uppercase tracking-[0.18em] text-primary">Configuration</p>
-						<span
-							class="inline-flex w-fit rounded-full border border-border bg-elevated px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-muted"
-						>
-							{data.status}
-						</span>
+						<Badge variant="neutral" appearance="soft" class="bg-elevated">{data.status}</Badge>
 					</div>
 					<h2 class="text-3xl font-semibold tracking-tight text-fg">{data.id}</h2>
 					<p class="max-w-3xl text-sm leading-6 text-muted sm:text-base">
