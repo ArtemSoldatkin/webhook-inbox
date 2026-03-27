@@ -67,21 +67,19 @@
 			{#each Object.keys(map) as mapKey (mapKey)}
 				<li class="rounded-md border border-border-muted bg-surface p-4">
 					<div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
-						<div>
-							<Eyebrow>Header key</Eyebrow>
+						<Eyebrow
+							>Header key
 							<p class="mt-1 py-3 break-all text-sm font-medium text-fg">{mapKey}</p>
-						</div>
-						<div>
-							<Eyebrow as="label"
-								>Header value
-								<TextInput
-									class="w-full mt-1"
-									placeholder="Value"
-									bind:value={map[mapKey]}
-									{disabled}
-								/>
-							</Eyebrow>
-						</div>
+						</Eyebrow>
+						<Eyebrow as="label"
+							>Header value
+							<TextInput
+								class="w-full mt-1"
+								placeholder="Value"
+								bind:value={map[mapKey]}
+								{disabled}
+							/>
+						</Eyebrow>
 						<Button
 							type="button"
 							variant="secondary"
@@ -101,24 +99,22 @@
 
 	<div class="rounded-md border border-border-muted bg-surface p-4">
 		<div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
-			<div>
-				<Eyebrow as="label"
-					>Key
-					<TextInput
-						class="w-full mt-1"
-						placeholder="Key"
-						bind:value={key}
-						{disabled}
-						onblur={handleKeyBlur}
-					/>
-				</Eyebrow>
-			</div>
-			<div>
-				<Eyebrow as="label"
-					>Value
-					<TextInput class="w-full mt-1" placeholder="Value" bind:value {disabled} />
-				</Eyebrow>
-			</div>
+			<Eyebrow as="label"
+				>Key
+				<TextInput
+					class="w-full mt-1"
+					placeholder="Key"
+					bind:value={key}
+					{disabled}
+					onblur={handleKeyBlur}
+				/>
+			</Eyebrow>
+
+			<Eyebrow as="label"
+				>Value
+				<TextInput class="w-full mt-1" placeholder="Value" bind:value {disabled} />
+			</Eyebrow>
+
 			<Button
 				type="button"
 				class="py-3 border border-transparent"

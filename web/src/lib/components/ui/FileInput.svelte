@@ -13,7 +13,7 @@
 <input
 	type="file"
 	class={cx(
-		'rounded border border-border bg-elevated text-fg shadow-sm outline-none',
+		'rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle',
 		'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
 		'disabled:pointer-events-none disabled:opacity-50',
 		className

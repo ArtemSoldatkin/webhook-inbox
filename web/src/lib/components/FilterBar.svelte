@@ -74,20 +74,22 @@
 		{/if}
 
 		<div>
-			<Eyebrow>Sort</Eyebrow>
-			<Button
-				type="button"
-				class="py-3 mt-1 border border-transparent"
-				onclick={toggleSortDirection}
-				aria-label="Toggle sort direction"
-				variant="secondary"
-			>
-				{#if sortDirection === 'ASC'}
-					<Icon icon="mdi:sort-ascending" class="text-xl" />
-				{:else}
-					<Icon icon="mdi:sort-descending" class="text-xl" />
-				{/if}
-			</Button>
+			<Eyebrow
+				>Sort
+				<Button
+					type="button"
+					class="block py-3 mt-1 border border-transparent"
+					onclick={toggleSortDirection}
+					aria-label="Toggle sort direction"
+					variant="secondary"
+				>
+					{#if sortDirection === 'ASC'}
+						<Icon icon="mdi:sort-ascending" class="text-xl" />
+					{:else}
+						<Icon icon="mdi:sort-descending" class="text-xl" />
+					{/if}
+				</Button>
+			</Eyebrow>
 		</div>
 	</div>
 </section>

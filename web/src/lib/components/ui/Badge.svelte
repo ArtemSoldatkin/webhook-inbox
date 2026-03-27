@@ -1,4 +1,4 @@
-	<script lang="ts">
+<script lang="ts">
 	import { cx } from '$lib/utils/cx';
 	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
