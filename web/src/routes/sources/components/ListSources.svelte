@@ -1,18 +1,15 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
-	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
-	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
-	import Link from '$lib/components/ui/Link.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { cx } from '$lib/utils/cx';
 	import { untrack } from 'svelte';
+	import SourceCard from './SourceCard.svelte';
 
 	/** Filters applied to the sources list. */
 	type SourceFilters = {
@@ -174,68 +171,7 @@
 				{#each data as source (source.id)}
 					<li>
 						<article class="rounded-lg border border-border bg-elevated p-5 shadow-sm">
-							<div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
-								<div class="xl:col-span-2 flex flex-wrap items-center gap-3">
-									<h3 class="text-xl font-semibold tracking-tight text-fg">
-										<Link href={resolve(`/sources/${source.id}`)} variant="inline">{source.id}</Link
-										>
-									</h3>
-									<Badge variant="neutral" appearance="soft">{source.status}</Badge>
-								</div>
-								<p class="xl:col-span-2 text-sm leading-6 text-muted">
-									{source.description || 'No description provided.'}
-								</p>
-
-								<div class="rounded-md border border-border-muted bg-surface p-4">
-									<Eyebrow>Ingress URL</Eyebrow>
-									<p class="mt-2 break-all text-sm leading-6 text-fg">{source.ingress_url}</p>
-								</div>
-								<div class="rounded-md border border-border-muted bg-surface p-4">
-									<Eyebrow>Egress URL</Eyebrow>
-									<p class="mt-2 break-all text-sm leading-6 text-fg">{source.egress_url}</p>
-								</div>
-
-								<div class="rounded-md border border-border-muted bg-surface p-4">
-									<Eyebrow>Static headers</Eyebrow>
-									{#if Object.keys(source.static_headers ?? {}).length > 0}
-										<div class="mt-3 flex flex-col gap-2">
-											{#each Object.entries(source.static_headers ?? {}) as [key, value] (key)}
-												<div
-													class="flex flex-col gap-1 rounded-md border border-border-muted bg-elevated px-3 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
-												>
-													<span class="text-sm font-medium text-fg">{key}</span>
-													<span class="break-all text-sm text-muted">{value}</span>
-												</div>
-											{/each}
-										</div>
-									{:else}
-										<p class="mt-2 text-sm text-muted">No static headers configured.</p>
-									{/if}
-								</div>
-
-								<div class="rounded-md border border-border-muted bg-surface p-4">
-									<Eyebrow>Metadata</Eyebrow>
-									<KeyValueList
-										items={[
-											{ label: 'Status reason', value: source.status_reason },
-											{
-												label: 'Created at',
-												value: new Date(source.created_at).toLocaleString()
-											},
-											{
-												label: 'Updated at',
-												value: new Date(source.updated_at).toLocaleString()
-											},
-											{
-												label: 'Disabled at',
-												value: source.disable_at
-													? new Date(source.disable_at).toLocaleString()
-													: 'N/A'
-											}
-										]}
-									/>
-								</div>
-							</div>
+							<SourceCard {source} idAsLink />
 						</article>
 					</li>
 				{/each}
