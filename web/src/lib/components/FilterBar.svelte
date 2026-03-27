@@ -3,7 +3,7 @@
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
 	import Icon from '@iconify/svelte';
-	import Input from './ui/Input.svelte';
+	import TextInput from './ui/TextInput.svelte';
 
 	type Props = {
 		/** Bound search text for the list. */
@@ -48,7 +48,7 @@
 		<div class="min-w-0 flex-1">
 			<Eyebrow as="label">
 				Search
-				<Input type="text" class="w-full mt-1" placeholder="Search..." bind:value={searchInput} />
+				<TextInput class="w-full mt-1" placeholder="Search..." bind:value={searchInput} />
 			</Eyebrow>
 		</div>
 		<Button type="button" class="py-3 border border-transparent" onclick={handleSearch}

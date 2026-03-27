@@ -1,8 +1,13 @@
 <script lang="ts">
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Checkbox from '$lib/components/ui/Checkbox.svelte';
+	import DateInput from '$lib/components/ui/DateInput.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import FileInput from '$lib/components/ui/FileInput.svelte';
+	import NumberInput from '$lib/components/ui/NumberInput.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import type { FormField } from '../types';
 
 	type Props = {
@@ -18,9 +23,11 @@
 		if (field.type !== lastType) {
 			switch (field.type) {
 				case 'text':
-				case 'number':
 				case 'date':
 					field.value = '';
+					break;
+				case 'number':
+					field.value = null;
 					break;
 				case 'checkbox':
 					field.value = false;
@@ -35,6 +42,9 @@
 
 	function removeValue(): void {
 		switch (field.type) {
+			case 'number':
+				field.value = null;
+				break;
 			case 'checkbox':
 				field.value = false;
 				break;
@@ -69,12 +79,7 @@
 		<div>
 			<Eyebrow as="label">
 				Name
-				<input
-					type="text"
-					placeholder="Enter name"
-					bind:value={field.name}
-					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				/>
+				<TextInput placeholder="Enter name" bind:value={field.name} />
 			</Eyebrow>
 		</div>
 
@@ -83,41 +88,37 @@
 			{#if field.name.trim() === ''}
 				<Alert variant="warning" class="mt-1 shadow-none">Name is required.</Alert>
 			{:else if field.type === 'text'}
-				<input
-					type="text"
+				<TextInput
 					name={field.name}
 					placeholder="Enter text"
 					bind:value={field.value}
-					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="mt-1 w-full"
 				/>
 			{:else if field.type === 'number'}
-				<input
-					type="number"
+				<NumberInput
 					name={field.name}
 					placeholder="Enter number"
 					bind:value={field.value}
-					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="mt-1 w-full"
 				/>
 			{:else if field.type === 'checkbox'}
 				<label
 					class="mt-1 flex items-center gap-3 rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm"
 				>
-					<input type="checkbox" name={field.name} bind:checked={field.value} />
+					<Checkbox name={field.name} bind:value={field.value} />
 					<span>Checked</span>
 				</label>
 			{:else if field.type === 'file'}
-				<input
-					type="file"
-					name={field.name}
-					bind:files={field.value}
-					class="mt-1 block w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm"
-				/>
-			{:else if field.type === 'date'}
-				<input
-					type="date"
+				<FileInput
 					name={field.name}
 					bind:value={field.value}
-					class="mt-1 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="mt-1 block w-full"
+				/>
+			{:else if field.type === 'date'}
+				<DateInput
+					name={field.name}
+					bind:value={field.value}
+					class="mt-1 w-full"
 				/>
 			{:else}
 				<Alert variant="warning" class="mt-1 shadow-none">Unsupported input type.</Alert>

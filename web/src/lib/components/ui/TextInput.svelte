@@ -2,13 +2,13 @@
 	import { cx } from '$lib/utils/cx';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	type Props = HTMLInputAttributes & {};
+	type Props = Omit<HTMLInputAttributes, 'type'>;
 
-	let { type = 'text', value = $bindable(), class: className, ...rest }: Props = $props();
+	let { value = $bindable(), class: className, ...rest }: Props = $props();
 </script>
 
 <input
-	{type}
+	type="text"
 	bind:value
 	class={cx(
 		'rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle',

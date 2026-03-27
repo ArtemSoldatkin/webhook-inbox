@@ -3,6 +3,8 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import env from '$lib/env';
 	import type { SourceDTO } from '$lib/types';
 
@@ -143,13 +145,12 @@
 		<div class="flex flex-col gap-2">
 			<label class="text-sm font-medium text-fg">
 				Egress URL
-				<input
-					type="text"
+				<TextInput
+					class="mt-2 w-full"
 					bind:value={data.egress_url}
 					placeholder="https://example.com/egress"
 					required
 					disabled={loading}
-					class="mt-2 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 				/>
 			</label>
 			<p class="text-sm text-muted">
@@ -162,26 +163,23 @@
 
 		{#if data.static_headers}
 			<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
-				<div>
-					<label class="text-sm font-medium text-fg">Static headers</label>
-					<p class="mt-1 text-sm text-muted">
-						Attach fixed headers to every forwarded request for this source.
-					</p>
-				</div>
-				<InputMap bind:map={data.static_headers} disabled={loading} />
+				<label class="text-sm font-medium text-fg"
+					>Static headers
+					<InputMap class="mt-2" bind:map={data.static_headers} disabled={loading} />
+				</label>
 			</div>
 		{/if}
 
 		<div class="flex flex-col gap-2">
 			<label class="text-sm font-medium text-fg">
 				Description
-				<textarea
+				<Textarea
 					bind:value={data.description}
 					placeholder="Optional description"
 					disabled={loading}
-					rows="4"
-					class="mt-2 min-h-28 w-full rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-				></textarea>
+					rows={4}
+					class="mt-2 min-h-28 bg-elevated"
+				/>
 			</label>
 		</div>
 

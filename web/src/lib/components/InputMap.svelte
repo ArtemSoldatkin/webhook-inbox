@@ -2,18 +2,22 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import { cx } from '$lib/utils/cx';
 	import Icon from '@iconify/svelte';
-	import Input from './ui/Input.svelte';
+	import TextInput from './ui/TextInput.svelte';
 
 	type Props = {
 		/** Bound key-value pairs being edited. */
 		map: Record<string, string>;
 
+		/** Additional CSS classes to apply to the component's root element. */
+		class?: string;
+
 		/** Disables all map inputs when true. */
 		disabled?: boolean;
 	};
 
-	let { map = $bindable(), disabled }: Props = $props();
+	let { map = $bindable(), class: className, disabled = false }: Props = $props();
 
 	/** Draft key for the next map entry. */
 	let key = $state('');
@@ -57,7 +61,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-4">
+<div class={cx('flex flex-col gap-4', className)}>
 	{#if Object.keys(map).length > 0}
 		<ul class="flex flex-col gap-3">
 			{#each Object.keys(map) as mapKey (mapKey)}
@@ -70,8 +74,7 @@
 						<div>
 							<Eyebrow as="label"
 								>Header value
-								<Input
-									type="text"
+								<TextInput
 									class="w-full mt-1"
 									placeholder="Value"
 									bind:value={map[mapKey]}
@@ -101,8 +104,7 @@
 			<div>
 				<Eyebrow as="label"
 					>Key
-					<Input
-						type="text"
+					<TextInput
 						class="w-full mt-1"
 						placeholder="Key"
 						bind:value={key}
@@ -114,7 +116,7 @@
 			<div>
 				<Eyebrow as="label"
 					>Value
-					<Input type="text" class="w-full mt-1" placeholder="Value" bind:value {disabled} />
+					<TextInput class="w-full mt-1" placeholder="Value" bind:value {disabled} />
 				</Eyebrow>
 			</div>
 			<Button

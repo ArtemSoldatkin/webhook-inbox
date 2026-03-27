@@ -9,8 +9,14 @@ interface BaseField {
 
 /** Text-like field backed by a string value. */
 interface TextField extends BaseField {
-	type: 'text' | 'number' | 'date';
+	type: 'text' | 'date';
 	value?: string | null;
+}
+
+/** Numeric field backed by a nullable number value. */
+interface NumberField extends BaseField {
+	type: 'number';
+	value?: number | null;
 }
 
 /** Checkbox field backed by a boolean value. */
@@ -26,4 +32,4 @@ interface FileField extends BaseField {
 }
 
 /** Any supported form field used by the constructor UI. */
-export type FormField = TextField | BooleanField | FileField;
+export type FormField = TextField | NumberField | BooleanField | FileField;

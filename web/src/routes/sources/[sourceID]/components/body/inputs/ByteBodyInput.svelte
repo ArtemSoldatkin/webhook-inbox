@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import FileInput from '$lib/components/ui/FileInput.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
 
 	type Props = {
 		/** Bound base64-encoded body value. */
@@ -67,19 +69,17 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<textarea
-		rows="10"
+	<Textarea
+		rows={10}
 		bind:value={body}
 		placeholder="Enter base64 body here..."
-		class="min-h-56 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-	></textarea>
+	/>
 	<div class="rounded-md border border-border-muted bg-elevated p-4">
 		<label class="text-sm font-medium text-fg">
 			Upload file
-			<input
-				type="file"
+			<FileInput
 				onchange={(e) => handleFileChange(e)}
-				class="mt-2 block w-full text-sm text-fg"
+				class="mt-2 block w-full text-sm"
 			/>
 		</label>
 	</div>
