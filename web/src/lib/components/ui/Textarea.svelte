@@ -2,9 +2,12 @@
 	import { cx } from '$lib/utils/cx';
 	import type { HTMLTextareaAttributes } from 'svelte/elements';
 
-	type Props = HTMLTextareaAttributes & {
+	type Props = Omit<HTMLTextareaAttributes, 'value' | 'rows'> & {
 		/** Bound value of the textarea. */
 		value?: string;
+
+		/** Visible row count for the textarea. */
+		rows?: number;
 	};
 
 	let { value = $bindable(), class: className, rows = 10, ...rest }: Props = $props();

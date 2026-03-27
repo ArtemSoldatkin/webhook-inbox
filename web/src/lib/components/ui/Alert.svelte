@@ -1,5 +1,6 @@
-<script lang="ts">
+	<script lang="ts">
 	import { cx } from '$lib/utils/cx';
+	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
 	/** Type of allowed variants for the alert component. */
@@ -33,10 +34,11 @@
 		}
 	} as const;
 
-	type Props = Omit<HTMLAttributes<HTMLDivElement>, 'contentEditable'> & {
+	type Props = Omit<HTMLAttributes<HTMLDivElement>, 'contentEditable' | 'children'> & {
 		variant?: Variant;
 		appearance?: Appearance;
 		title?: string;
+		children?: Snippet;
 	};
 
 	let {

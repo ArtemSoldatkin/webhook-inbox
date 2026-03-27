@@ -2,7 +2,9 @@
 	import { cx } from '$lib/utils/cx';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	type Props = Omit<HTMLInputAttributes, 'type'>;
+	type Props = Omit<HTMLInputAttributes, 'type' | 'value'> & {
+		value?: string | null;
+	};
 
 	let { value = $bindable(), class: className, ...rest }: Props = $props();
 </script>

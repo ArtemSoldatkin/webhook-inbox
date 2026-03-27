@@ -2,7 +2,7 @@
 	import { cx } from '$lib/utils/cx';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	type Props = Omit<HTMLInputAttributes, 'type' | 'bind:value'> & {
+	type Props = Omit<HTMLInputAttributes, 'type' | 'value'> & {
 		/** Bound string value of the date input, representing the selected date in YYYY-MM-DD format. */
 		value?: string | null;
 	};

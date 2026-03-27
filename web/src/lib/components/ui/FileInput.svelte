@@ -2,7 +2,7 @@
 	import { cx } from '$lib/utils/cx';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	type Props = Omit<HTMLInputAttributes, 'type' | 'bind:files'> & {
+	type Props = Omit<HTMLInputAttributes, 'type' | 'files' | 'value'> & {
 		/** Bound FileList from the input, allowing parent components to access selected files. */
 		value?: FileList | null;
 	};

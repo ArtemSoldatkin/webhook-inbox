@@ -1,5 +1,6 @@
-<script lang="ts">
+	<script lang="ts">
 	import { cx } from '$lib/utils/cx';
+	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
 	/** Type of allowed variants for the badge component. */
@@ -34,15 +35,17 @@
 	} as const;
 
 	type Props =
-		| (Omit<HTMLAttributes<HTMLSpanElement>, 'contentEditable'> & {
+		| (Omit<HTMLAttributes<HTMLSpanElement>, 'contentEditable' | 'children'> & {
 				variant?: Variant;
 				appearance?: Appearance;
 				as?: 'span';
+				children?: Snippet;
 		  })
-		| (Omit<HTMLAttributes<HTMLDivElement>, 'contentEditable'> & {
+		| (Omit<HTMLAttributes<HTMLDivElement>, 'contentEditable' | 'children'> & {
 				variant?: Variant;
 				appearance?: Appearance;
 				as: 'div';
+				children?: Snippet;
 		  });
 
 	let {

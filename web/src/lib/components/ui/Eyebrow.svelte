@@ -1,5 +1,6 @@
-<script lang="ts">
+	<script lang="ts">
 	import { cx } from '$lib/utils/cx';
+	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
 	/** Type of allowed variants for the Eyebrow component. */
@@ -12,13 +13,15 @@
 	} as const;
 
 	type Props =
-		| (Omit<HTMLAttributes<HTMLParagraphElement>, 'contentEditable'> & {
+		| (Omit<HTMLAttributes<HTMLParagraphElement>, 'contentEditable' | 'children'> & {
 				as?: 'p';
 				variant?: Variant;
+				children?: Snippet;
 		  })
-		| (HTMLAttributes<HTMLLabelElement> & {
+		| (Omit<HTMLAttributes<HTMLLabelElement>, 'children'> & {
 				as: 'label';
 				variant?: Variant;
+				children?: Snippet;
 		  });
 
 	let { as = 'p', variant = 'subtle', class: className, children, ...rest }: Props = $props();

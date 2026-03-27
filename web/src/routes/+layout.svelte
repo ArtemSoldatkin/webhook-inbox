@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Link from '$lib/components/ui/Link.svelte';
 	import favicon from '$lib/assets/favicon.svg';
+	import Link from '$lib/components/ui/Link.svelte';
 	import '$lib/highlight-init';
 	import type { Snippet } from 'svelte';
 	import '../app.css';
@@ -9,7 +9,7 @@
 
 	type Props = {
 		/** Route content rendered inside the shared layout. */
-		children: Snippet<[]>;
+		children: Snippet;
 	};
 
 	let { children }: Props = $props();
@@ -21,12 +21,16 @@
 
 <div class="min-h-screen bg-bg text-fg">
 	<header class="border-b border-border-muted bg-surface/95 shadow-sm backdrop-blur">
-		<div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4 sm:px-8 lg:px-12">
+		<div
+			class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4 sm:px-8 lg:px-12"
+		>
 			<div class="flex min-w-0 flex-1 flex-col gap-1">
 				<Link href={resolve('/')} variant="brand">Webhook Inbox</Link>
 				<p class="text-sm text-muted">Inspect webhook traffic without guessing.</p>
 			</div>
-			<nav class="flex items-center gap-1 rounded-lg border border-border bg-elevated p-1 shadow-sm">
+			<nav
+				class="flex items-center gap-1 rounded-lg border border-border bg-elevated p-1 shadow-sm"
+			>
 				<Link href={resolve('/')} variant="nav">Home</Link>
 				<Link href={resolve('/sources')} variant="nav">Sources</Link>
 			</nav>

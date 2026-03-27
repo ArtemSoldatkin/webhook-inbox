@@ -1,5 +1,6 @@
-<script lang="ts">
+	<script lang="ts">
 	import { cx } from '$lib/utils/cx';
+	import type { Snippet } from 'svelte';
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 
 	/**
@@ -30,8 +31,10 @@
 		link: 'bg-transparent text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
 	} as const;
 
-	type Props = HTMLButtonAttributes & {
+	type Props = Omit<HTMLButtonAttributes, 'children' | 'type'> & {
 		variant?: Variant;
+		type?: HTMLButtonAttributes['type'];
+		children?: Snippet;
 	};
 
 	let {

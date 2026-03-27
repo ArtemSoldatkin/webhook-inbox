@@ -2,7 +2,7 @@
 	import { cx } from '$lib/utils/cx';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	type Props = Omit<HTMLInputAttributes, 'type' | 'bind:checked'> & {
+	type Props = Omit<HTMLInputAttributes, 'type' | 'checked' | 'value'> & {
 		/** Bound boolean value of the checkbox. */
 		value?: boolean;
 	};

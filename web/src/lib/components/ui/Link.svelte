@@ -1,5 +1,6 @@
-<script lang="ts">
+	<script lang="ts">
 	import { cx } from '$lib/utils/cx';
+	import type { Snippet } from 'svelte';
 	import type { HTMLAnchorAttributes } from 'svelte/elements';
 
 	/**
@@ -33,8 +34,9 @@
 			'text-primary underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
 	} as const;
 
-	type Props = HTMLAnchorAttributes & {
+	type Props = Omit<HTMLAnchorAttributes, 'children'> & {
 		variant?: Variant;
+		children?: Snippet;
 	};
 
 	let { class: className, variant = 'primary', children, ...rest }: Props = $props();
