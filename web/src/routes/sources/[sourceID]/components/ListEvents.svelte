@@ -6,10 +6,10 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
 	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import type { EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -135,18 +135,16 @@
 
 <section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
 	<div class="flex flex-col gap-6">
-		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-			<div>
-				<Eyebrow variant="strong">Events</Eyebrow>
-				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">
-					Captured traffic for this source
-				</h3>
-				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-					Inspect recorded requests, query parameters, headers, and request bodies in arrival order.
-				</p>
-			</div>
-			<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Events</Button>
-		</div>
+		<SectionHeader
+			eyebrow="Events"
+			title="Captured traffic for this source"
+			description="Inspect recorded requests, query parameters, headers, and request bodies in arrival order."
+			titleAs="h3"
+		>
+			{#snippet actions()}
+				<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Events</Button>
+			{/snippet}
+		</SectionHeader>
 
 		<FilterBar bind:searchQuery bind:sortDirection />
 

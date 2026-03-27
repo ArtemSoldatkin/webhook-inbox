@@ -2,7 +2,7 @@
 	import InputMap from '$lib/components/InputMap.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import Textarea from '$lib/components/ui/Textarea.svelte';
 	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import env from '$lib/env';
@@ -133,13 +133,12 @@
 </script>
 
 <section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
-	<div class="max-w-3xl">
-		<Eyebrow variant="strong">Create source</Eyebrow>
-		<h1 class="mt-4 text-3xl font-semibold tracking-tight text-fg">Add a webhook destination</h1>
-		<p class="mt-3 text-sm leading-6 text-muted sm:text-base">
-			Create a unique ingest endpoint and define where captured webhook traffic should be forwarded.
-		</p>
-	</div>
+	<SectionHeader
+		eyebrow="Create source"
+		title="Add a webhook destination"
+		description="Create a unique ingest endpoint and define where captured webhook traffic should be forwarded."
+		titleAs="h1"
+	/>
 
 	<form onsubmit={handleSubmit} class="mt-8 flex flex-col gap-6">
 		<div class="flex flex-col gap-2">

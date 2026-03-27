@@ -4,6 +4,7 @@
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
 	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import { type EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -84,13 +85,11 @@
 	<div class="flex flex-col gap-8">
 		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
 			<div class="flex flex-col gap-6">
-				<div class="flex flex-col gap-3">
-					<div class="flex flex-wrap items-center gap-3">
-						<Eyebrow variant="strong">Captured event</Eyebrow>
-						<Badge variant="neutral" appearance="soft" class="bg-elevated">{data.method}</Badge>
-					</div>
-					<h2 class="text-3xl font-semibold tracking-tight text-fg">Event ID: {data.id}</h2>
-				</div>
+				<SectionHeader eyebrow="Captured event" title={`Event ID: ${data.id}`}>
+					{#snippet actions()}
+						<Badge variant="neutral" appearance="soft" class="bg-elevated">{data?.method}</Badge>
+					{/snippet}
+				</SectionHeader>
 
 				<div class="grid gap-4 border-t border-border-muted pt-4 sm:grid-cols-2">
 					<div>

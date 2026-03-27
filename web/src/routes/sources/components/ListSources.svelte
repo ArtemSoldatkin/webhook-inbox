@@ -4,11 +4,11 @@
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { cx } from '$lib/utils/cx';
 	import { untrack } from 'svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import SourceCard from './SourceCard.svelte';
 
 	/** Filters applied to the sources list. */
@@ -137,20 +137,17 @@
 
 <section class={cx('rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8', className)}>
 	<div class="flex flex-col gap-6">
-		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-			<div>
-				<Eyebrow variant="strong">Sources</Eyebrow>
-				<h2 class="mt-4 text-3xl font-semibold tracking-tight text-fg">
-					Manage registered endpoints
-				</h2>
-				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-					Browse created sources, inspect forwarding settings, and drill into event history for each
-					endpoint.
-				</p>
-			</div>
-			<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Sources</Button
-			>
-		</div>
+		<SectionHeader
+			eyebrow="Sources"
+			title="Manage registered endpoints"
+			description="Browse created sources, inspect forwarding settings, and drill into event history for each endpoint."
+		>
+			{#snippet actions()}
+				<Button onclick={handleRefresh} disabled={loading} variant="secondary">
+					Refresh Sources
+				</Button>
+			{/snippet}
+		</SectionHeader>
 
 		<FilterBar
 			bind:searchQuery

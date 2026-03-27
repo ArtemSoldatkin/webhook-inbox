@@ -2,8 +2,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Alert from '$lib/components/ui/Alert.svelte';
-	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import EventView from './components/EventView.svelte';
 
 	/** Source id read from the current route. */
@@ -26,10 +26,7 @@
 		</ul>
 	</nav>
 
-	<div class="flex flex-col gap-2">
-		<Eyebrow variant="strong">Event details</Eyebrow>
-		<h1 class="text-3xl font-semibold tracking-tight text-fg">Event ID: {eventID}</h1>
-	</div>
+	<SectionHeader eyebrow="Event details" title={`Event ID: ${eventID}`} titleAs="h1" />
 
 	{#if eventID && sourceID}
 		<EventView {sourceID} {eventID} />

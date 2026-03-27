@@ -2,8 +2,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Alert from '$lib/components/ui/Alert.svelte';
-	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import SourceView from './components/SourceView.svelte';
 
 	/** Source id read from the current route. */
@@ -19,10 +19,7 @@
 		</ul>
 	</nav>
 
-	<div class="flex flex-col gap-2">
-		<Eyebrow variant="strong">Source details</Eyebrow>
-		<h1 class="text-3xl font-semibold tracking-tight text-fg">Source ID: {sourceID}</h1>
-	</div>
+	<SectionHeader eyebrow="Source details" title={`Source ID: ${sourceID}`} titleAs="h1" />
 
 	{#if !sourceID}
 		<Alert>No source ID provided.</Alert>

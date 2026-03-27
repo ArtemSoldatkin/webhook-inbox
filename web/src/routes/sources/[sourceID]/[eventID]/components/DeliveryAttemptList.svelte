@@ -7,6 +7,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -150,20 +151,18 @@
 
 <section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
 	<div class="flex flex-col gap-6">
-		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-			<div>
-				<Eyebrow variant="strong">Delivery attempts</Eyebrow>
-				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">
-					Delivery history for this event
-				</h3>
-				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-					Review retries, status codes, and error information for each outbound delivery attempt.
-				</p>
-			</div>
-			<Button onclick={handleRefresh} disabled={loading} variant="secondary">
-				Refresh Delivery Attempts
-			</Button>
-		</div>
+		<SectionHeader
+			eyebrow="Delivery attempts"
+			title="Delivery history for this event"
+			description="Review retries, status codes, and error information for each outbound delivery attempt."
+			titleAs="h3"
+		>
+			{#snippet actions()}
+				<Button onclick={handleRefresh} disabled={loading} variant="secondary">
+					Refresh Delivery Attempts
+				</Button>
+			{/snippet}
+		</SectionHeader>
 
 		<FilterBar
 			bind:searchQuery

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Alert from '$lib/components/ui/Alert.svelte';
-	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -82,13 +82,13 @@
 		</section>
 
 		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
-			<div class="mb-6">
-				<Eyebrow variant="strong">Testing</Eyebrow>
-				<h3 class="mt-4 text-2xl font-semibold tracking-tight text-fg">Send a test webhook</h3>
-				<p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-					Exercise the ingest endpoint directly from the UI and verify the event appears below.
-				</p>
-			</div>
+			<SectionHeader
+				eyebrow="Testing"
+				title="Send a test webhook"
+				description="Exercise the ingest endpoint directly from the UI and verify the event appears below."
+				titleAs="h3"
+				class="mb-6"
+			/>
 			<TestWebhook publicID={data.public_id} staticHeaders={data.static_headers} />
 		</section>
 
