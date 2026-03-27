@@ -165,15 +165,13 @@
 			</Button>
 		</div>
 
-		<div class="rounded-lg border border-border-muted bg-elevated p-4">
-			<FilterBar
-				bind:searchQuery
-				bind:filter={filterState}
-				bind:sortDirection
-				filterName="state"
-				filterOptions={filterStateOptions}
-			/>
-		</div>
+		<FilterBar
+			bind:searchQuery
+			bind:filter={filterState}
+			bind:sortDirection
+			filterName="state"
+			filterOptions={filterStateOptions}
+		/>
 
 		{#if loading}
 			<Alert>Loading delivery attempts...</Alert>
@@ -185,7 +183,7 @@
 			<ul class="grid gap-4">
 				{#each data as attempt (attempt.id)}
 					<li>
-						<article class="rounded-lg border border-border bg-elevated p-5 shadow-sm">
+						<article class="rounded-lg border border-border bg-surface p-5 shadow-sm">
 							<div class="flex flex-col gap-5">
 								<div class="flex flex-wrap items-center gap-3">
 									<h4 class="text-xl font-semibold tracking-tight text-fg">
@@ -194,23 +192,23 @@
 									<Badge variant="neutral" appearance="soft">{attempt.state}</Badge>
 								</div>
 
-								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-									<div class="rounded-md border border-border-muted bg-surface p-4">
+								<div class="grid gap-4 border-t border-border-muted pt-4 sm:grid-cols-2 xl:grid-cols-3">
+									<div>
 										<Eyebrow>Event ID</Eyebrow>
 										<p class="mt-2 break-all text-sm text-fg">{attempt.event_id}</p>
 									</div>
-									<div class="rounded-md border border-border-muted bg-surface p-4">
+									<div>
 										<Eyebrow>Attempt number</Eyebrow>
 										<p class="mt-2 text-sm text-fg">{attempt.attempt_number}</p>
 									</div>
-									<div class="rounded-md border border-border-muted bg-surface p-4">
+									<div>
 										<Eyebrow>Status code</Eyebrow>
 										<p class="mt-2 text-sm text-fg">{attempt.status_code ?? 'N/A'}</p>
 									</div>
 								</div>
 
-								<div class="grid gap-4 lg:grid-cols-2">
-									<div class="rounded-md border border-border-muted bg-surface p-4">
+								<div class="grid gap-4 border-t border-border-muted pt-4 lg:grid-cols-2">
+									<div>
 										<Eyebrow>Errors</Eyebrow>
 										<KeyValueList
 											items={[
@@ -219,7 +217,7 @@
 											]}
 										/>
 									</div>
-									<div class="rounded-md border border-border-muted bg-surface p-4">
+									<div>
 										<Eyebrow>Timing</Eyebrow>
 										<KeyValueList
 											items={[

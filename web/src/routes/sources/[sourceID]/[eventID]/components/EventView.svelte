@@ -92,19 +92,19 @@
 					<h2 class="text-3xl font-semibold tracking-tight text-fg">Event ID: {data.id}</h2>
 				</div>
 
-				<div class="grid gap-4 sm:grid-cols-2">
-					<div class="rounded-md border border-border-muted bg-elevated p-4">
+				<div class="grid gap-4 border-t border-border-muted pt-4 sm:grid-cols-2">
+					<div>
 						<Eyebrow>Source ID</Eyebrow>
 						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.source_id}</p>
 					</div>
-					<div class="rounded-md border border-border-muted bg-elevated p-4">
+					<div>
 						<Eyebrow>Deduplication hash</Eyebrow>
 						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.dedup_hash ?? 'N/A'}</p>
 					</div>
 				</div>
 
-				<div class="grid gap-4 lg:grid-cols-2">
-					<section class="rounded-md border border-border-muted bg-surface p-4">
+				<div class="grid gap-4 border-t border-border-muted pt-4 lg:grid-cols-2">
+					<section>
 						<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 							Query Parameters
 						</h4>
@@ -113,7 +113,7 @@
 							emptyStateText="No values recorded."
 						/>
 					</section>
-					<section class="rounded-md border border-border-muted bg-surface p-4">
+					<section>
 						<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Raw Headers</h4>
 						<KeyValueList
 							items={stringArrayRecordToKeyValueItems(data.raw_headers ?? {})}

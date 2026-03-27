@@ -148,9 +148,7 @@
 			<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Events</Button>
 		</div>
 
-		<div class="rounded-lg border border-border-muted bg-elevated p-4">
-			<FilterBar bind:searchQuery bind:sortDirection />
-		</div>
+		<FilterBar bind:searchQuery bind:sortDirection />
 
 		{#if loading}
 			<Alert>Loading events...</Alert>
@@ -162,7 +160,7 @@
 			<ul class="grid gap-4">
 				{#each data as event (event.id)}
 					<li>
-						<article class="rounded-lg border border-border bg-elevated p-5 shadow-sm">
+						<article class="rounded-lg border border-border bg-surface p-5 shadow-sm">
 							<div class="flex flex-col gap-5">
 								<div class="flex flex-col gap-2">
 									<div class="flex flex-wrap items-center gap-3">
@@ -176,20 +174,20 @@
 										</h4>
 										<Badge variant="neutral" appearance="soft">{event.method}</Badge>
 									</div>
-									<div class="grid gap-3 text-sm sm:grid-cols-2">
-										<div class="rounded-md border border-border-muted bg-surface px-3 py-2">
+									<div class="grid gap-4 border-t border-border-muted pt-4 text-sm sm:grid-cols-2">
+										<div>
 											<span class="text-muted">Source ID</span>
 											<p class="mt-1 break-all text-fg">{event.source_id}</p>
 										</div>
-										<div class="rounded-md border border-border-muted bg-surface px-3 py-2">
+										<div>
 											<span class="text-muted">Deduplication hash</span>
 											<p class="mt-1 break-all text-fg">{event.dedup_hash ?? 'N/A'}</p>
 										</div>
 									</div>
 								</div>
 
-								<div class="grid gap-4 lg:grid-cols-2">
-									<section class="rounded-md border border-border-muted bg-surface p-4">
+								<div class="grid gap-4 border-t border-border-muted pt-4 lg:grid-cols-2">
+									<section>
 										<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 											Query Parameters
 										</h4>
@@ -198,7 +196,7 @@
 											emptyStateText="No values recorded."
 										/>
 									</section>
-									<section class="rounded-md border border-border-muted bg-surface p-4">
+									<section>
 										<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
 											Raw Headers
 										</h4>

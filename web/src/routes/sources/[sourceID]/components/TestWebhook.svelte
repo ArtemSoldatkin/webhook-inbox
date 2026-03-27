@@ -135,21 +135,21 @@
 		</Alert>
 	</div>
 
-	<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
+	<section class="flex flex-col gap-3 border-t border-border-muted pt-4">
 		<div>
 			<p class="text-sm font-medium text-fg">Headers</p>
 			<p class="mt-1 text-sm text-muted">Optional headers included with the test request.</p>
 		</div>
 		<InputMap bind:map={headers} disabled={loading} />
-	</div>
+	</section>
 
-	<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
+	<section class="flex flex-col gap-3 border-t border-border-muted pt-4">
 		<div>
 			<p class="text-sm font-medium text-fg">Query parameters</p>
 			<p class="mt-1 text-sm text-muted">Optional query string values appended to the request URL.</p>
 		</div>
 		<InputMap bind:map={queryParams} disabled={loading} />
-	</div>
+	</section>
 
 	{#if isBodyAllowed}
 		<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">

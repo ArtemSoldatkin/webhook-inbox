@@ -152,15 +152,13 @@
 			>
 		</div>
 
-		<div class="rounded-lg border border-border-muted bg-elevated p-4">
-			<FilterBar
-				bind:searchQuery
-				bind:filter={filterStatus}
-				bind:sortDirection
-				filterName="status"
-				filterOptions={filterStatusOptions}
-			/>
-		</div>
+		<FilterBar
+			bind:searchQuery
+			bind:filter={filterStatus}
+			bind:sortDirection
+			filterName="status"
+			filterOptions={filterStatusOptions}
+		/>
 
 		{#if loading}
 			<Alert>Loading sources...</Alert>
@@ -170,9 +168,7 @@
 			<ul class="grid gap-4">
 				{#each data as source (source.id)}
 					<li>
-						<article class="rounded-lg border border-border bg-elevated p-5 shadow-sm">
-							<SourceCard {source} idAsLink />
-						</article>
+						<SourceCard {source} idAsLink />
 					</li>
 				{/each}
 			</ul>

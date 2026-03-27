@@ -162,11 +162,12 @@
 		</div>
 
 		{#if data.static_headers}
-			<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
-				<label class="text-sm font-medium text-fg"
-					>Static headers
-					<InputMap class="mt-2" bind:map={data.static_headers} disabled={loading} />
-				</label>
+			<div class="border-t border-border-muted pt-4">
+				<p class="text-sm font-medium text-fg">Static headers</p>
+				<p class="mt-1 text-sm text-muted">
+					Attach fixed headers to every forwarded request for this source.
+				</p>
+				<InputMap class="mt-3" bind:map={data.static_headers} disabled={loading} />
 			</div>
 		{/if}
 
