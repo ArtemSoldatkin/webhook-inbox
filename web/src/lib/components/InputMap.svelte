@@ -20,6 +20,9 @@
 	/** Draft value for the next map entry. */
 	let value = $state('');
 
+	/** Error message for the current draft entry, shown when the key is empty or already exists in the map. */
+	let inputError = $state<string | null>(null);
+
 	/** Adds the current draft entry when both fields are valid. */
 	function addKeyValue(): void {
 		if (key.trim() === '' || value.trim() === '' || map[key]) {
@@ -28,6 +31,7 @@
 		map = { ...map, [key]: value };
 		key = '';
 		value = '';
+		inputError = null;
 	}
 
 	/**
@@ -38,6 +42,17 @@
 	function removeKey(keyToRemove: string): void {
 		delete map[keyToRemove];
 		map = { ...map };
+	}
+
+	/** Validates the draft key on blur, setting an error message if it's empty or already exists in the map. */
+	function handleKeyBlur(): void {
+		if (key.trim() === '') {
+			inputError = 'Key cannot be empty.';
+		} else if (key in map) {
+			inputError = 'Key already exists in the map.';
+		} else {
+			inputError = null;
+		}
 	}
 </script>
 
@@ -79,7 +94,7 @@
 			<div>
 				<Eyebrow as="label"
 					>Key
-					<Input type="text" placeholder="Key" bind:value={key} {disabled} />
+					<Input type="text" placeholder="Key" bind:value={key} {disabled} onblur={handleKeyBlur} />
 				</Eyebrow>
 			</div>
 			<div>
@@ -97,5 +112,10 @@
 				+
 			</Button>
 		</div>
+		{#if inputError}
+			<Alert variant="error" class="mt-3">
+				{inputError}
+			</Alert>
+		{/if}
 	</div>
 </div>
