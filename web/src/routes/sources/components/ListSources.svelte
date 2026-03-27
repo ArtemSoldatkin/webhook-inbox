@@ -11,6 +11,7 @@
 	import Link from '$lib/components/ui/Link.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
+	import { cx } from '$lib/utils/cx';
 	import { untrack } from 'svelte';
 
 	/** Filters applied to the sources list. */
@@ -24,6 +25,13 @@
 		/** Sort order used for source results. */
 		sortDirection: 'ASC' | 'DESC';
 	};
+
+	type Props = {
+		/** Additional CSS classes to apply to the root element of this component. */
+		class?: string;
+	};
+
+	let { class: className }: Props = $props();
 
 	/** Loaded source rows for the current filters. */
 	let data = $state<SourceDTO[]>([]);
@@ -130,7 +138,7 @@
 	});
 </script>
 
-<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+<section class={cx('rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8', className)}>
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 			<div>

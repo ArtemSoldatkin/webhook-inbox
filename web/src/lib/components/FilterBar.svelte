@@ -2,6 +2,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import Icon from '@iconify/svelte';
+	import Input from './ui/Input.svelte';
 
 	type Props = {
 		/** Bound search text for the list. */
@@ -46,15 +48,12 @@
 		<div class="min-w-0 flex-1">
 			<Eyebrow as="label">
 				Search
-				<input
-					type="text"
-					placeholder="Search..."
-					bind:value={searchInput}
-					class="mt-1 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none placeholder:text-subtle focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-				/>
+				<Input type="text" class="w-full mt-1" placeholder="Search..." bind:value={searchInput} />
 			</Eyebrow>
 		</div>
-		<Button type="button" onclick={handleSearch}>Search</Button>
+		<Button type="button" class="py-3 border border-transparent" onclick={handleSearch}
+			>Search</Button
+		>
 	</div>
 
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -68,7 +67,7 @@
 							{ value: '*', label: 'All' },
 							...(filterOptions?.map((category) => ({ value: category, label: category })) ?? [])
 						]}
-						class="mt-1 w-full rounded-md border border-border bg-surface px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="w-full mt-1"
 					/>
 				</Eyebrow>
 			</div>
@@ -78,11 +77,16 @@
 			<Eyebrow>Sort</Eyebrow>
 			<Button
 				type="button"
+				class="py-3 mt-1 border border-transparent"
 				onclick={toggleSortDirection}
 				aria-label="Toggle sort direction"
 				variant="secondary"
 			>
-				{sortDirection === 'ASC' ? 'Ascending' : 'Descending'}
+				{#if sortDirection === 'ASC'}
+					<Icon icon="mdi:sort-ascending" class="text-xl" />
+				{:else}
+					<Icon icon="mdi:sort-descending" class="text-xl" />
+				{/if}
 			</Button>
 		</div>
 	</div>

@@ -70,7 +70,7 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			"query":               r.URL.RawQuery,
 		}).Info("Created initial delivery attempt")
 
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusAccepted)
 		w.Write([]byte("OK"))
 	}
 }

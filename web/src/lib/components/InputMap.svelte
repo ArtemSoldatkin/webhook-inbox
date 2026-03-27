@@ -2,6 +2,7 @@
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import Icon from '@iconify/svelte';
 	import Input from './ui/Input.svelte';
 
 	type Props = {
@@ -69,17 +70,23 @@
 						<div>
 							<Eyebrow as="label"
 								>Header value
-								<Input type="text" placeholder="Value" bind:value={map[mapKey]} {disabled} />
+								<Input
+									type="text"
+									class="w-full mt-1"
+									placeholder="Value"
+									bind:value={map[mapKey]}
+									{disabled}
+								/>
 							</Eyebrow>
 						</div>
 						<Button
 							type="button"
 							variant="secondary"
-							class="py-3 border border-transparent"
+							class="py-3 border border-transparent text-error"
 							{disabled}
 							onclick={() => removeKey(mapKey)}
 						>
-							x
+							<Icon icon="material-symbols:delete-rounded" class="text-xl" />
 						</Button>
 					</div>
 				</li>
@@ -94,22 +101,29 @@
 			<div>
 				<Eyebrow as="label"
 					>Key
-					<Input type="text" placeholder="Key" bind:value={key} {disabled} onblur={handleKeyBlur} />
+					<Input
+						type="text"
+						class="w-full mt-1"
+						placeholder="Key"
+						bind:value={key}
+						{disabled}
+						onblur={handleKeyBlur}
+					/>
 				</Eyebrow>
 			</div>
 			<div>
 				<Eyebrow as="label"
 					>Value
-					<Input type="text" placeholder="Value" bind:value {disabled} />
+					<Input type="text" class="w-full mt-1" placeholder="Value" bind:value {disabled} />
 				</Eyebrow>
 			</div>
 			<Button
 				type="button"
 				class="py-3 border border-transparent"
-				disabled={disabled || !key || key in map}
+				disabled={disabled || !key || key in map || !value}
 				onclick={() => addKeyValue()}
 			>
-				+
+				<Icon icon="material-symbols:add-rounded" class="text-xl" />
 			</Button>
 		</div>
 		{#if inputError}

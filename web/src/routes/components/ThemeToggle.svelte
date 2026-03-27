@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import Select from '$lib/components/ui/Select.svelte';
+	import { onMount } from 'svelte';
 
 	/**
 	 * Defines the possible theme options for the application.
