@@ -188,11 +188,11 @@ func (svc *Service) UpdateSourceStatus(ctx context.Context, sourceStatusInput Up
 	}
 
 	if source.Status == sourceStatusInput.Status {
-		return db.Source{}, nil
+		return source, nil
 	}
 
 	if !isValidStatusTransition(source.Status, sourceStatusInput.Status) {
-		return db.Source{}, fmt.Errorf("invalid status transition from %s to %s", source.Status, sourceStatusInput.Status)
+		return source, fmt.Errorf("invalid status transition from %s to %s", source.Status, sourceStatusInput.Status)
 	}
 
 	if err := svc.queries.UpdateSourceStatus(ctx, db.UpdateSourceStatusParams{
@@ -203,7 +203,7 @@ func (svc *Service) UpdateSourceStatus(ctx context.Context, sourceStatusInput Up
 			Valid:  sourceStatusInput.StatusReason != "",
 		},
 	}); err != nil {
-		return db.Source{}, fmt.Errorf("failed to update status for source with ID %d: %w", sourceStatusInput.SourceID, err)
+		return source, fmt.Errorf("failed to update status for source with ID %d: %w", sourceStatusInput.SourceID, err)
 	}
 
 	// Invalidate cache for this source since its status has changed

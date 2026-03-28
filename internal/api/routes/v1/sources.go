@@ -219,13 +219,13 @@ func updateSourceStatus(svc *service.Service) http.HandlerFunc {
 
 		sourceDTO := mapperv1.ToSourceDTO(source, svc.Config)
 
-		if err := api.JSON(w, http.StatusCreated, sourceDTO); err != nil {
+		if err := api.JSON(w, http.StatusOK, sourceDTO); err != nil {
 			var writeErr *api.JSONWriteError
 			if errors.As(err, &writeErr) {
 				logrus.WithError(err).Error("Failed to write response")
 			} else {
 				logrus.WithError(err).Error("Failed to marshal response")
-				http.Error(w, "Failed to create source", http.StatusInternalServerError)
+				http.Error(w, "Failed to update source status", http.StatusInternalServerError)
 			}
 		}
 	}

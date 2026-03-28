@@ -46,7 +46,6 @@
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					source_id: source.id,
 					status: newStatus,
 					status_reason: `Status changed to ${newStatus} via UI`
 				})

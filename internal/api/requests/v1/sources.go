@@ -59,7 +59,7 @@ var allowedStatuses = []string{"active", "paused", "quarantined", "disabled"}
 
 // UpdateSourceStatusInput defines the expected input parameters for updating the status of a source.
 type UpdateSourceStatusInput struct {
-	SourceID     int64  `json:"source_id"`
+	SourceID     int64  `url_param:"source_id"`
 	Status       string `json:"status"`
 	StatusReason string `json:"status_reason,omitempty"`
 }
