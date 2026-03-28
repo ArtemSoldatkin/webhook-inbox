@@ -75,7 +75,7 @@
 	 * It should demonstrate how to send a POST request with a JSON body to the ingest endpoint, which is the most common way webhooks are sent.
 	 * Avoid including unnecessary flags or complex payloads that might overwhelm users who are just trying to get started.
 	 */
-	const exampleRequest = `curl -X POST ${env.VITE_API_BASE_URL}/api/v1/ingest/YOUR_SOURCE_KEY \\
+	const exampleRequest = `curl -X POST ${env.VITE_API_BASE_URL}/ingest/YOUR_SOURCE_KEY \\
   -H "Content-Type: application/json" \\
   -d '{"event":"payment.succeeded","source":"demo"}'`;
 </script>
