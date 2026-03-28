@@ -1,4 +1,4 @@
-	<script lang="ts">
+<script lang="ts">
 	import { cx } from '$lib/utils/cx';
 	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
@@ -53,7 +53,7 @@
 
 <div
 	class={cx(
-		'flex flex-col gap-2 rounded-md border px-4 py-3 text-sm shadow-sm',
+		'flex flex-col gap-2 rounded-md border min-h-12 px-4 py-3 text-sm shadow-sm',
 		APPEARANCE_CLASSES[appearance][variant],
 		className
 	)}

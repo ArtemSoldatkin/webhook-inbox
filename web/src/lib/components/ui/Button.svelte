@@ -1,4 +1,4 @@
-	<script lang="ts">
+<script lang="ts">
 	import { cx } from '$lib/utils/cx';
 	import type { Snippet } from 'svelte';
 	import type { HTMLButtonAttributes } from 'svelte/elements';
@@ -48,7 +48,7 @@
 
 <button
 	class={cx(
-		'inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium whitespace-nowrap',
+		'inline-flex items-center justify-center gap-2 rounded-md min-h-12 px-4 py-2 text-sm font-medium whitespace-nowrap',
 		'transition-colors outline-none',
 		VARIANT_CLASSES[variant],
 		className

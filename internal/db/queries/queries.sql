@@ -104,6 +104,18 @@ VALUES (
         @description
     )
 RETURNING *;
+-- name: UpdateSourceStatus :exec
+UPDATE sources
+SET status = @status,
+    status_reason = @status_reason,
+    updated_at = NOW(),
+    disable_at = CASE
+        WHEN @status = 'disabled' THEN COALESCE(disable_at, NOW())
+        ELSE NULL
+    END
+WHERE id = @source_id
+    AND status IS DISTINCT
+FROM @status;
 -- name: ListEventsBySource :many
 SELECT id,
     source_id,

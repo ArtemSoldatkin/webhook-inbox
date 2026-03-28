@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"slices"
+	"strconv"
 	"time"
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
@@ -14,7 +16,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sirupsen/logrus"
 )
-
 
 // ListSources retrieves all sources from the database.
 func (svc *Service) ListSources(
@@ -37,8 +38,42 @@ func (svc *Service) ListSources(
 }
 
 // GetSourceByID retrieves a source by its ID from the database.
-func (svc *Service) GetSourceByID(ctx context.Context, id int64) (db.Source, error) {
-	return svc.queries.GetSourceByID(ctx, id)
+func (svc *Service) GetSourceByID(ctx context.Context, sourceID int64) (db.Source, error) {
+	cacheKey := fmt.Sprintf("GetSourceByID|%s", strconv.FormatInt(sourceID, 10))
+
+	if cachedSource, ok := svc.Cache.Get(cacheKey); ok {
+		source, ok := cachedSource.(db.Source)
+		if ok {
+			return source, nil
+		}
+
+		logrus.
+			WithField("source_id", sourceID).
+			Warning("cache hit for GetSourceByID but value has unexpected type, ignoring cache")
+	}
+
+	source, err := svc.queries.GetSourceByID(ctx, sourceID)
+	if err != nil {
+		return db.Source{}, err
+	}
+
+	cacheCost, err := utils.EstimateStructSize(source)
+	if err != nil {
+		logrus.
+			WithError(err).
+			WithField("source_id", source.ID).
+			Warning("failed to estimate cache cost for source, using default cost")
+		cacheCost = svc.Config.APICacheDefaultCost
+	}
+
+	svc.Cache.SetWithTTL(
+		cacheKey,
+		source,
+		cacheCost,
+		time.Duration(svc.Config.APICacheSourceTTLSec)*time.Second,
+	)
+
+	return source, nil
 }
 
 // GetSourceByPublicID retrieves a source by its public ID from the database.
@@ -117,6 +152,65 @@ func (svc *Service) CreateSource(
 			Valid:  source.Description != "",
 		},
 	})
+}
+
+// allowedStatusTransitions defines the valid status transitions for sources.
+var allowedStatusTransitions = map[string][]string{
+	"active":      {"paused", "quarantined"},
+	"paused":      {"active", "quarantined", "disabled"},
+	"quarantined": {"active", "disabled"},
+	"disabled":    {"active"},
+}
+
+// isValidStatusTransition checks if transitioning from currentStatus to newStatus is allowed based on predefined rules.
+func isValidStatusTransition(currentStatus, newStatus string) bool {
+	allowedTransitions, ok := allowedStatusTransitions[currentStatus]
+
+	if !ok {
+		return false
+	}
+
+	return slices.Contains(allowedTransitions, newStatus)
+}
+
+// UpdateSourceStatusInput contains the parameters required to update the status of a source.
+type UpdateSourceStatusInput struct {
+	SourceID     int64
+	Status       string
+	StatusReason string
+}
+
+// UpdateSourceStatus updates the status of a source in the database.
+func (svc *Service) UpdateSourceStatus(ctx context.Context, sourceStatusInput UpdateSourceStatusInput) (db.Source, error) {
+	source, err := svc.GetSourceByID(ctx, sourceStatusInput.SourceID)
+	if err != nil {
+		return db.Source{}, fmt.Errorf("failed to retrieve source with ID %d: %w", sourceStatusInput.SourceID, err)
+	}
+
+	if source.Status == sourceStatusInput.Status {
+		return source, nil
+	}
+
+	if !isValidStatusTransition(source.Status, sourceStatusInput.Status) {
+		return source, fmt.Errorf("invalid status transition from %s to %s", source.Status, sourceStatusInput.Status)
+	}
+
+	if err := svc.queries.UpdateSourceStatus(ctx, db.UpdateSourceStatusParams{
+		SourceID: sourceStatusInput.SourceID,
+		Status:   sourceStatusInput.Status,
+		StatusReason: pgtype.Text{
+			String: sourceStatusInput.StatusReason,
+			Valid:  sourceStatusInput.StatusReason != "",
+		},
+	}); err != nil {
+		return source, fmt.Errorf("failed to update status for source with ID %d: %w", sourceStatusInput.SourceID, err)
+	}
+
+	// Invalidate cache for this source since its status has changed
+	svc.Cache.Del(fmt.Sprintf("GetSourceByID|%s", strconv.FormatInt(sourceStatusInput.SourceID, 10)))
+	svc.Cache.Del(fmt.Sprintf("GetSourceByPublicID|%s", source.PublicID.String()))
+
+	return svc.GetSourceByID(ctx, sourceStatusInput.SourceID)
 }
 
 // NOTE: This SSRF protection is primarily for defense-in-depth. Since this is an internal tool

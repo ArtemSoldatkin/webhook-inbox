@@ -741,3 +741,28 @@ func (q *Queries) UpdateDeliveryAttemptsToInFlight(ctx context.Context, batchIds
 	}
 	return items, nil
 }
+
+const updateSourceStatus = `-- name: UpdateSourceStatus :exec
+UPDATE sources
+SET status = $1,
+    status_reason = $2,
+    updated_at = NOW(),
+    disable_at = CASE
+        WHEN $1 = 'disabled' THEN COALESCE(disable_at, NOW())
+        ELSE NULL
+    END
+WHERE id = $3
+    AND status IS DISTINCT
+FROM $1
+`
+
+type UpdateSourceStatusParams struct {
+	Status       string
+	StatusReason pgtype.Text
+	SourceID     int64
+}
+
+func (q *Queries) UpdateSourceStatus(ctx context.Context, arg UpdateSourceStatusParams) error {
+	_, err := q.db.Exec(ctx, updateSourceStatus, arg.Status, arg.StatusReason, arg.SourceID)
+	return err
+}
