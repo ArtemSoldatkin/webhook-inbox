@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
+
 	type Props = {
 		/** Bound JSON body value. */
 		body: string;
@@ -36,6 +39,14 @@
 	});
 </script>
 
-<textarea bind:value={body} rows="10" cols="50" placeholder="Enter JSON body here..."></textarea>
-<button type="button" onclick={formatJSON} disabled={!!error}>Format</button>
-<button type="button" onclick={handleClear} disabled={!body}>Clear</button>
+<div class="flex flex-col gap-4">
+	<Textarea
+		bind:value={body}
+		rows={10}
+		placeholder="Enter JSON body here..."
+	/>
+	<div class="flex flex-wrap justify-end gap-3">
+		<Button type="button" onclick={formatJSON} disabled={!!error} variant="secondary">Format</Button>
+		<Button type="button" onclick={handleClear} disabled={!body} variant="secondary">Clear</Button>
+	</div>
+</div>

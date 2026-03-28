@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import type { FormField } from '../types';
 	import InputConstructor from './InputConstructor.svelte';
 
@@ -16,10 +18,16 @@
 </script>
 
 {#if fields.length === 0}
-	<p>No fields added yet. Click "Add field" to start building your form.</p>
+	<Alert class="bg-surface shadow-none">
+		No fields added yet. Click "Add field" to start building your form.
+	</Alert>
 {/if}
-<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
-{#each fields as _, index (index)}
-	<InputConstructor bind:field={fields[index]} />
-{/each}
-<button type="button" onclick={handleAddField}>Add field</button>
+<div class="flex flex-col gap-4">
+	<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+	{#each fields as _, index (index)}
+		<InputConstructor bind:field={fields[index]} />
+	{/each}
+	<div class="flex justify-end">
+		<Button type="button" onclick={handleAddField}>Add field</Button>
+	</div>
+</div>

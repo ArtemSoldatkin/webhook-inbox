@@ -1,0 +1,157 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+	/* =========================
+     SURFACES (LAYERS)
+     ========================= */
+	--ui-color-bg: oklch(0.98 0.01 260);
+	--ui-color-surface: oklch(1 0 0);
+	--ui-color-elevated: oklch(1 0 0);
+	--ui-color-overlay: oklch(0 0 0 / 0.4);
+
+	/* =========================
+     TEXT
+     ========================= */
+	--ui-color-fg: oklch(0.2 0.02 260);
+	--ui-color-muted: oklch(0.5 0.02 260);
+	--ui-color-subtle: oklch(0.7 0.02 260);
+	--ui-color-inverted: oklch(1 0 0);
+
+	/* =========================
+     BRAND / ACTIONS
+     ========================= */
+	--ui-color-primary: oklch(0.6 0.15 260);
+	--ui-color-primary-hover: oklch(0.55 0.15 260);
+	--ui-color-primary-active: oklch(0.5 0.15 260);
+	--ui-color-accent: oklch(0.7 0.12 200);
+
+	/* =========================
+     BORDERS & DIVIDERS
+     ========================= */
+	--ui-color-border: oklch(0.9 0.01 260);
+	--ui-color-border-muted: oklch(0.93 0.01 260);
+	--ui-color-ring: oklch(0.6 0.15 260);
+
+	/* =========================
+     STATES (FEEDBACK)
+     ========================= */
+	--ui-color-success: oklch(0.6 0.15 140);
+	--ui-color-warning: oklch(0.7 0.15 80);
+	--ui-color-error: oklch(0.6 0.2 30);
+	--ui-color-info: oklch(0.6 0.12 220);
+
+	/* =========================
+     RADIUS (SHAPE)
+     ========================= */
+	--ui-radius-sm: 0.375rem;
+	--ui-radius-md: 0.5rem;
+	--ui-radius-lg: 0.75rem;
+
+	/* =========================
+     SHADOWS (DEPTH)
+     ========================= */
+	--ui-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	--ui-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+	--ui-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.15);
+}
+
+.dark {
+	/* =========================
+     SURFACES (LAYERS)
+     ========================= */
+	--ui-color-bg: oklch(0.18 0.02 260);
+	--ui-color-surface: oklch(0.24 0.02 260);
+	--ui-color-elevated: oklch(0.29 0.02 260);
+	--ui-color-overlay: oklch(0 0 0 / 0.65);
+
+	/* =========================
+     TEXT
+     ========================= */
+	--ui-color-fg: oklch(0.94 0.01 260);
+	--ui-color-muted: oklch(0.78 0.02 260);
+	--ui-color-subtle: oklch(0.62 0.02 260);
+	--ui-color-inverted: oklch(0.16 0.02 260);
+
+	/* =========================
+     BRAND / ACTIONS
+     ========================= */
+	--ui-color-primary: oklch(0.72 0.14 260);
+	--ui-color-primary-hover: oklch(0.77 0.14 260);
+	--ui-color-primary-active: oklch(0.66 0.14 260);
+	--ui-color-accent: oklch(0.76 0.11 200);
+
+	/* =========================
+     BORDERS & DIVIDERS
+     ========================= */
+	--ui-color-border: oklch(0.36 0.02 260);
+	--ui-color-border-muted: oklch(0.3 0.02 260);
+	--ui-color-ring: oklch(0.72 0.14 260);
+
+	/* =========================
+     STATES (FEEDBACK)
+     ========================= */
+	--ui-color-success: oklch(0.72 0.15 145);
+	--ui-color-warning: oklch(0.8 0.14 85);
+	--ui-color-error: oklch(0.7 0.19 28);
+	--ui-color-info: oklch(0.74 0.12 225);
+
+	/* =========================
+     RADIUS (SHAPE)
+     ========================= */
+	--ui-radius-sm: 0.375rem;
+	--ui-radius-md: 0.5rem;
+	--ui-radius-lg: 0.75rem;
+
+	/* =========================
+     SHADOWS (DEPTH)
+     ========================= */
+	--ui-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+	--ui-shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.35);
+	--ui-shadow-lg: 0 18px 32px -8px rgb(0 0 0 / 0.45);
+}
+
+@theme inline {
+	--color-bg: var(--ui-color-bg);
+	--color-surface: var(--ui-color-surface);
+	--color-elevated: var(--ui-color-elevated);
+	--color-overlay: var(--ui-color-overlay);
+	--color-fg: var(--ui-color-fg);
+	--color-muted: var(--ui-color-muted);
+	--color-subtle: var(--ui-color-subtle);
+	--color-inverted: var(--ui-color-inverted);
+	--color-primary: var(--ui-color-primary);
+	--color-primary-hover: var(--ui-color-primary-hover);
+	--color-primary-active: var(--ui-color-primary-active);
+	--color-accent: var(--ui-color-accent);
+	--color-border: var(--ui-color-border);
+	--color-border-muted: var(--ui-color-border-muted);
+	--color-ring: var(--ui-color-ring);
+	--color-success: var(--ui-color-success);
+	--color-warning: var(--ui-color-warning);
+	--color-error: var(--ui-color-error);
+	--color-info: var(--ui-color-info);
+	--radius-sm: var(--ui-radius-sm);
+	--radius-md: var(--ui-radius-md);
+	--radius-lg: var(--ui-radius-lg);
+	--shadow-sm: var(--ui-shadow-sm);
+	--shadow-md: var(--ui-shadow-md);
+	--shadow-lg: var(--ui-shadow-lg);
+}
+
+@layer base {
+	html {
+		background-color: var(--ui-color-bg);
+		color: var(--ui-color-fg);
+	}
+
+	body {
+		min-height: 100%;
+		font-family: var(--font-sans);
+	}
+
+	* {
+		border-color: var(--ui-color-border);
+	}
+}

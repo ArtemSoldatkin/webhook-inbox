@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { fetchPaginatedData } from '$lib/api';
-	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
+	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
+	import Link from '$lib/components/ui/Link.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import type { EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -127,38 +133,94 @@
 	});
 </script>
 
-<FilterBar bind:searchQuery bind:sortDirection />
-<button onclick={handleRefresh} disabled={loading}>Refresh Events</button>
-{#if loading}
-	<p>Loading events...</p>
-{:else if error}
-	<p class="error">Error: {error}</p>
-{:else if data}
-	{#if data.length === 0}
-		<p>No events found for this source.</p>
-	{:else}
-		<ul>
-			{#each data as event (event.id)}
-				<li>
-					<section>
-						<h3>
-							<a href={resolve(`/sources/${event.source_id}/${event.id}`)}>Event ID: {event.id}</a>
-						</h3>
-						<p>Source ID: {event.source_id}</p>
-						<p>Deduplication Hash: {event.dedup_hash ?? 'N/A'}</p>
-						<p>Method: {event.method}</p>
-						<DisplayMapOfStringArrays title="Query Parameters" data={event.query_params ?? {}} />
-						<DisplayMapOfStringArrays title="Raw Headers" data={event.raw_headers ?? {}} />
-						<BodyView body={event.body} contentType={event.body_content_type} />
-					</section>
-				</li>
-			{/each}
-		</ul>
-		{#if hasNext}
-			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
+<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+	<div class="flex flex-col gap-6">
+		<SectionHeader
+			eyebrow="Events"
+			title="Captured traffic for this source"
+			description="Inspect recorded requests, query parameters, headers, and request bodies in arrival order."
+			titleAs="h3"
+		>
+			{#snippet actions()}
+				<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Events</Button>
+			{/snippet}
+		</SectionHeader>
+
+		<FilterBar bind:searchQuery bind:sortDirection />
+
+		{#if loading}
+			<Alert>Loading events...</Alert>
+		{:else if error}
+			<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
+		{:else if data.length === 0}
+			<Alert>No events found for this source.</Alert>
+		{:else}
+			<ul class="grid gap-4">
+				{#each data as event (event.id)}
+					<li>
+						<article class="rounded-lg border border-border bg-surface p-5 shadow-sm">
+							<div class="flex flex-col gap-5">
+								<div class="flex flex-col gap-2">
+									<div class="flex flex-wrap items-center gap-3">
+										<h4 class="text-xl font-semibold tracking-tight text-fg">
+											<Link
+												href={resolve(`/sources/${event.source_id}/${event.id}`)}
+												variant="inline"
+											>
+												Event ID: {event.id}
+											</Link>
+										</h4>
+										<Badge variant="neutral" appearance="soft">{event.method}</Badge>
+									</div>
+									<div class="grid gap-4 border-t border-border-muted pt-4 text-sm sm:grid-cols-2">
+										<div>
+											<span class="text-muted">Source ID</span>
+											<p class="mt-1 break-all text-fg">{event.source_id}</p>
+										</div>
+										<div>
+											<span class="text-muted">Deduplication hash</span>
+											<p class="mt-1 break-all text-fg">{event.dedup_hash ?? 'N/A'}</p>
+										</div>
+									</div>
+								</div>
+
+								<div class="grid gap-4 border-t border-border-muted pt-4 lg:grid-cols-2">
+									<section>
+										<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Query Parameters
+										</h4>
+										<KeyValueList
+											items={stringArrayRecordToKeyValueItems(event.query_params ?? {})}
+											emptyStateText="No values recorded."
+										/>
+									</section>
+									<section>
+										<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+											Raw Headers
+										</h4>
+										<KeyValueList
+											items={stringArrayRecordToKeyValueItems(event.raw_headers ?? {})}
+											emptyStateText="No values recorded."
+										/>
+									</section>
+								</div>
+
+								<BodyView body={event.body} contentType={event.body_content_type} />
+							</div>
+						</article>
+					</li>
+				{/each}
+			</ul>
+
+			{#if hasNext}
+				<div class="flex justify-center pt-2">
+					<Button onclick={handleLoadMore} disabled={loading} variant="secondary">Load More</Button>
+				</div>
+			{/if}
 		{/if}
-	{/if}
-{:else}
-	<p>No events found for this source.</p>
-{/if}
-<PageSizeSelector bind:pageSize />
+
+		<div class="border-t border-border-muted pt-4">
+			<PageSizeSelector bind:pageSize />
+		</div>
+	</div>
+</section>

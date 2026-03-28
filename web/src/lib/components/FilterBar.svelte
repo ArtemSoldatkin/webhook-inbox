@@ -1,4 +1,10 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
+	import Icon from '@iconify/svelte';
+	import TextInput from './ui/TextInput.svelte';
+
 	type Props = {
 		/** Bound search text for the list. */
 		searchQuery: string;
@@ -37,27 +43,53 @@
 	}
 </script>
 
-<section>
-	<div>
-		<input type="text" placeholder="Search..." bind:value={searchInput} />
-		<button type="button" onclick={handleSearch}>Search</button>
-	</div>
-	{#if filter && filterOptions}
-		<div>
-			<label for="filter"
-				>Filter by {filterName ?? 'category'}:
-				<select bind:value={filter}>
-					<option value="*">All</option>
-					{#each filterOptions as category (category)}
-						<option value={category}>{category}</option>
-					{/each}
-				</select>
-			</label>
+<section class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+	<div class="flex flex-1 flex-col gap-4 sm:flex-row sm:items-end">
+		<div class="min-w-0 flex-1">
+			<Eyebrow as="label">
+				Search
+				<TextInput class="w-full mt-1" placeholder="Search..." bind:value={searchInput} />
+			</Eyebrow>
 		</div>
-	{/if}
-	<div>
-		<button type="button" onclick={toggleSortDirection} aria-label="Toggle sort direction">
-			{sortDirection === 'ASC' ? '↑' : '↓'}
-		</button>
+		<Button type="button" class="py-3 border border-transparent" onclick={handleSearch}
+			>Search</Button
+		>
+	</div>
+
+	<div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+		{#if filterOptions}
+			<div class="min-w-0 sm:min-w-44">
+				<Eyebrow as="label">
+					Filter by {filterName ?? 'category'}
+					<Select
+						bind:value={filter}
+						options={[
+							{ value: '*', label: 'All' },
+							...(filterOptions?.map((category) => ({ value: category, label: category })) ?? [])
+						]}
+						class="w-full mt-1"
+					/>
+				</Eyebrow>
+			</div>
+		{/if}
+
+		<div>
+			<Eyebrow
+				>Sort
+				<Button
+					type="button"
+					class="block py-3 mt-1 border border-transparent"
+					onclick={toggleSortDirection}
+					aria-label="Toggle sort direction"
+					variant="secondary"
+				>
+					{#if sortDirection === 'ASC'}
+						<Icon icon="mdi:sort-ascending" class="text-xl" />
+					{:else}
+						<Icon icon="mdi:sort-descending" class="text-xl" />
+					{/if}
+				</Button>
+			</Eyebrow>
+		</div>
 	</div>
 </section>

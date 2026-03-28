@@ -1,5 +1,8 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Select from '$lib/components/ui/Select.svelte';
 	import type { ContentType } from '$lib/types';
 	import BodyInput from './BodyInput.svelte';
 
@@ -107,32 +110,64 @@
 	}
 </script>
 
-<form onsubmit={testWebhook}>
-	<label
-		>HTTP Method:
-		<select bind:value={method} disabled={loading}>
-			<option value="GET">GET</option>
-			<option value="POST">POST</option>
-			<option value="PUT">PUT</option>
-			<option value="PATCH">PATCH</option>
-			<option value="DELETE">DELETE</option>
-		</select>
-	</label>
-	<label>
-		Headers (optional):
+<form onsubmit={testWebhook} class="flex flex-col gap-6">
+	<div class="grid gap-6 lg:grid-cols-[minmax(0,0.36fr)_minmax(0,0.64fr)]">
+		<div class="flex flex-col gap-2">
+			<label class="text-sm font-medium text-fg">
+				HTTP Method
+				<Select
+					bind:value={method}
+					disabled={loading}
+					options={[
+						{ value: 'GET', label: 'GET' },
+						{ value: 'POST', label: 'POST' },
+						{ value: 'PUT', label: 'PUT' },
+						{ value: 'PATCH', label: 'PATCH' },
+						{ value: 'DELETE', label: 'DELETE' }
+					]}
+					class="mt-2 rounded-md border border-border bg-elevated px-4 py-3 text-sm text-fg shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+				/>
+			</label>
+		</div>
+		<Alert>
+			Requests are sent to the source ingest endpoint using the selected method, merged static
+			headers, and any overrides you add below.
+		</Alert>
+	</div>
+
+	<section class="flex flex-col gap-3 border-t border-border-muted pt-4">
+		<div>
+			<p class="text-sm font-medium text-fg">Headers</p>
+			<p class="mt-1 text-sm text-muted">Optional headers included with the test request.</p>
+		</div>
 		<InputMap bind:map={headers} disabled={loading} />
-	</label>
-	<label>
-		Query Parameters (optional):
+	</section>
+
+	<section class="flex flex-col gap-3 border-t border-border-muted pt-4">
+		<div>
+			<p class="text-sm font-medium text-fg">Query parameters</p>
+			<p class="mt-1 text-sm text-muted">Optional query string values appended to the request URL.</p>
+		</div>
 		<InputMap bind:map={queryParams} disabled={loading} />
-	</label>
-	{#if isBodyAllowed}<label>
-			Body (optional):
+	</section>
+
+	{#if isBodyAllowed}
+		<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
+			<div>
+				<p class="text-sm font-medium text-fg">Request body</p>
+				<p class="mt-1 text-sm text-muted">Choose a content type and compose the request payload.</p>
+			</div>
 			<BodyInput bind:textBody bind:formDataBody bind:contentType />
-		</label>
+		</div>
 	{/if}
+
 	{#if error}
-		<div class="error">{error}</div>
+		<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 	{/if}
-	<button type="submit" disabled={loading}>Test Webhook</button>
+
+	<div class="flex justify-end border-t border-border-muted pt-6">
+		<Button type="submit" disabled={loading}>
+			{loading ? 'Sending Test Webhook...' : 'Test Webhook'}
+		</Button>
+	</div>
 </form>

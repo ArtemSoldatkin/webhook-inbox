@@ -2,6 +2,12 @@
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseDeliveryAttemptDTO } from '$lib/dto-parsers';
 	import { type DeliveryAttemptDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -143,58 +149,118 @@
 	});
 </script>
 
-<FilterBar
-	bind:searchQuery
-	bind:filter={filterState}
-	bind:sortDirection
-	filterName="state"
-	filterOptions={filterStateOptions}
-/>
-<button onclick={handleRefresh} disabled={loading}>Refresh Delivery Attempts</button>
-<h3>Delivery Attempts</h3>
-{#if loading}
-	<p>Loading event details...</p>
-{:else if error}
-	<p class="error">Error: {error}</p>
-{:else if data}
-	{#if data.length === 0}
-		<p>No delivery attempts found for this event.</p>
-	{:else}
-		<ul>
-			{#each data as attempt (attempt.id)}
-				<li>
-					<section>
-						<h3>Attempt ID: {attempt.id}</h3>
-						<p>Event ID: {attempt.event_id}</p>
-						<p>Attempt Number: {attempt.attempt_number}</p>
-						<p>Delivery State: {attempt.state}</p>
-						<p>Status code: {attempt.status_code}</p>
-						<p>Error Type: {attempt.error_type}</p>
-						<p>Error Message: {attempt.error_message}</p>
-						<p>
-							Started at: {attempt.started_at
-								? new Date(attempt.started_at).toLocaleString()
-								: 'N/A'}
-						</p>
-						<p>
-							Finished at: {attempt.finished_at
-								? new Date(attempt.finished_at).toLocaleString()
-								: 'N/A'}
-						</p>
-						<p>Created at: {new Date(attempt.created_at).toLocaleString()}</p>
-						<p>
-							Next attempt at:
-							{attempt.next_attempt_at ? new Date(attempt.next_attempt_at).toLocaleString() : 'N/A'}
-						</p>
-					</section>
-				</li>
-			{/each}
-		</ul>
-		{#if hasNext}
-			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
+<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+	<div class="flex flex-col gap-6">
+		<SectionHeader
+			eyebrow="Delivery attempts"
+			title="Delivery history for this event"
+			description="Review retries, status codes, and error information for each outbound delivery attempt."
+			titleAs="h3"
+		>
+			{#snippet actions()}
+				<Button onclick={handleRefresh} disabled={loading} variant="secondary">
+					Refresh Delivery Attempts
+				</Button>
+			{/snippet}
+		</SectionHeader>
+
+		<FilterBar
+			bind:searchQuery
+			bind:filter={filterState}
+			bind:sortDirection
+			filterName="state"
+			filterOptions={filterStateOptions}
+		/>
+
+		{#if loading}
+			<Alert>Loading delivery attempts...</Alert>
+		{:else if error}
+			<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
+		{:else if data.length === 0}
+			<Alert>No delivery attempts found for this event.</Alert>
+		{:else}
+			<ul class="grid gap-4">
+				{#each data as attempt (attempt.id)}
+					<li>
+						<article class="rounded-lg border border-border bg-surface p-5 shadow-sm">
+							<div class="flex flex-col gap-5">
+								<div class="flex flex-wrap items-center gap-3">
+									<h4 class="text-xl font-semibold tracking-tight text-fg">
+										Attempt ID: {attempt.id}
+									</h4>
+									<Badge variant="neutral" appearance="soft">{attempt.state}</Badge>
+								</div>
+
+								<div class="grid gap-4 border-t border-border-muted pt-4 sm:grid-cols-2 xl:grid-cols-3">
+									<div>
+										<Eyebrow>Event ID</Eyebrow>
+										<p class="mt-2 break-all text-sm text-fg">{attempt.event_id}</p>
+									</div>
+									<div>
+										<Eyebrow>Attempt number</Eyebrow>
+										<p class="mt-2 text-sm text-fg">{attempt.attempt_number}</p>
+									</div>
+									<div>
+										<Eyebrow>Status code</Eyebrow>
+										<p class="mt-2 text-sm text-fg">{attempt.status_code ?? 'N/A'}</p>
+									</div>
+								</div>
+
+								<div class="grid gap-4 border-t border-border-muted pt-4 lg:grid-cols-2">
+									<div>
+										<Eyebrow>Errors</Eyebrow>
+										<KeyValueList
+											items={[
+												{ label: 'Error type', value: attempt.error_type },
+												{ label: 'Error message', value: attempt.error_message }
+											]}
+										/>
+									</div>
+									<div>
+										<Eyebrow>Timing</Eyebrow>
+										<KeyValueList
+											items={[
+												{
+													label: 'Started at',
+													value: attempt.started_at
+														? new Date(attempt.started_at).toLocaleString()
+														: 'N/A'
+												},
+												{
+													label: 'Finished at',
+													value: attempt.finished_at
+														? new Date(attempt.finished_at).toLocaleString()
+														: 'N/A'
+												},
+												{
+													label: 'Created at',
+													value: new Date(attempt.created_at).toLocaleString()
+												},
+												{
+													label: 'Next attempt at',
+													value: attempt.next_attempt_at
+														? new Date(attempt.next_attempt_at).toLocaleString()
+														: 'N/A'
+												}
+											]}
+										/>
+									</div>
+								</div>
+							</div>
+						</article>
+					</li>
+				{/each}
+			</ul>
+
+			{#if hasNext}
+				<div class="flex justify-center pt-2">
+					<Button onclick={handleLoadMore} disabled={loading} variant="secondary">Load More</Button>
+				</div>
+			{/if}
 		{/if}
-	{/if}
-{:else}
-	<p>No details found for this event.</p>
-{/if}
-<PageSizeSelector bind:pageSize />
+
+		<div class="border-t border-border-muted pt-4">
+			<PageSizeSelector bind:pageSize />
+		</div>
+	</div>
+</section>

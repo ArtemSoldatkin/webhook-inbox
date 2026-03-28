@@ -1,5 +1,10 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
+	import TextInput from '$lib/components/ui/TextInput.svelte';
 	import env from '$lib/env';
 	import type { SourceDTO } from '$lib/types';
 
@@ -127,32 +132,70 @@
 	}
 </script>
 
-<form onsubmit={handleSubmit}>
-	<label
-		>Egress URL
-		<input
-			type="text"
-			bind:value={data.egress_url}
-			placeholder="https://example.com/egress"
-			required
-			disabled={loading}
-		/>
-	</label>
-	{#if egressError}
-		<p class="error">{egressError}</p>
-	{/if}
-	{#if data.static_headers}
-		<label
-			>Static Headers
-			<InputMap bind:map={data.static_headers} disabled={loading} />
-		</label>
-	{/if}
-	<label
-		>Description
-		<textarea bind:value={data.description} placeholder="Optional description"></textarea>
-	</label>
-	<button type="submit" disabled={loading || Boolean(egressError)}>Create New Source</button>
-	{#if error}
-		<p class="error">Error: {error}</p>
-	{/if}
-</form>
+<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+	<SectionHeader
+		eyebrow="Create source"
+		title="Add a webhook destination"
+		description="Create a unique ingest endpoint and define where captured webhook traffic should be forwarded."
+		titleAs="h1"
+	/>
+
+	<form onsubmit={handleSubmit} class="mt-8 flex flex-col gap-6">
+		<div class="flex flex-col gap-2">
+			<label class="text-sm font-medium text-fg">
+				Egress URL
+				<TextInput
+					class="mt-2 w-full"
+					bind:value={data.egress_url}
+					placeholder="https://example.com/egress"
+					required
+					disabled={loading}
+				/>
+			</label>
+			<p class="text-sm text-muted">
+				Use an `http` or `https` endpoint that should receive forwarded requests.
+			</p>
+			{#if egressError}
+				<p class="text-sm text-error">{egressError}</p>
+			{/if}
+		</div>
+
+		{#if data.static_headers}
+			<div class="border-t border-border-muted pt-4">
+				<p class="text-sm font-medium text-fg">Static headers</p>
+				<p class="mt-1 text-sm text-muted">
+					Attach fixed headers to every forwarded request for this source.
+				</p>
+				<InputMap class="mt-3" bind:map={data.static_headers} disabled={loading} />
+			</div>
+		{/if}
+
+		<div class="flex flex-col gap-2">
+			<label class="text-sm font-medium text-fg">
+				Description
+				<Textarea
+					bind:value={data.description}
+					placeholder="Optional description"
+					disabled={loading}
+					rows={4}
+					class="mt-2 min-h-28 bg-elevated"
+				/>
+			</label>
+		</div>
+
+		<div
+			class="flex flex-col gap-3 border-t border-border-muted pt-6 sm:flex-row sm:items-center sm:justify-between"
+		>
+			<p class="text-sm text-muted">
+				The source will be created immediately and appear in the sources list below.
+			</p>
+			<Button type="submit" disabled={loading || Boolean(egressError)}>
+				{loading ? 'Creating Source...' : 'Create New Source'}
+			</Button>
+		</div>
+
+		{#if error}
+			<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
+		{/if}
+	</form>
+</section>

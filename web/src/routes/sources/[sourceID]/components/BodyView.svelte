@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
 	import type { ContentType } from '$lib/types';
 	import ByteBodyView from './body/views/ByteBodyView.svelte';
 	import FormUrlEncodedBodyView from './body/views/FormUrlEncodedBodyView.svelte';
@@ -79,15 +80,17 @@
 	}
 </script>
 
-<section>
-	<h3>Request body</h3>
+<section class="rounded-md border border-border-muted bg-surface p-4">
+	<h3 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Request body</h3>
 	{#if parsedBody.error && parsedBody.content}
-		<p>{parsedBody.error}</p>
-		<p>Original body: {parsedBody.content}</p>
+		<Alert variant="warning" class="mt-3">
+			<p class="font-medium">{parsedBody.error}</p>
+			<p class="break-all text-muted">Original body: {parsedBody.content}</p>
+		</Alert>
 	{:else if parsedBody.error}
-		<p>{parsedBody.error}</p>
+		<p class="mt-3 text-sm text-muted">{parsedBody.error}</p>
 	{:else if !contentType}
-		<p>Content type unknown, cannot display body</p>
+		<p class="mt-3 text-sm text-muted">Content type unknown, cannot display body.</p>
 	{:else if contentType.startsWith('application/json')}
 		<JSONBodyView body={parsedBody.content} />
 	{:else if contentType.startsWith('application/x-www-form-urlencoded')}

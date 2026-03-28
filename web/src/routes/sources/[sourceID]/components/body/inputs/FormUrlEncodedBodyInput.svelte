@@ -1,5 +1,6 @@
 <script lang="ts">
 	import InputMap from '$lib/components/InputMap.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 
 	type Props = {
 		/** Bound encoded body value. */
@@ -32,5 +33,9 @@
 	});
 </script>
 
-<InputMap bind:map={jsonBody} disabled={!!error} />
-<button type="button" onclick={handleClear} disabled={!body}>Clear</button>
+<div class="flex flex-col gap-4">
+	<InputMap bind:map={jsonBody} disabled={!!error} />
+	<div class="flex justify-end">
+		<Button type="button" onclick={handleClear} disabled={!body} variant="secondary">Clear</Button>
+	</div>
+</div>

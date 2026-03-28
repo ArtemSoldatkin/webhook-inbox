@@ -10,10 +10,17 @@
 	const params = $derived(Array.from(new URLSearchParams(body).entries()));
 </script>
 
-<ul style="list-style-type: none; padding-left: 0">
-	{#each params as [key, value], index (`${key}:${index}`)}
-		<li>
-			<span style="color:#0366d6">{key}</span>: <span style="color:#24292e">{value}</span>
-		</li>
-	{/each}
-</ul>
+{#if params.length > 0}
+	<ul class="mt-3 flex flex-col gap-2">
+		{#each params as [key, value], index (`${key}:${index}`)}
+			<li
+				class="flex flex-col gap-1 rounded-md border border-border-muted bg-elevated px-3 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+			>
+				<span class="text-sm font-medium text-fg">{key}</span>
+				<span class="break-all text-sm text-muted">{value}</span>
+			</li>
+		{/each}
+	</ul>
+{:else}
+	<p class="mt-3 text-sm text-muted">No form values provided.</p>
+{/if}

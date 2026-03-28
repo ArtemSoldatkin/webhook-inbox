@@ -1,19 +1,32 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import { cx } from '$lib/utils/cx';
+	import Icon from '@iconify/svelte';
+	import TextInput from './ui/TextInput.svelte';
+
 	type Props = {
 		/** Bound key-value pairs being edited. */
 		map: Record<string, string>;
+
+		/** Additional CSS classes to apply to the component's root element. */
+		class?: string;
 
 		/** Disables all map inputs when true. */
 		disabled?: boolean;
 	};
 
-	let { map = $bindable(), disabled }: Props = $props();
+	let { map = $bindable(), class: className, disabled = false }: Props = $props();
 
 	/** Draft key for the next map entry. */
 	let key = $state('');
 
 	/** Draft value for the next map entry. */
 	let value = $state('');
+
+	/** Error message for the current draft entry, shown when the key is empty or already exists in the map. */
+	let inputError = $state<string | null>(null);
 
 	/** Adds the current draft entry when both fields are valid. */
 	function addKeyValue(): void {
@@ -23,6 +36,7 @@
 		map = { ...map, [key]: value };
 		key = '';
 		value = '';
+		inputError = null;
 	}
 
 	/**
@@ -34,17 +48,86 @@
 		delete map[keyToRemove];
 		map = { ...map };
 	}
+
+	/** Validates the draft key on blur, setting an error message if it's empty or already exists in the map. */
+	function handleKeyBlur(): void {
+		if (key.trim() === '') {
+			inputError = 'Key cannot be empty.';
+		} else if (key in map) {
+			inputError = 'Key already exists in the map.';
+		} else {
+			inputError = null;
+		}
+	}
 </script>
 
-<ul>
-	{#each Object.keys(map) as mapKey (mapKey)}
-		<li>
-			<p>{mapKey}</p>
-			<input type="text" placeholder="Value" bind:value={map[mapKey]} {disabled} />
-			<button type="button" {disabled} onclick={() => removeKey(mapKey)}>Remove</button>
-		</li>
-	{/each}
-</ul>
-<input type="text" placeholder="Key" bind:value={key} {disabled} />
-<input type="text" placeholder="Value" bind:value {disabled} />
-<button type="button" {disabled} onclick={() => addKeyValue()}>Add</button>
+<div class={cx('flex flex-col gap-4', className)}>
+	{#if Object.keys(map).length > 0}
+		<ul class="flex flex-col gap-3">
+			{#each Object.keys(map) as mapKey (mapKey)}
+				<li class="rounded-md border border-border-muted bg-surface p-4">
+					<div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+						<Eyebrow
+							>Header key
+							<p class="mt-1 py-3 break-all text-sm font-medium text-fg">{mapKey}</p>
+						</Eyebrow>
+						<Eyebrow as="label"
+							>Header value
+							<TextInput
+								class="w-full mt-1"
+								placeholder="Value"
+								bind:value={map[mapKey]}
+								{disabled}
+							/>
+						</Eyebrow>
+						<Button
+							type="button"
+							variant="secondary"
+							class="py-3 border border-transparent text-error"
+							{disabled}
+							onclick={() => removeKey(mapKey)}
+						>
+							<Icon icon="material-symbols:delete-rounded" class="text-xl" />
+						</Button>
+					</div>
+				</li>
+			{/each}
+		</ul>
+	{:else}
+		<Alert class="bg-surface shadow-none">No static headers added yet.</Alert>
+	{/if}
+
+	<div class="rounded-md border border-border-muted bg-surface p-4">
+		<div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+			<Eyebrow as="label"
+				>Key
+				<TextInput
+					class="w-full mt-1"
+					placeholder="Key"
+					bind:value={key}
+					{disabled}
+					onblur={handleKeyBlur}
+				/>
+			</Eyebrow>
+
+			<Eyebrow as="label"
+				>Value
+				<TextInput class="w-full mt-1" placeholder="Value" bind:value {disabled} />
+			</Eyebrow>
+
+			<Button
+				type="button"
+				class="py-3 border border-transparent"
+				disabled={disabled || !key || key in map || !value}
+				onclick={() => addKeyValue()}
+			>
+				<Icon icon="material-symbols:add-rounded" class="text-xl" />
+			</Button>
+		</div>
+		{#if inputError}
+			<Alert variant="error" class="mt-3">
+				{inputError}
+			</Alert>
+		{/if}
+	</div>
+</div>

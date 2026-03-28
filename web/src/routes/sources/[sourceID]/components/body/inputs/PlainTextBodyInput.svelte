@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
+	import Textarea from '$lib/components/ui/Textarea.svelte';
+
 	type Props = {
 		/** Bound plain text body value. */
 		body: string;
@@ -16,5 +19,13 @@
 	}
 </script>
 
-<textarea bind:value={body} rows="10" cols="50" placeholder="Enter body content here..."></textarea>
-<button type="button" onclick={handleClear} disabled={!body}>Clear</button>
+<div class="flex flex-col gap-4">
+	<Textarea
+		bind:value={body}
+		rows={10}
+		placeholder="Enter body content here..."
+	/>
+	<div class="flex justify-end">
+		<Button type="button" onclick={handleClear} disabled={!body} variant="secondary">Clear</Button>
+	</div>
+</div>

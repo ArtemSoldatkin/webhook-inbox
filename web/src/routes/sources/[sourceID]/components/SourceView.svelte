@@ -1,7 +1,10 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { untrack } from 'svelte';
+	import SourceCard from '../../components/SourceCard.svelte';
 	import ListEvents from './ListEvents.svelte';
 	import TestWebhook from './TestWebhook.svelte';
 
@@ -69,30 +72,30 @@
 </script>
 
 {#if loading}
-	<p>Loading source data...</p>
+	<Alert>Loading source data...</Alert>
 {:else if error}
-	<p class="error">Error: {error}</p>
+	<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 {:else if data}
-	<section>
-		<h2>{data.id}</h2>
-		<p>{data.description}</p>
-		<p>{data.ingress_url}</p>
-		<p>{data.egress_url}</p>
-		<p>Static headers:</p>
-		{#each Object.entries(data.static_headers ?? {}) as [key, value] (key)}
-			<p>{key}: {value}</p>
-		{/each}
-		<p>{data.status}</p>
-		<p>{data.status_reason}</p>
-		<p>Created at: {new Date(data.created_at).toLocaleString()}</p>
-		<p>Updated at: {new Date(data.updated_at).toLocaleString()}</p>
-		<p>
-			Disabled at: {data.disable_at ? new Date(data.disable_at).toLocaleString() : 'N/A'}
-		</p>
-	</section>
-	<section>
-		<h3>Test Webhook</h3>
-		<TestWebhook publicID={data.public_id} staticHeaders={data.static_headers} />
+	<div class="flex flex-col gap-8">
+		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+			<SourceCard source={data} />
+		</section>
+
+		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+			<SectionHeader
+				eyebrow="Testing"
+				title="Send a test webhook"
+				description="Exercise the ingest endpoint directly from the UI and verify the event appears below."
+				titleAs="h3"
+				class="mb-6"
+			/>
+			<TestWebhook publicID={data.public_id} staticHeaders={data.static_headers} />
+		</section>
+
 		<ListEvents {sourceID} />
-	</section>
+	</div>
+{:else}
+	<Alert variant="warning" title="Source not found" class="bg-surface">
+		The requested source could not be found. It may have been deleted.
+	</Alert>
 {/if}

@@ -1,5 +1,10 @@
 <script lang="ts">
-	import DisplayMapOfStringArrays from '$lib/components/DisplayMapOfStringArrays.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
+	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
+	import { stringArrayRecordToKeyValueItems } from '$lib/components/ui/key-value-list';
+	import KeyValueList from '$lib/components/ui/KeyValueList.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseEventDTO } from '$lib/dto-parsers';
 	import { type EventDTO } from '$lib/types';
 	import { untrack } from 'svelte';
@@ -73,20 +78,55 @@
 </script>
 
 {#if loading}
-	<p>Loading event details...</p>
+	<Alert>Loading event details...</Alert>
 {:else if error}
-	<p class="error">Error: {error}</p>
+	<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
 {:else if data}
-	<section>
-		<h2>Event ID: {data.id}</h2>
-		<p>Source ID: {data.source_id}</p>
-		<p>Deduplication Hash: {data.dedup_hash ?? 'N/A'}</p>
-		<p>Method: {data.method}</p>
-		<DisplayMapOfStringArrays title="Query Parameters" data={data.query_params ?? {}} />
-		<DisplayMapOfStringArrays title="Raw Headers" data={data.raw_headers ?? {}} />
-		<BodyView body={data.body} contentType={data.body_content_type} />
-	</section>
-	<DeliveryAttemptList {sourceID} {eventID} />
+	<div class="flex flex-col gap-8">
+		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+			<div class="flex flex-col gap-6">
+				<SectionHeader eyebrow="Captured event" title={`Event ID: ${data.id}`}>
+					{#snippet actions()}
+						<Badge variant="neutral" appearance="soft" class="bg-elevated">{data?.method}</Badge>
+					{/snippet}
+				</SectionHeader>
+
+				<div class="grid gap-4 border-t border-border-muted pt-4 sm:grid-cols-2">
+					<div>
+						<Eyebrow>Source ID</Eyebrow>
+						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.source_id}</p>
+					</div>
+					<div>
+						<Eyebrow>Deduplication hash</Eyebrow>
+						<p class="mt-2 break-all text-sm leading-6 text-fg">{data.dedup_hash ?? 'N/A'}</p>
+					</div>
+				</div>
+
+				<div class="grid gap-4 border-t border-border-muted pt-4 lg:grid-cols-2">
+					<section>
+						<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
+							Query Parameters
+						</h4>
+						<KeyValueList
+							items={stringArrayRecordToKeyValueItems(data.query_params ?? {})}
+							emptyStateText="No values recorded."
+						/>
+					</section>
+					<section>
+						<h4 class="text-xs font-medium uppercase tracking-[0.12em] text-subtle">Raw Headers</h4>
+						<KeyValueList
+							items={stringArrayRecordToKeyValueItems(data.raw_headers ?? {})}
+							emptyStateText="No values recorded."
+						/>
+					</section>
+				</div>
+
+				<BodyView body={data.body} contentType={data.body_content_type} />
+			</div>
+		</section>
+
+		<DeliveryAttemptList {sourceID} {eventID} />
+	</div>
 {:else}
-	<p>No details found for this event.</p>
+	<Alert>No details found for this event.</Alert>
 {/if}

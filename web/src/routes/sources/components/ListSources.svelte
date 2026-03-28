@@ -1,11 +1,15 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { fetchPaginatedData } from '$lib/api';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
+	import { cx } from '$lib/utils/cx';
 	import { untrack } from 'svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
+	import SourceCard from './SourceCard.svelte';
 
 	/** Filters applied to the sources list. */
 	type SourceFilters = {
@@ -18,6 +22,13 @@
 		/** Sort order used for source results. */
 		sortDirection: 'ASC' | 'DESC';
 	};
+
+	type Props = {
+		/** Additional CSS classes to apply to the root element of this component. */
+		class?: string;
+	};
+
+	let { class: className }: Props = $props();
 
 	/** Loaded source rows for the current filters. */
 	let data = $state<SourceDTO[]>([]);
@@ -124,52 +135,51 @@
 	});
 </script>
 
-<FilterBar
-	bind:searchQuery
-	bind:filter={filterStatus}
-	bind:sortDirection
-	filterName="status"
-	filterOptions={filterStatusOptions}
-/>
-<button onclick={handleRefresh} disabled={loading}>Refresh Sources</button>
-{#if loading}
-	<p>Loading sources...</p>
-{:else if error}
-	<p class="error">Error: {error}</p>
-{:else if data}
-	{#if data.length > 0}
-		<ul>
-			{#each data as source (source.id)}
-				<li>
-					<section>
-						<h2><a href={resolve(`/sources/${source.id}`)}>{source.id}</a></h2>
-						<p>{source.description}</p>
-						<p>{source.ingress_url}</p>
-						<p>{source.egress_url}</p>
-						<p>Static headers:</p>
-						{#each Object.entries(source.static_headers ?? {}) as [key, value] (key)}
-							<p>{key}: {value}</p>
-						{/each}
-						<p>{source.status}</p>
-						<p>{source.status_reason}</p>
-						<p>Created at: {new Date(source.created_at).toLocaleString()}</p>
-						<p>Updated at: {new Date(source.updated_at).toLocaleString()}</p>
-						<p>
-							Disabled at: {source.disable_at
-								? new Date(source.disable_at).toLocaleString()
-								: 'N/A'}
-						</p>
-					</section>
-				</li>
-			{/each}
-		</ul>
-		{#if hasNext}
-			<button onclick={handleLoadMore} disabled={loading}>Load More</button>
+<section class={cx('rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8', className)}>
+	<div class="flex flex-col gap-6">
+		<SectionHeader
+			eyebrow="Sources"
+			title="Manage registered endpoints"
+			description="Browse created sources, inspect forwarding settings, and drill into event history for each endpoint."
+		>
+			{#snippet actions()}
+				<Button onclick={handleRefresh} disabled={loading} variant="secondary">
+					Refresh Sources
+				</Button>
+			{/snippet}
+		</SectionHeader>
+
+		<FilterBar
+			bind:searchQuery
+			bind:filter={filterStatus}
+			bind:sortDirection
+			filterName="status"
+			filterOptions={filterStatusOptions}
+		/>
+
+		{#if loading}
+			<Alert>Loading sources...</Alert>
+		{:else if error}
+			<Alert variant="error" title="Error" class="bg-surface">{error}</Alert>
+		{:else if data.length > 0}
+			<ul class="grid gap-4">
+				{#each data as source (source.id)}
+					<li>
+						<SourceCard {source} idAsLink />
+					</li>
+				{/each}
+			</ul>
+			{#if hasNext}
+				<div class="flex justify-center pt-2">
+					<Button onclick={handleLoadMore} disabled={loading} variant="secondary">Load More</Button>
+				</div>
+			{/if}
+		{:else}
+			<Alert>No sources found.</Alert>
 		{/if}
-	{:else}
-		<p>No sources found.</p>
-	{/if}
-{:else}
-	<p>No sources found.</p>
-{/if}
-<PageSizeSelector bind:pageSize />
+
+		<div class="border-t border-border-muted pt-4">
+			<PageSizeSelector bind:pageSize />
+		</div>
+	</div>
+</section>
