@@ -28,7 +28,7 @@
 			} else if (field.type === 'checkbox') {
 				formData.append(field.name, field.value ? 'on' : 'off');
 			} else {
-				formData.append(field.name, String(field.value));
+				formData.append(field.name, field.value == null ? '' : String(field.value));
 			}
 		}
 
