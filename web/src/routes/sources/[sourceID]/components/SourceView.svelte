@@ -62,6 +62,11 @@
 		}
 	}
 
+	function handleRefresh(): void {
+		const filters = getCurrentFilters();
+		void fetchSource(filters);
+	}
+
 	$effect(() => {
 		const filters = getCurrentFilters();
 
@@ -78,7 +83,7 @@
 {:else if data}
 	<div class="flex flex-col gap-8">
 		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
-			<SourceCard source={data} />
+			<SourceCard source={data} onStatusUpdate={handleRefresh} />
 		</section>
 
 		<section class="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">

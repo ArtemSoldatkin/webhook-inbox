@@ -4,11 +4,11 @@
 	import PageSizeSelector from '$lib/components/PageSizeSelector.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
 	import type { SourceDTO } from '$lib/types';
 	import { cx } from '$lib/utils/cx';
 	import { untrack } from 'svelte';
-	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import SourceCard from './SourceCard.svelte';
 
 	/** Filters applied to the sources list. */
@@ -165,7 +165,7 @@
 			<ul class="grid gap-4">
 				{#each data as source (source.id)}
 					<li>
-						<SourceCard {source} idAsLink />
+						<SourceCard {source} idAsLink onStatusUpdate={handleRefresh} />
 					</li>
 				{/each}
 			</ul>

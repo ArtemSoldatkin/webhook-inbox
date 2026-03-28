@@ -3,6 +3,7 @@ package requestsv1
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/ArtemSoldatkin/webhook-inbox/internal/api/types"
 )
@@ -48,6 +49,33 @@ func ValidateCreateSourceInput(input *CreateSourceInput) error {
 		if len(k) > maxHeaderKeyLen || len(v) > maxHeaderValueLen {
 			return fmt.Errorf("header key or value exceeds maximum length (key: %d, value: %d)", maxHeaderKeyLen, maxHeaderValueLen)
 		}
+	}
+
+	return nil
+}
+
+// allowedStatuses defines the valid statuses for sources.
+var allowedStatuses = []string{"active", "paused", "quarantined", "disabled"}
+
+// UpdateSourceStatusInput defines the expected input parameters for updating the status of a source.
+type UpdateSourceStatusInput struct {
+	SourceID     int64  `json:"source_id"`
+	Status       string `json:"status"`
+	StatusReason string `json:"status_reason,omitempty"`
+}
+
+// ValidateUpdateSourceStatusInput validates the input parameters for updating the status of a source.
+func ValidateUpdateSourceStatusInput(input *UpdateSourceStatusInput) error {
+	if input.SourceID <= 0 {
+		return fmt.Errorf("invalid source ID: must be a positive integer")
+	}
+
+	if !slices.Contains(allowedStatuses, input.Status) {
+		return fmt.Errorf("invalid status: must be one of %v", allowedStatuses)
+	}
+
+	if len(input.StatusReason) > maxDescriptionLen {
+		return fmt.Errorf("status reason exceeds maximum length of %d characters", maxDescriptionLen)
 	}
 
 	return nil

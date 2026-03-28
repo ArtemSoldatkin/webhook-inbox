@@ -178,12 +178,66 @@ func createSource(svc *service.Service) http.HandlerFunc {
 	}
 }
 
+// updateSourceStatus handles PUT requests to update the status of a source.
+func updateSourceStatus(svc *service.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		input, err := api.ParseRequestInput[requestsv1.UpdateSourceStatusInput](r)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to parse input parameters")
+			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			return
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"source_id":     input.SourceID,
+			"status":        input.Status,
+			"status_reason": input.StatusReason,
+			"query":         r.URL.RawQuery,
+		}).Debug("Received updateSourceStatus request")
+
+		if err := requestsv1.ValidateUpdateSourceStatusInput(input); err != nil {
+			logrus.WithError(err).Error("Input validation failed")
+			http.Error(w, "Invalid input parameters: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		source, err := svc.UpdateSourceStatus(r.Context(), service.UpdateSourceStatusInput{
+			SourceID:     input.SourceID,
+			Status:       input.Status,
+			StatusReason: input.StatusReason,
+		})
+		if err != nil {
+			logrus.WithError(err).Error("Failed to create source")
+			http.Error(w, "Failed to create source", http.StatusInternalServerError)
+			return
+		}
+		logrus.WithFields(logrus.Fields{
+			"source_id":     input.SourceID,
+			"status":        input.Status,
+			"status_reason": input.StatusReason,
+		}).Info("Updated source status")
+
+		sourceDTO := mapperv1.ToSourceDTO(source, svc.Config)
+
+		if err := api.JSON(w, http.StatusCreated, sourceDTO); err != nil {
+			var writeErr *api.JSONWriteError
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Failed to write response")
+			} else {
+				logrus.WithError(err).Error("Failed to marshal response")
+				http.Error(w, "Failed to create source", http.StatusInternalServerError)
+			}
+		}
+	}
+}
+
 // sourcesRouter sets up the router for sources-related endpoints.
 func sourcesRouter(svc *service.Service) chi.Router {
 	r := chi.NewRouter()
 	r.Get("/", listSources(svc))
-	r.Get("/{source_id}", getSourceByID(svc))
 	r.Post("/", createSource(svc))
+	r.Get("/{source_id}", getSourceByID(svc))
+	r.Put("/{source_id}/status", updateSourceStatus(svc))
 	r.Mount("/{source_id}/events", eventsRouter(svc))
 	return r
 }
