@@ -43,12 +43,20 @@
 	}
 </script>
 
-<section class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+<section
+	class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"
+	aria-label="List filters"
+>
 	<div class="flex flex-1 flex-col gap-4 sm:flex-row sm:items-end">
 		<div class="min-w-0 flex-1">
 			<Eyebrow as="label">
 				Search
-				<TextInput class="w-full mt-1" placeholder="Search..." bind:value={searchInput} />
+				<TextInput
+					class="w-full mt-1"
+					placeholder="Search..."
+					bind:value={searchInput}
+					aria-label="Search"
+				/>
 			</Eyebrow>
 		</div>
 		<Button type="button" class="py-3 border border-transparent" onclick={handleSearch}
@@ -63,6 +71,7 @@
 					Filter by {filterName ?? 'category'}
 					<Select
 						bind:value={filter}
+						aria-label={`Filter by ${filterName ?? 'category'}`}
 						options={[
 							{ value: '*', label: 'All' },
 							...(filterOptions?.map((category) => ({ value: category, label: category })) ?? [])
@@ -80,13 +89,16 @@
 					type="button"
 					class="block py-3 mt-1 border border-transparent"
 					onclick={toggleSortDirection}
-					aria-label="Toggle sort direction"
+					aria-label={sortDirection === 'ASC'
+						? 'Sort ascending. Activate to sort descending'
+						: 'Sort descending. Activate to sort ascending'}
+					aria-pressed={sortDirection === 'DESC'}
 					variant="secondary"
 				>
 					{#if sortDirection === 'ASC'}
-						<Icon icon="mdi:sort-ascending" class="text-xl" />
+						<Icon icon="mdi:sort-ascending" class="text-xl" aria-hidden="true" />
 					{:else}
-						<Icon icon="mdi:sort-descending" class="text-xl" />
+						<Icon icon="mdi:sort-descending" class="text-xl" aria-hidden="true" />
 					{/if}
 				</Button>
 			</Eyebrow>

@@ -140,7 +140,7 @@
 		titleAs="h1"
 	/>
 
-	<form onsubmit={handleSubmit} class="mt-8 flex flex-col gap-6">
+	<form onsubmit={handleSubmit} class="mt-8 flex flex-col gap-6" aria-label="Create source">
 		<div class="flex flex-col gap-2">
 			<label class="text-sm font-medium text-fg">
 				Egress URL
@@ -150,6 +150,8 @@
 					placeholder="https://example.com/egress"
 					required
 					disabled={loading}
+					aria-label="Egress URL"
+					aria-invalid={egressError ? 'true' : undefined}
 				/>
 			</label>
 			<p class="text-sm text-muted">
@@ -179,6 +181,7 @@
 					disabled={loading}
 					rows={4}
 					class="mt-2 min-h-28 bg-elevated"
+					aria-label="Description"
 				/>
 			</label>
 		</div>

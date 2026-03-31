@@ -63,7 +63,7 @@
 
 <div class={cx('flex flex-col gap-4', className)}>
 	{#if Object.keys(map).length > 0}
-		<ul class="flex flex-col gap-3">
+		<ul class="flex flex-col gap-3" aria-label="Mapped key value pairs">
 			{#each Object.keys(map) as mapKey (mapKey)}
 				<li class="rounded-md border border-border-muted bg-surface p-4">
 					<div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
@@ -86,8 +86,9 @@
 							class="py-3 border border-transparent text-error"
 							{disabled}
 							onclick={() => removeKey(mapKey)}
+							aria-label={`Remove ${mapKey}`}
 						>
-							<Icon icon="material-symbols:delete-rounded" class="text-xl" />
+							<Icon icon="material-symbols:delete-rounded" class="text-xl" aria-hidden="true" />
 						</Button>
 					</div>
 				</li>
@@ -107,12 +108,20 @@
 					bind:value={key}
 					{disabled}
 					onblur={handleKeyBlur}
+					aria-label="Key"
+					aria-invalid={inputError ? 'true' : undefined}
 				/>
 			</Eyebrow>
 
 			<Eyebrow as="label"
 				>Value
-				<TextInput class="w-full mt-1" placeholder="Value" bind:value {disabled} />
+				<TextInput
+					class="w-full mt-1"
+					placeholder="Value"
+					bind:value
+					{disabled}
+					aria-label="Value"
+				/>
 			</Eyebrow>
 
 			<Button
@@ -120,8 +129,9 @@
 				class="py-3 border border-transparent"
 				disabled={disabled || !key || key in map || !value}
 				onclick={() => addKeyValue()}
+				aria-label="Add key value pair"
 			>
-				<Icon icon="material-symbols:add-rounded" class="text-xl" />
+				<Icon icon="material-symbols:add-rounded" class="text-xl" aria-hidden="true" />
 			</Button>
 		</div>
 		{#if inputError}

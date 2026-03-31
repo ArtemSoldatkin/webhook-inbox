@@ -110,7 +110,7 @@
 	}
 </script>
 
-<form onsubmit={testWebhook} class="flex flex-col gap-6">
+<form onsubmit={testWebhook} class="flex flex-col gap-6" aria-label="Test webhook request">
 	<div class="grid gap-6 lg:grid-cols-[minmax(0,0.36fr)_minmax(0,0.64fr)]">
 		<div class="flex flex-col gap-2">
 			<label class="text-sm font-medium text-fg">
@@ -118,6 +118,7 @@
 				<Select
 					bind:value={method}
 					disabled={loading}
+					aria-label="HTTP Method"
 					options={[
 						{ value: 'GET', label: 'GET' },
 						{ value: 'POST', label: 'POST' },
@@ -146,7 +147,9 @@
 	<section class="flex flex-col gap-3 border-t border-border-muted pt-4">
 		<div>
 			<p class="text-sm font-medium text-fg">Query parameters</p>
-			<p class="mt-1 text-sm text-muted">Optional query string values appended to the request URL.</p>
+			<p class="mt-1 text-sm text-muted">
+				Optional query string values appended to the request URL.
+			</p>
 		</div>
 		<InputMap bind:map={queryParams} disabled={loading} />
 	</section>
@@ -155,7 +158,9 @@
 		<div class="flex flex-col gap-3 rounded-lg border border-border-muted bg-elevated p-4">
 			<div>
 				<p class="text-sm font-medium text-fg">Request body</p>
-				<p class="mt-1 text-sm text-muted">Choose a content type and compose the request payload.</p>
+				<p class="mt-1 text-sm text-muted">
+					Choose a content type and compose the request payload.
+				</p>
 			</div>
 			<BodyInput bind:textBody bind:formDataBody bind:contentType />
 		</div>

@@ -13,6 +13,12 @@
 	};
 
 	let { children }: Props = $props();
+	let mainContentElement = $state<HTMLElement | null>(null);
+
+	function skipToMainContent(): void {
+		mainContentElement?.focus();
+		mainContentElement?.scrollIntoView({ block: 'start' });
+	}
 </script>
 
 <svelte:head>
@@ -20,6 +26,13 @@
 </svelte:head>
 
 <div class="min-h-screen bg-bg text-fg">
+	<button
+		type="button"
+		onclick={skipToMainContent}
+		class="sr-only absolute left-4 top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-inverted shadow-sm focus:not-sr-only focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+	>
+		Skip to main content
+	</button>
 	<header class="border-b border-border-muted bg-surface/95 shadow-sm backdrop-blur">
 		<div
 			class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4 sm:px-8 lg:px-12"
@@ -30,6 +43,7 @@
 			</div>
 			<nav
 				class="flex items-center gap-1 rounded-lg border border-border bg-elevated p-1 shadow-sm"
+				aria-label="Primary"
 			>
 				<Link href={resolve('/')} variant="nav">Home</Link>
 				<Link href={resolve('/sources')} variant="nav">Sources</Link>
@@ -39,7 +53,11 @@
 			</div>
 		</div>
 	</header>
-	<main class="mx-auto w-full max-w-7xl flex-1 px-6 py-8 sm:px-8 lg:px-12 lg:py-10">
+	<main
+		bind:this={mainContentElement}
+		tabindex="-1"
+		class="mx-auto w-full max-w-7xl flex-1 px-6 py-8 sm:px-8 lg:px-12 lg:py-10"
+	>
 		{@render children()}
 	</main>
 	<footer class="border-t border-border-muted bg-surface">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
 	import Link from '$lib/components/ui/Link.svelte';
 	import env from '$lib/env';
@@ -78,6 +79,14 @@
 	const exampleRequest = `curl -X POST ${env.VITE_API_BASE_URL}/ingest/YOUR_SOURCE_KEY \\
   -H "Content-Type: application/json" \\
   -d '{"event":"payment.succeeded","source":"demo"}'`;
+
+	/** Local state for the "How It Works" section element, used for smooth scrolling from the button. */
+	let howItWorksSection = $state<HTMLElement | null>(null);
+
+	/** Source ID read from the current route, used for generating dynamic links and breadcrumbs. */
+	function scrollToHowItWorks(): void {
+		howItWorksSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
 </script>
 
 <svelte:head>
@@ -114,7 +123,9 @@
 
 				<div class="flex flex-col gap-3 sm:flex-row">
 					<Link href={resolve('/sources')} variant="primary">Open Sources</Link>
-					<Link href="#how-it-works" variant="secondary">How It Works</Link>
+					<Button type="button" variant="secondary" onclick={scrollToHowItWorks}>
+						How It Works
+					</Button>
 				</div>
 
 				<div class="grid gap-4 sm:grid-cols-3">
@@ -175,7 +186,7 @@
 			</aside>
 		</section>
 
-		<section id="how-it-works" class="border-t border-border-muted pt-16">
+		<section bind:this={howItWorksSection} class="border-t border-border-muted pt-16">
 			<div class="flex flex-col gap-4 lg:max-w-3xl">
 				<Eyebrow variant="strong">Start in 3 steps</Eyebrow>
 				<h2 class="text-3xl font-semibold tracking-tight text-fg sm:text-4xl">

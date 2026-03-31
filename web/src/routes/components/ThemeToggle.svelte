@@ -40,6 +40,7 @@
 {#if mounted}
 	<Select
 		bind:value={theme}
+		aria-label="Theme"
 		options={[
 			{ value: 'light', label: 'Light' },
 			{ value: 'dark', label: 'Dark' },

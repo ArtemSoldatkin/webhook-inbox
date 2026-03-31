@@ -110,11 +110,25 @@
 			{:else}
 				<Badge variant="neutral" appearance="soft">{source.status}</Badge>
 			{/if}
-			<Button variant="ghost" class="ml-auto" onclick={toggleEditing} disabled={loading}>
+			<Button
+				variant="ghost"
+				class="ml-auto"
+				onclick={toggleEditing}
+				disabled={loading}
+				aria-label={isEditing ? 'Save source status' : 'Edit source status'}
+			>
 				{#if isEditing}
-					<Icon icon="material-symbols:save-as-outline-rounded" class="text-xl" />
+					<Icon
+						icon="material-symbols:save-as-outline-rounded"
+						class="text-xl"
+						aria-hidden="true"
+					/>
 				{:else}
-					<Icon icon="material-symbols:edit-document-outline-rounded" class="text-xl" />
+					<Icon
+						icon="material-symbols:edit-document-outline-rounded"
+						class="text-xl"
+						aria-hidden="true"
+					/>
 				{/if}
 			</Button>
 		</div>

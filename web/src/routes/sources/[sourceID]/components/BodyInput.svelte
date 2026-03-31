@@ -44,6 +44,7 @@
 			Content type
 			<Select
 				bind:value={contentType}
+				aria-label="Content type"
 				options={[
 					{ value: 'application/json', label: 'JSON' },
 					{ value: 'application/x-www-form-urlencoded', label: 'Form URL Encoded' },
