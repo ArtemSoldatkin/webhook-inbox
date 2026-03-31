@@ -15,8 +15,8 @@
 	/** Breadcrumb items for navigation, dynamically generated based on the current source and event IDs. */
 	const breadcrumbItems = [
 		{ label: 'Sources', href: resolve('/sources') },
-		{ label: sourceID ?? 'Unknown source', href: resolve(`/sources/${sourceID}`) },
-		{ label: eventID ?? 'Unknown event', active: true }
+		{ label: sourceID || 'Unknown source', href: resolve(`/sources/${sourceID}`) },
+		{ label: eventID || 'Unknown event', active: true }
 	];
 </script>
 

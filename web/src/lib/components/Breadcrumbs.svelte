@@ -21,18 +21,23 @@
 	let { items }: Props = $props();
 </script>
 
-<nav class="rounded-md border border-border-muted bg-surface px-4 py-3 text-sm shadow-sm">
+<nav
+	class="rounded-md border border-border-muted bg-surface px-4 py-3 text-sm shadow-sm"
+	aria-label="Breadcrumb"
+>
 	<ul class="flex flex-wrap items-center gap-2 text-muted">
-		{#each items as item, index (index)}
+		{#each items as item, index (item.href ?? item.label)}
 			<li>
 				{#if item.href && !item.active}
 					<Link href={item.href} variant="inline">{item.label}</Link>
 				{:else}
-					<span class="text-fg">{item.label}</span>
+					<span class="text-fg" aria-current={item.active ? 'page' : undefined}>
+						{item.label}
+					</span>
 				{/if}
 			</li>
 			{#if index < items.length - 1}
-				<li>/</li>
+				<li aria-hidden="true" role="presentation">/</li>
 			{/if}
 		{/each}
 	</ul>

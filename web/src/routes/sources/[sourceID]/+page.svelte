@@ -12,7 +12,7 @@
 	/** Breadcrumb items for navigation, dynamically generated based on the current source ID. */
 	const breadcrumbItems = [
 		{ label: 'Sources', href: resolve('/sources') },
-		{ label: sourceID ?? 'Unknown source', active: true }
+		{ label: sourceID || 'Unknown source', active: true }
 	];
 </script>
 
