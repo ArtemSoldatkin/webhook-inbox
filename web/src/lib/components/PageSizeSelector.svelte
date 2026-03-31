@@ -14,6 +14,7 @@
 		Page size
 		<Select
 			bind:value={pageSize}
+			aria-label="Page size"
 			options={[
 				{ value: 1, label: '1' },
 				{ value: 5, label: '5' },

@@ -38,6 +38,7 @@
 		variant?: Variant;
 		appearance?: Appearance;
 		title?: string;
+		role?: HTMLAttributes<HTMLDivElement>['role'];
 		children?: Snippet;
 	};
 
@@ -45,6 +46,7 @@
 		variant = 'neutral',
 		appearance = 'soft',
 		title,
+		role = variant === 'error' ? 'alert' : 'status',
 		children,
 		class: className,
 		...rest
@@ -57,6 +59,8 @@
 		APPEARANCE_CLASSES[appearance][variant],
 		className
 	)}
+	aria-live={variant === 'error' ? 'assertive' : 'polite'}
+	{role}
 	{...rest}
 >
 	{#if title}

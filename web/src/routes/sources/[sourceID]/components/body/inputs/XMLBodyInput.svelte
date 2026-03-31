@@ -54,12 +54,15 @@
 
 <div class="flex flex-col gap-4">
 	<Textarea
+		aria-label="XML request body"
 		bind:value={body}
 		rows={10}
 		placeholder="Enter XML body here..."
 	/>
 	<div class="flex flex-wrap justify-end gap-3">
-		<Button type="button" onclick={formatInput} disabled={!!error} variant="secondary">Format</Button>
+		<Button type="button" onclick={formatInput} disabled={!!error} variant="secondary"
+			>Format</Button
+		>
 		<Button type="button" onclick={handleClear} disabled={!body} variant="secondary">Clear</Button>
 	</div>
 </div>

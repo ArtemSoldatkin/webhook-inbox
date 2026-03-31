@@ -21,6 +21,7 @@
 
 <div class="flex flex-col gap-4">
 	<Textarea
+		aria-label="Plain text request body"
 		bind:value={body}
 		rows={10}
 		placeholder="Enter body content here..."

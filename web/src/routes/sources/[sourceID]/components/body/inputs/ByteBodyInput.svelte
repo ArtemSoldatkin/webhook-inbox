@@ -70,6 +70,7 @@
 
 <div class="flex flex-col gap-4">
 	<Textarea
+		aria-label="Base64 request body"
 		rows={10}
 		bind:value={body}
 		placeholder="Enter base64 body here..."
@@ -80,6 +81,7 @@
 			<FileInput
 				onchange={(e) => handleFileChange(e)}
 				class="mt-2 block w-full text-sm"
+				aria-label="Upload file"
 			/>
 		</label>
 	</div>
