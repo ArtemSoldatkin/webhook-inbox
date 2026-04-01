@@ -17,11 +17,6 @@ func TestRecoverStuckDeliveryAttempts(t *testing.T) {
 	dbtx := newEngineTestDB()
 	svc := newEngineTestService(t, dbtx)
 	svc.Config.APIRecoveryTimeoutSec = 5
-	dbtx.execHandlers["-- name: RecoverStuckDeliveryAttempts :exec"] = func(args ...any) (pgconn.CommandTag, error) {
-		t.Fatalf("recover query should be called without arguments")
-		return pgconn.NewCommandTag(""), nil
-	}
-
 	called := false
 	dbtx.execHandlers["-- name: RecoverStuckDeliveryAttempts :exec"] = func(args ...any) (pgconn.CommandTag, error) {
 		called = true

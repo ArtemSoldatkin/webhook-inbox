@@ -29,6 +29,7 @@ func TestNewService(t *testing.T) {
 
 	assert.Nil(t, svc.dbPool)
 	assert.NotNil(t, svc.queries)
+	assert.NotNil(t, svc.beginTx)
 	assert.Same(t, cfg, svc.Config)
 	assert.Same(t, cache, svc.Cache)
 }
@@ -194,6 +195,9 @@ func newServiceUnderTest(t *testing.T, dbtx db.DBTX) *Service {
 	svc := &Service{
 		Config: testServiceConfig(),
 		Cache:  cache,
+		beginTx: func(context.Context, pgx.TxOptions) (pgx.Tx, error) {
+			return nil, errors.New("unexpected begin tx")
+		},
 	}
 	setServicePrivateField(t, svc, "queries", db.New(dbtx))
 	return svc

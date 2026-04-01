@@ -12,7 +12,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestListDeliveryAttempts(t *testing.T) {
@@ -69,8 +68,6 @@ func TestCreateDeliveryAttempt(t *testing.T) {
 }
 
 func TestListPendingDeliveryAttempts(t *testing.T) {
-	t.Parallel()
-
 	svc := newServiceUnderTest(t, newServiceTestDB())
 	tx := newServiceTestTx()
 	tx.queryHandlers["-- name: SelectPendingDeliveryAttemptIDs :many"] = func(args ...any) (pgx.Rows, error) {
@@ -87,11 +84,9 @@ func TestListPendingDeliveryAttempts(t *testing.T) {
 		}}, nil
 	}
 
-	originalBeginTx := beginTxFunc
-	beginTxFunc = func(_ *pgxpool.Pool, ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error) {
+	svc.beginTx = func(context.Context, pgx.TxOptions) (pgx.Tx, error) {
 		return tx, nil
 	}
-	defer func() { beginTxFunc = originalBeginTx }()
 
 	pending, err := svc.ListPendingDeliveryAttempts(context.Background(), 3)
 
@@ -104,15 +99,11 @@ func TestListPendingDeliveryAttempts(t *testing.T) {
 }
 
 func TestListPendingDeliveryAttempts_BeginTxError(t *testing.T) {
-	t.Parallel()
-
 	svc := newServiceUnderTest(t, newServiceTestDB())
 	expectedErr := errors.New("begin tx failed")
-	originalBeginTx := beginTxFunc
-	beginTxFunc = func(_ *pgxpool.Pool, ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error) {
+	svc.beginTx = func(context.Context, pgx.TxOptions) (pgx.Tx, error) {
 		return nil, expectedErr
 	}
-	defer func() { beginTxFunc = originalBeginTx }()
 
 	pending, err := svc.ListPendingDeliveryAttempts(context.Background(), 3)
 

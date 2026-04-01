@@ -38,7 +38,7 @@ func TestValidateCreateSourceInput_TooManyHeaders(t *testing.T) {
 	t.Parallel()
 
 	headers := make(map[string]string, maxHeaders+1)
-	for i := range maxHeaders + 1 {
+	for i := 0; i < maxHeaders+1; i++ {
 		headers[string(rune('a'+i))] = "value"
 	}
 

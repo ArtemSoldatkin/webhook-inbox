@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -177,7 +178,7 @@ func withTestURLParam(req *http.Request, key, value string) *http.Request {
 	return req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, routeContext))
 }
 
-func reqQuery(raw string) map[string][]string {
+func reqQuery(raw string) url.Values {
 	req := httptest.NewRequest("GET", "/?"+raw, nil)
 	return req.URL.Query()
 }
