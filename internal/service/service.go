@@ -15,6 +15,7 @@ import (
 type Service struct {
 	dbPool  *pgxpool.Pool
 	queries *db.Queries
+	beginTx func(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error)
 	Config  *config.Config
 	Cache   *ristretto.Cache
 }
@@ -30,13 +31,19 @@ func NewService(
 	return &Service{
 		dbPool:  dbPool,
 		queries: queries,
-		Config:  config,
-		Cache:   cache,
+		beginTx: func(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error) {
+			return dbPool.BeginTx(ctx, opts)
+		},
+		Config: config,
+		Cache:  cache,
 	}
 }
 
 // BeginTx starts a new database transaction and returns it.
 // The caller is responsible for committing or rolling back the transaction and releasing the connection.
 func (s *Service) BeginTx(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error) {
+	if s.beginTx != nil {
+		return s.beginTx(ctx, opts)
+	}
 	return s.dbPool.BeginTx(ctx, opts)
 }
