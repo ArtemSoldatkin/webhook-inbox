@@ -191,7 +191,9 @@
 									<Badge variant="neutral" appearance="soft">{attempt.state}</Badge>
 								</div>
 
-								<div class="grid gap-4 border-t border-border-muted pt-4 sm:grid-cols-2 xl:grid-cols-3">
+								<div
+									class="grid gap-4 border-t border-border-muted pt-4 sm:grid-cols-2 xl:grid-cols-3"
+								>
 									<div>
 										<Eyebrow>Event ID</Eyebrow>
 										<p class="mt-2 break-all text-sm text-fg">{attempt.event_id}</p>

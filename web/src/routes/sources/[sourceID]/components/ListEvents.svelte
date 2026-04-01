@@ -142,7 +142,9 @@
 			titleAs="h3"
 		>
 			{#snippet actions()}
-				<Button onclick={handleRefresh} disabled={loading} variant="secondary">Refresh Events</Button>
+				<Button onclick={handleRefresh} disabled={loading} variant="secondary"
+					>Refresh Events</Button
+				>
 			{/snippet}
 		</SectionHeader>
 
