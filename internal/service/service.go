@@ -11,6 +11,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+var beginTxFunc = func(dbPool *pgxpool.Pool, ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error) {
+	return dbPool.BeginTx(ctx, opts)
+}
+
 // Service encapsulates the business logic and database queries.
 type Service struct {
 	dbPool  *pgxpool.Pool
@@ -38,5 +42,5 @@ func NewService(
 // BeginTx starts a new database transaction and returns it.
 // The caller is responsible for committing or rolling back the transaction and releasing the connection.
 func (s *Service) BeginTx(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error) {
-	return s.dbPool.BeginTx(ctx, opts)
+	return beginTxFunc(s.dbPool, ctx, opts)
 }
