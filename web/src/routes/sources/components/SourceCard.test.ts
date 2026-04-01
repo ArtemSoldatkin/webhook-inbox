@@ -18,7 +18,6 @@ function createSource(overrides: Record<string, unknown> = {}) {
 		description: 'Primary source',
 		created_at: new Date('2026-04-01T00:00:00.000Z'),
 		updated_at: new Date('2026-04-02T00:00:00.000Z'),
-		disable_at: null,
 		...overrides
 	};
 }

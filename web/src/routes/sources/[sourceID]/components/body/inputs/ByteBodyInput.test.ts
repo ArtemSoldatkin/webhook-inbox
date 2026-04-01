@@ -1,14 +1,14 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import ByteBodyInput from './ByteBodyInput.svelte';
 import ByteBodyInputHost from '../../../../../../test/mocks/ByteBodyInputHost.svelte';
+import ByteBodyInput from './ByteBodyInput.svelte';
 
 class FileReaderSuccessMock {
 	result: ArrayBuffer | null = null;
 	onload: null | (() => void) = null;
 	onerror: null | (() => void) = null;
 
-	readAsArrayBuffer(_file: File): void {
+	readAsArrayBuffer(): void {
 		this.result = Uint8Array.from([72, 101, 108, 108, 111]).buffer;
 		this.onload?.();
 	}
@@ -19,7 +19,7 @@ class FileReaderErrorMock {
 	onload: null | (() => void) = null;
 	onerror: null | (() => void) = null;
 
-	readAsArrayBuffer(_file: File): void {
+	readAsArrayBuffer(): void {
 		this.onerror?.();
 	}
 }

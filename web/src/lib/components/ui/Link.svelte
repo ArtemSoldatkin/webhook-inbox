@@ -1,4 +1,4 @@
-	<script lang="ts">
+<script lang="ts">
 	import { cx } from '$lib/utils/cx';
 	import type { Snippet } from 'svelte';
 	import type { HTMLAnchorAttributes } from 'svelte/elements';
@@ -42,6 +42,13 @@
 	let { class: className, variant = 'primary', children, ...rest }: Props = $props();
 </script>
 
-<a class={cx('transition-colors outline-none disabled:pointer-events-none disabled:opacity-50', VARIANT_CLASSES[variant], className)} {...rest}>
+<a
+	class={cx(
+		'transition-colors outline-none disabled:pointer-events-none disabled:opacity-50',
+		VARIANT_CLASSES[variant],
+		className
+	)}
+	{...rest}
+>
 	{@render children?.()}
 </a>

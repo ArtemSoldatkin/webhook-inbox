@@ -1,14 +1,19 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import fs from 'fs';
-import { defineConfig } from 'vite';
+import { defaultClientConditions } from 'vite';
+import { defineConfig } from 'vitest/config';
 import env from './env';
 
 export default defineConfig({
 	plugins: [sveltekit(), tailwindcss()],
-	resolve: {
-		conditions: process.env.VITEST ? ['browser'] : []
-	},
+	...(process.env.VITEST
+		? {
+				resolve: {
+					conditions: [...defaultClientConditions]
+				}
+			}
+		: {}),
 	test: {
 		environment: 'jsdom',
 		setupFiles: ['./src/test/setup.ts'],

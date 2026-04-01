@@ -39,7 +39,10 @@ describe('CreateSource', () => {
 		});
 		await fireEvent.submit(screen.getByRole('form', { name: 'Create source' }));
 
-		expect(fetchMock).toHaveBeenCalledWith('/api/sources', expect.objectContaining({ method: 'POST' }));
+		expect(fetchMock).toHaveBeenCalledWith(
+			'/api/sources',
+			expect.objectContaining({ method: 'POST' })
+		);
 		expect(urlInput).toHaveValue('');
 		expect(descriptionInput).toHaveValue('');
 	});

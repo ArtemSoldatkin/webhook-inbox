@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { compile } from 'svelte/compiler';
+import { describe, expect, it } from 'vitest';
 import pageSource from './+page.svelte?raw';
 
 describe('routes/sources/[sourceID]/[eventID]/+page.svelte', () => {
@@ -23,6 +23,6 @@ describe('routes/sources/[sourceID]/[eventID]/+page.svelte', () => {
 		expect(pageSource).toContain("label: sourceID || 'Unknown source'");
 		expect(pageSource).toContain("label: eventID || 'Unknown event'");
 		expect(pageSource).toContain('title={`Event ID: ${eventID}`}');
-		expect(pageSource).toContain("href: resolve(`/sources/${sourceID}`)");
+		expect(pageSource).toContain('href: resolve(`/sources/${sourceID}`)');
 	});
 });

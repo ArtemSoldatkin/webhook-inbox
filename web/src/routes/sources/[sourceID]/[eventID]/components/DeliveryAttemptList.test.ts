@@ -41,9 +41,9 @@ describe('DeliveryAttemptList', () => {
 		});
 
 		expect(await screen.findByRole('heading', { name: 'Attempt ID: 101' })).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Attempt ID: 101' }).closest('article')).toHaveTextContent(
-			'failed'
-		);
+		expect(
+			screen.getByRole('heading', { name: 'Attempt ID: 101' }).closest('article')
+		).toHaveTextContent('failed');
 		expect(screen.getByText('connection timed out')).toBeInTheDocument();
 		expect(fetchPaginatedData).toHaveBeenCalledWith(
 			'/api/sources/12/events/44/delivery-attempts',
@@ -133,6 +133,8 @@ describe('DeliveryAttemptList', () => {
 		});
 
 		expect(await screen.findByText('Request failed')).toBeInTheDocument();
-		expect(screen.queryByText('No delivery attempts found for this event.')).not.toBeInTheDocument();
+		expect(
+			screen.queryByText('No delivery attempts found for this event.')
+		).not.toBeInTheDocument();
 	});
 });

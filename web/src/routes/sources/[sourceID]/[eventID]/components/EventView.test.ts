@@ -45,6 +45,8 @@ describe('EventView', () => {
 		expect(await screen.findByRole('heading', { name: 'Event ID: 44' })).toBeInTheDocument();
 		expect(screen.getByText('abc123')).toBeInTheDocument();
 		expect(screen.getByText('tenant')).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Delivery history for this event' })).toBeInTheDocument();
+		expect(
+			screen.getByRole('heading', { name: 'Delivery history for this event' })
+		).toBeInTheDocument();
 	});
 });

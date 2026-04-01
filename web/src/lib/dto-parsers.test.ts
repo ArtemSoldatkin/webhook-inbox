@@ -20,7 +20,7 @@ describe('parseSourceDTO', () => {
 		expect(result.disable_at?.toISOString()).toBe('2026-04-03T10:00:00.000Z');
 	});
 
-	it('preserves falsy optional disable_at values', () => {
+	it('normalizes missing disable_at to undefined', () => {
 		const result = parseSourceDTO({
 			id: 1,
 			public_id: 'src_123',
@@ -32,7 +32,7 @@ describe('parseSourceDTO', () => {
 			disable_at: null
 		});
 
-		expect(result.disable_at).toBeNull();
+		expect(result.disable_at).toBeUndefined();
 	});
 });
 
@@ -70,7 +70,7 @@ describe('parseDeliveryAttemptDTO', () => {
 		expect(result.next_attempt_at).toBeInstanceOf(Date);
 	});
 
-	it('preserves missing optional timestamps', () => {
+	it('normalizes missing optional timestamps to undefined', () => {
 		const result = parseDeliveryAttemptDTO({
 			id: 21,
 			event_id: 11,
@@ -82,8 +82,8 @@ describe('parseDeliveryAttemptDTO', () => {
 			next_attempt_at: null
 		});
 
-		expect(result.started_at).toBeNull();
-		expect(result.finished_at).toBeNull();
-		expect(result.next_attempt_at).toBeNull();
+		expect(result.started_at).toBeUndefined();
+		expect(result.finished_at).toBeUndefined();
+		expect(result.next_attempt_at).toBeUndefined();
 	});
 });

@@ -48,6 +48,8 @@ describe('SourceView', () => {
 
 		expect(await screen.findByText('Payments source')).toBeInTheDocument();
 		expect(screen.getByRole('heading', { name: 'Send a test webhook' })).toBeInTheDocument();
-		expect(screen.getByRole('heading', { name: 'Captured traffic for this source' })).toBeInTheDocument();
+		expect(
+			screen.getByRole('heading', { name: 'Captured traffic for this source' })
+		).toBeInTheDocument();
 	});
 });

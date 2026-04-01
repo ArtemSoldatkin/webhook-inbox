@@ -56,12 +56,12 @@ describe('ByteBodyView', () => {
 
 		expect(createObjectURL).toHaveBeenCalledTimes(1);
 		expect(clickSpy).toHaveBeenCalledTimes(1);
-		expect(
-			appendChildSpy.mock.calls.some(([node]) => (node as Element).tagName === 'A')
-		).toBe(true);
-		expect(
-			removeChildSpy.mock.calls.some(([node]) => (node as Element).tagName === 'A')
-		).toBe(true);
+		expect(appendChildSpy.mock.calls.some(([node]) => (node as Element).tagName === 'A')).toBe(
+			true
+		);
+		expect(removeChildSpy.mock.calls.some(([node]) => (node as Element).tagName === 'A')).toBe(
+			true
+		);
 		expect(revokeObjectURL).toHaveBeenCalledWith('blob:test-url');
 	});
 });
