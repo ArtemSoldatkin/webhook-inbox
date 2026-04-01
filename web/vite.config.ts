@@ -6,6 +6,14 @@ import env from './env';
 
 export default defineConfig({
 	plugins: [sveltekit(), tailwindcss()],
+	resolve: {
+		conditions: process.env.VITEST ? ['browser'] : []
+	},
+	test: {
+		environment: 'jsdom',
+		setupFiles: ['./src/test/setup.ts'],
+		include: ['src/**/*.{test,spec}.{ts,js}']
+	},
 	server: {
 		host: env.UI_HOST,
 		port: Number(env.UI_PORT),
