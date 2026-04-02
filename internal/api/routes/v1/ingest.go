@@ -18,7 +18,13 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 		input, err := api.ParseRequestInput[requestsv1.IngestEventInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
-			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -31,7 +37,13 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 
 		if err := requestsv1.ValidateIngestEventInput(input); err != nil {
 			logrus.WithError(err).WithField("public_id", input.PublicID).Error("Input validation failed")
-			http.Error(w, "Invalid input parameters: "+err.Error(), http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters: " + err.Error()},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -40,11 +52,23 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			var notFoundErr *service.SourceIsNotFound
 			if errors.As(err, &notFoundErr) {
 				logrus.WithError(err).Error("Source not found for given public_id")
-				http.Error(w, notFoundErr.Message, http.StatusNotFound)
+				if err := api.JSON(
+					w,
+					http.StatusNotFound,
+					map[string]string{"error": notFoundErr.Message},
+				); err != nil {
+					logrus.WithError(err).Error("Failed to write error response")
+				}
 				return
 			}
 			logrus.WithError(err).Error("Failed to create event")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Internal server error"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 		logrus.WithFields(logrus.Fields{
@@ -61,7 +85,13 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to create delivery attempt")
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Internal server error"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 		logrus.WithFields(logrus.Fields{
@@ -70,8 +100,22 @@ func ingestEvent(svc *service.Service) http.HandlerFunc {
 			"query":               r.URL.RawQuery,
 		}).Info("Created initial delivery attempt")
 
-		w.WriteHeader(http.StatusAccepted)
-		w.Write([]byte("OK"))
+		if err := api.JSON(w, http.StatusAccepted, map[string]string{"message": "OK"}); err != nil {
+			var writeErr *api.JSONWriteError
+			if errors.As(err, &writeErr) {
+				logrus.WithError(err).Error("Failed to write response")
+				return
+			}
+
+			logrus.WithError(err).Error("Failed to marshal response")
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Internal server error"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
+		}
 	}
 }
 

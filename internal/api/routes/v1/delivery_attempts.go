@@ -19,7 +19,13 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 		input, err := api.ParseRequestInput[requestsv1.ListDeliveryAttemptsInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
-			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -44,7 +50,13 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list delivery attempts")
-			http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to list delivery attempts"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -74,9 +86,16 @@ func listDeliveryAttempts(svc *service.Service) http.HandlerFunc {
 			var writeErr *api.JSONWriteError
 			if errors.As(err, &writeErr) {
 				logrus.WithError(err).Error("Failed to write response")
-			} else {
-				logrus.WithError(err).Error("Failed to marshal response")
-				http.Error(w, "Failed to list delivery attempts", http.StatusInternalServerError)
+				return
+			}
+
+			logrus.WithError(err).Error("Failed to marshal response")
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to list delivery attempts"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
 			}
 		}
 	}
