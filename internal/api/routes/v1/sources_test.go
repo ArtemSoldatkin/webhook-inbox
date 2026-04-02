@@ -2,6 +2,7 @@ package routev1
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -77,7 +78,8 @@ func TestGetSourceByID_NotFoundReturns404(t *testing.T) {
 	getSourceByID(newTestService(t, dbtx, newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Source not found")
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Equal(t, "Source not found", response.Error)
 }
 
 func TestCreateSource_ValidationErrorReturns400(t *testing.T) {
@@ -94,7 +96,8 @@ func TestCreateSource_ValidationErrorReturns400(t *testing.T) {
 	createSource(newTestService(t, newTestDB(), newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Invalid input parameters")
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Contains(t, response.Error, "Invalid input parameters")
 }
 
 func TestCreateSource_ReturnsCreatedSource(t *testing.T) {
@@ -182,6 +185,36 @@ func TestUpdateSourceStatus_ReturnsUpdatedSource(t *testing.T) {
 	response := decodeJSONResponse[map[string]any](t, recorder)
 	assert.Equal(t, float64(44), response["id"])
 	assert.Equal(t, "active", response["status"])
+}
+
+func TestUpdateSourceStatus_ServiceErrorReturns500(t *testing.T) {
+	t.Parallel()
+
+	dbtx := newTestDB()
+	dbtx.queryRowHandlers["-- name: GetSourceByID :one"] = func(args ...any) pgx.Row {
+		return &testRow{values: sourceRowValues(t, db.Source{
+			ID:            44,
+			PublicID:      mustPGUUID(t, "44444444-4444-4444-4444-444444444444"),
+			EgressUrl:     "https://example.com/webhook",
+			StaticHeaders: []byte(`{"Authorization":"Bearer token"}`),
+			Status:        "paused",
+			CreatedAt:     pgtype.Timestamptz{Time: testTime().Add(-time.Hour), Valid: true},
+			UpdatedAt:     pgtype.Timestamptz{Time: testTime().Add(-time.Hour), Valid: true},
+		})}
+	}
+	dbtx.execHandlers["-- name: UpdateSourceStatus :exec"] = func(args ...any) (pgconn.CommandTag, error) {
+		return pgconn.NewCommandTag(""), errors.New("update failed")
+	}
+
+	req := withURLParam(httptest.NewRequest("PUT", "/sources/44/status", bytes.NewBufferString(`{"status":"active","status_reason":"resume delivery"}`)), "source_id", "44")
+	req.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+
+	updateSourceStatus(newTestService(t, dbtx, newTestConfig())).ServeHTTP(recorder, req)
+
+	require.Equal(t, http.StatusInternalServerError, recorder.Code)
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Equal(t, "Failed to update source status", response.Error)
 }
 
 func mustPGUUID(t *testing.T, value string) pgtype.UUID {

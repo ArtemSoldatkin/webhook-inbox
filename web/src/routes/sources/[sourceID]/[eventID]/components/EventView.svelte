@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getResponseErrorMessage } from '$lib/api';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
@@ -56,7 +57,7 @@
 		try {
 			const response = await fetch(`/api/sources/${filters.sourceID}/events/${filters.eventID}`);
 			if (!response.ok) {
-				throw new Error(`Failed to fetch event details: ${response.statusText}`);
+				throw new Error(await getResponseErrorMessage(response, 'Request failed'));
 			}
 			const rawData = await response.json();
 			data = parseEventDTO(rawData);

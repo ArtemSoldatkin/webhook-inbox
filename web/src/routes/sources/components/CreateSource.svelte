@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getResponseErrorMessage } from '$lib/api';
 	import InputMap from '$lib/components/InputMap.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -60,7 +61,7 @@
 				body: JSON.stringify(data)
 			});
 			if (!response.ok) {
-				throw new Error(`Failed to create source: ${response.statusText}`);
+				throw new Error(await getResponseErrorMessage(response, 'Failed to create source'));
 			}
 			const newSource = await response.json();
 			data = newData(); // Reset form after successful creation

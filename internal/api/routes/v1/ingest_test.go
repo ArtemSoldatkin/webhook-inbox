@@ -20,7 +20,8 @@ func TestIngestEvent_InvalidPublicIDReturnsBadRequest(t *testing.T) {
 	ingestEvent(newTestService(t, newTestDB(), newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Invalid input parameters: invalid public_id format")
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Equal(t, "Invalid input parameters: invalid public_id format", response.Error)
 }
 
 func TestIngestEvent_SourceNotFoundReturns404(t *testing.T) {
@@ -38,7 +39,8 @@ func TestIngestEvent_SourceNotFoundReturns404(t *testing.T) {
 	ingestEvent(newTestService(t, dbtx, newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "source with public_id '123e4567-e89b-12d3-a456-426614174000' not found")
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Equal(t, "source with public_id '123e4567-e89b-12d3-a456-426614174000' not found", response.Error)
 }
 
 func TestIngestEvent_SuccessReturnsAccepted(t *testing.T) {
@@ -76,5 +78,6 @@ func TestIngestEvent_SuccessReturnsAccepted(t *testing.T) {
 	ingestEvent(newTestService(t, dbtx, newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusAccepted, recorder.Code)
-	assert.Equal(t, "OK", recorder.Body.String())
+	response := decodeJSONResponse[messageResponse](t, recorder)
+	assert.Equal(t, "OK", response.Message)
 }

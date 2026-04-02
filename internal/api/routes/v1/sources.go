@@ -20,7 +20,13 @@ func listSources(svc *service.Service) http.HandlerFunc {
 		input, err := api.ParseRequestInput[requestsv1.ListSourcesInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
-			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -43,7 +49,13 @@ func listSources(svc *service.Service) http.HandlerFunc {
 		)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to list sources")
-			http.Error(w, "Failed to list sources", http.StatusInternalServerError)
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to list sources"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -70,9 +82,16 @@ func listSources(svc *service.Service) http.HandlerFunc {
 			var writeErr *api.JSONWriteError
 			if errors.As(err, &writeErr) {
 				logrus.WithError(err).Error("Failed to write response")
-			} else {
-				logrus.WithError(err).Error("Failed to marshal response")
-				http.Error(w, "Failed to list sources", http.StatusInternalServerError)
+				return
+			}
+
+			logrus.WithError(err).Error("Failed to marshal response")
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to list sources"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
 			}
 		}
 	}
@@ -84,7 +103,13 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 		input, err := api.ParseRequestInput[requestsv1.GetSourceByIDInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
-			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -97,11 +122,23 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				logrus.WithField("source_id", input.SourceID).Info("Source not found")
-				http.Error(w, "Source not found", http.StatusNotFound)
+				if err := api.JSON(
+					w,
+					http.StatusNotFound,
+					map[string]string{"error": "Source not found"},
+				); err != nil {
+					logrus.WithError(err).Error("Failed to write error response")
+				}
 				return
 			}
 			logrus.WithField("source_id", input.SourceID).WithError(err).Error("Failed to get source")
-			http.Error(w, "Failed to get source", http.StatusInternalServerError)
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to get source"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -111,9 +148,16 @@ func getSourceByID(svc *service.Service) http.HandlerFunc {
 			var writeErr *api.JSONWriteError
 			if errors.As(err, &writeErr) {
 				logrus.WithError(err).Error("Failed to write response")
-			} else {
-				logrus.WithError(err).Error("Failed to marshal response")
-				http.Error(w, "Failed to get source", http.StatusInternalServerError)
+				return
+			}
+
+			logrus.WithError(err).Error("Failed to marshal response")
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to get source"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
 			}
 		}
 	}
@@ -129,7 +173,13 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		input, err := api.ParseRequestInput[requestsv1.CreateSourceInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
-			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -148,7 +198,13 @@ func createSource(svc *service.Service) http.HandlerFunc {
 
 		if err := requestsv1.ValidateCreateSourceInput(input); err != nil {
 			logrus.WithError(err).Error("Input validation failed")
-			http.Error(w, "Invalid input parameters: "+err.Error(), http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters: " + err.Error()},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -159,7 +215,13 @@ func createSource(svc *service.Service) http.HandlerFunc {
 		})
 		if err != nil {
 			logrus.WithError(err).Error("Failed to create source")
-			http.Error(w, "Failed to create source", http.StatusInternalServerError)
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to create source"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 		logrus.WithField("source_id", source.ID).Info("Created new source")
@@ -170,9 +232,16 @@ func createSource(svc *service.Service) http.HandlerFunc {
 			var writeErr *api.JSONWriteError
 			if errors.As(err, &writeErr) {
 				logrus.WithError(err).Error("Failed to write response")
-			} else {
-				logrus.WithError(err).Error("Failed to marshal response")
-				http.Error(w, "Failed to create source", http.StatusInternalServerError)
+				return
+			}
+
+			logrus.WithError(err).Error("Failed to marshal response")
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to create source"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
 			}
 		}
 	}
@@ -184,7 +253,13 @@ func updateSourceStatus(svc *service.Service) http.HandlerFunc {
 		input, err := api.ParseRequestInput[requestsv1.UpdateSourceStatusInput](r)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to parse input parameters")
-			http.Error(w, "Invalid input parameters", http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -197,7 +272,13 @@ func updateSourceStatus(svc *service.Service) http.HandlerFunc {
 
 		if err := requestsv1.ValidateUpdateSourceStatusInput(input); err != nil {
 			logrus.WithError(err).Error("Input validation failed")
-			http.Error(w, "Invalid input parameters: "+err.Error(), http.StatusBadRequest)
+			if err := api.JSON(
+				w,
+				http.StatusBadRequest,
+				map[string]string{"error": "Invalid input parameters: " + err.Error()},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 
@@ -207,8 +288,14 @@ func updateSourceStatus(svc *service.Service) http.HandlerFunc {
 			StatusReason: input.StatusReason,
 		})
 		if err != nil {
-			logrus.WithError(err).Error("Failed to create source")
-			http.Error(w, "Failed to create source", http.StatusInternalServerError)
+			logrus.WithError(err).Error("Failed to update source status")
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to update source status"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
+			}
 			return
 		}
 		logrus.WithFields(logrus.Fields{
@@ -223,9 +310,16 @@ func updateSourceStatus(svc *service.Service) http.HandlerFunc {
 			var writeErr *api.JSONWriteError
 			if errors.As(err, &writeErr) {
 				logrus.WithError(err).Error("Failed to write response")
-			} else {
-				logrus.WithError(err).Error("Failed to marshal response")
-				http.Error(w, "Failed to update source status", http.StatusInternalServerError)
+				return
+			}
+
+			logrus.WithError(err).Error("Failed to marshal response")
+			if err := api.JSON(
+				w,
+				http.StatusInternalServerError,
+				map[string]string{"error": "Failed to update source status"},
+			); err != nil {
+				logrus.WithError(err).Error("Failed to write error response")
 			}
 		}
 	}

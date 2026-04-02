@@ -87,7 +87,7 @@ describe('SourceCard', () => {
 	it('shows an error when updating the source status fails', async () => {
 		const fetchMock = vi.fn().mockResolvedValue({
 			ok: false,
-			json: async () => ({ message: 'Failed to update source status' })
+			json: async () => ({ error: 'Source is disabled by policy' })
 		});
 		vi.stubGlobal('fetch', fetchMock);
 		const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -106,9 +106,7 @@ describe('SourceCard', () => {
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Save source status' }));
 
-		expect(
-			await screen.findByText('Failed to update source status. Please try again.')
-		).toBeInTheDocument();
+		expect(await screen.findByText('Source is disabled by policy')).toBeInTheDocument();
 		expect(screen.getByText('No static headers configured.')).toBeInTheDocument();
 		expect(screen.queryByText('disabled')).not.toBeInTheDocument();
 		expect(consoleError).toHaveBeenCalled();

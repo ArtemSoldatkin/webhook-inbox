@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getResponseErrorMessage } from '$lib/api';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { parseSourceDTO } from '$lib/dto-parsers';
@@ -50,7 +51,7 @@
 		try {
 			const response = await fetch(`/api/sources/${filters.sourceID}`);
 			if (!response.ok) {
-				throw new Error(`Failed to fetch source: ${response.statusText}`);
+				throw new Error(await getResponseErrorMessage(response, 'Failed to fetch source'));
 			}
 			const rawData = await response.json();
 			data = parseSourceDTO(rawData);

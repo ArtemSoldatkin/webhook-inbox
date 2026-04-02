@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { getResponseErrorMessage } from '$lib/api';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -51,15 +52,16 @@
 				})
 			});
 			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.message || 'Failed to update source status');
+				throw new Error(
+					await getResponseErrorMessage(response, 'Failed to update source status')
+				);
 			}
 			source.status = newStatus;
 			isEditing = false;
 			onStatusUpdate?.();
-		} catch (err) {
+		} catch (err: unknown) {
 			console.error('Failed to update source status:', err);
-			error = 'Failed to update source status. Please try again.';
+			error = err instanceof Error ? err.message : String(err);
 			newStatus = source.status;
 		} finally {
 			loading = false;
