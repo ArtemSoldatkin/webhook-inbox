@@ -58,12 +58,35 @@ describe('fetchPaginatedData', () => {
 			'fetch',
 			vi.fn().mockResolvedValue({
 				ok: false,
+				json: async () => ({ error: 'Sources request failed' }),
+				statusText: 'Bad Request'
+			})
+		);
+
+		await expect(fetchPaginatedData('/api/sources', 20, null)).rejects.toThrow(
+			'Sources request failed'
+		);
+	});
+
+	it('warns and falls back to statusText when the error response is not JSON', async () => {
+		const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: false,
+				json: async () => {
+					throw new Error('invalid json');
+				},
 				statusText: 'Bad Request'
 			})
 		);
 
 		await expect(fetchPaginatedData('/api/sources', 20, null)).rejects.toThrow(
 			'Failed to fetch data: Bad Request'
+		);
+		expect(consoleWarn).toHaveBeenCalledWith(
+			'Failed to parse error response as JSON',
+			expect.objectContaining({ ok: false, statusText: 'Bad Request' })
 		);
 	});
 });
