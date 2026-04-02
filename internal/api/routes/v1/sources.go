@@ -288,11 +288,11 @@ func updateSourceStatus(svc *service.Service) http.HandlerFunc {
 			StatusReason: input.StatusReason,
 		})
 		if err != nil {
-			logrus.WithError(err).Error("Failed to create source")
+			logrus.WithError(err).Error("Failed to update source status")
 			if err := api.JSON(
 				w,
 				http.StatusInternalServerError,
-				map[string]string{"error": "Failed to create source"},
+				map[string]string{"error": "Failed to update source status"},
 			); err != nil {
 				logrus.WithError(err).Error("Failed to write error response")
 			}

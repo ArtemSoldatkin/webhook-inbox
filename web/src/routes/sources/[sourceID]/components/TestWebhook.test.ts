@@ -80,8 +80,13 @@ describe('TestWebhook', () => {
 	it('shows an error alert when the webhook request fails', async () => {
 		const fetchMock = vi.fn().mockResolvedValue({
 			ok: false,
+			status: 400,
+			json: async () => {
+				throw new Error('invalid json');
+			},
 			statusText: 'Bad Request'
 		});
+		const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 		vi.stubGlobal('fetch', fetchMock);
 
@@ -93,7 +98,11 @@ describe('TestWebhook', () => {
 
 		await fireEvent.submit(screen.getByRole('form', { name: 'Test webhook request' }));
 
-		expect(await screen.findByText('Failed to test webhook: Bad Request')).toBeInTheDocument();
+		expect(await screen.findByText('Failed to test webhook: 400 Bad Request')).toBeInTheDocument();
+		expect(consoleWarn).toHaveBeenCalledWith(
+			'Failed to parse error response as JSON',
+			expect.objectContaining({ ok: false, status: 400, statusText: 'Bad Request' })
+		);
 		expect(consoleError).toHaveBeenCalled();
 	});
 });

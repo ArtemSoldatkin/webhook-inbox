@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { getResponseErrorMessage } from '$lib/api';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -51,16 +52,9 @@
 				})
 			});
 			if (!response.ok) {
-				let errorMsg = `Failed to update source status: ${response.statusText}`;
-				try {
-					const errorJson = await response.json();
-					if (errorJson && errorJson.error) {
-						errorMsg = errorJson.error;
-					}
-				} catch {
-					console.warn('Failed to parse error response as JSON', response);
-				}
-				throw new Error(errorMsg);
+				throw new Error(
+					await getResponseErrorMessage(response, 'Failed to update source status')
+				);
 			}
 			source.status = newStatus;
 			isEditing = false;

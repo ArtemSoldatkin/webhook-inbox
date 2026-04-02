@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getResponseErrorMessage } from '$lib/api';
 	import InputMap from '$lib/components/InputMap.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -99,16 +100,7 @@
 				...(isBodyAllowed && { body })
 			});
 			if (!response.ok) {
-				let errorMsg = `Failed to test webhook: ${response.statusText}`;
-				try {
-					const errorJson = await response.json();
-					if (errorJson && errorJson.error) {
-						errorMsg = errorJson.error;
-					}
-				} catch {
-					console.warn('Failed to parse error response as JSON', response);
-				}
-				throw new Error(errorMsg);
+				throw new Error(await getResponseErrorMessage(response, 'Failed to test webhook'));
 			}
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getResponseErrorMessage } from '$lib/api';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import Eyebrow from '$lib/components/ui/Eyebrow.svelte';
@@ -56,16 +57,7 @@
 		try {
 			const response = await fetch(`/api/sources/${filters.sourceID}/events/${filters.eventID}`);
 			if (!response.ok) {
-				let errorMsg = `Request failed: ${response.statusText}`;
-				try {
-					const errorJson = await response.json();
-					if (errorJson && errorJson.error) {
-						errorMsg = errorJson.error;
-					}
-				} catch {
-					console.warn('Failed to parse error response as JSON', response);
-				}
-				throw new Error(errorMsg);
+				throw new Error(await getResponseErrorMessage(response, 'Request failed'));
 			}
 			const rawData = await response.json();
 			data = parseEventDTO(rawData);
