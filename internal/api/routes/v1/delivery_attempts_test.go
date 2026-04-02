@@ -21,7 +21,8 @@ func TestListDeliveryAttempts_InvalidInputReturnsBadRequest(t *testing.T) {
 	listDeliveryAttempts(newTestService(t, newTestDB(), newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Invalid input parameters")
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Equal(t, "Invalid input parameters", response.Error)
 }
 
 func TestListDeliveryAttempts_ReturnsPaginatedResponse(t *testing.T) {

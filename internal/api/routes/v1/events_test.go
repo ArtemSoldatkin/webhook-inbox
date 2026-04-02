@@ -61,5 +61,6 @@ func TestGetEvent_NotFoundReturns404(t *testing.T) {
 	getEvent(newTestService(t, dbtx, newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Event not found")
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Equal(t, "Event not found", response.Error)
 }

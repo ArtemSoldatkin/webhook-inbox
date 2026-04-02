@@ -60,6 +60,14 @@ type paginatedDeliveryAttemptsResponse struct {
 	HasNext    bool                       `json:"has_next"`
 }
 
+type errorResponse struct {
+	Error string `json:"error"`
+}
+
+type messageResponse struct {
+	Message string `json:"message"`
+}
+
 type testDB struct {
 	queryHandlers    map[string]func(args ...any) (pgx.Rows, error)
 	queryRowHandlers map[string]func(args ...any) pgx.Row

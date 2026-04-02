@@ -77,7 +77,8 @@ func TestGetSourceByID_NotFoundReturns404(t *testing.T) {
 	getSourceByID(newTestService(t, dbtx, newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Source not found")
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Equal(t, "Source not found", response.Error)
 }
 
 func TestCreateSource_ValidationErrorReturns400(t *testing.T) {
@@ -94,7 +95,8 @@ func TestCreateSource_ValidationErrorReturns400(t *testing.T) {
 	createSource(newTestService(t, newTestDB(), newTestConfig())).ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Invalid input parameters")
+	response := decodeJSONResponse[errorResponse](t, recorder)
+	assert.Contains(t, response.Error, "Invalid input parameters")
 }
 
 func TestCreateSource_ReturnsCreatedSource(t *testing.T) {
