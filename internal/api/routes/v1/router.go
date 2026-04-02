@@ -44,6 +44,7 @@ func V1Router(svc *service.Service) chi.Router {
 	r.Use(middleware.Throttle(svc.Config.APIThrottleConcurrentLimit))
 	r.Use(middleware.RequestSize(svc.Config.APIRequestSizeLimitBytes))
 
+	r.Mount("/system", systemRouter())
 	r.Mount("/ingest", ingestRouter(svc))
 	r.Mount("/sources", sourcesRouter(svc))
 	return r
