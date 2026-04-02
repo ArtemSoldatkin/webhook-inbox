@@ -24,10 +24,18 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func TestV1Router_MountsIngestAndSourcesRoutes(t *testing.T) {
+func TestV1Router_MountsSystemIngestAndSourcesRoutes(t *testing.T) {
 	t.Parallel()
 
 	router := V1Router(newTestService(t, newTestDB(), newTestConfig()))
+
+	systemReq := httptest.NewRequest("GET", "/system/health", nil)
+	systemRes := httptest.NewRecorder()
+	router.ServeHTTP(systemRes, systemReq)
+
+	assert.Equal(t, http.StatusOK, systemRes.Code)
+	systemResponse := decodeJSONResponse[map[string]string](t, systemRes)
+	assert.Equal(t, "ok", systemResponse["status"])
 
 	ingestReq := httptest.NewRequest("POST", "/ingest/not-a-uuid", nil)
 	ingestRes := httptest.NewRecorder()

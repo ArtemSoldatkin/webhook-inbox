@@ -16,7 +16,12 @@ WORKDIR /app
 
 COPY --from=builder /app/webhook-inbox .
 
-RUN groupadd -r webhookinbox && useradd -r -g webhookinbox webhookinbox && chown -R webhookinbox:webhookinbox /app
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends curl ca-certificates \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& groupadd -r webhookinbox \
+	&& useradd -r -g webhookinbox webhookinbox \
+	&& chown -R webhookinbox:webhookinbox /app
 USER webhookinbox
 
 EXPOSE 8080
