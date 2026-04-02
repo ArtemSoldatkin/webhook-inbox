@@ -99,7 +99,16 @@
 				...(isBodyAllowed && { body })
 			});
 			if (!response.ok) {
-				throw new Error(`Failed to test webhook: ${response.statusText}`);
+				let errorMsg = `Failed to test webhook: ${response.statusText}`;
+				try {
+					const errorJson = await response.json();
+					if (errorJson && errorJson.error) {
+						errorMsg = errorJson.error;
+					}
+				} catch {
+					console.warn('Failed to parse error response as JSON', response);
+				}
+				throw new Error(errorMsg);
 			}
 		} catch (err: unknown) {
 			error = err instanceof Error ? err.message : String(err);

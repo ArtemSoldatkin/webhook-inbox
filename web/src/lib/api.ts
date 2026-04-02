@@ -25,7 +25,16 @@ export async function fetchPaginatedData<T>(
 
 	const response = await fetch(`${url}?${params.toString()}`);
 	if (!response.ok) {
-		throw new Error(`Failed to fetch data: ${response.statusText}`);
+		let errorMsg = `Failed to fetch data: ${response.statusText}`;
+		try {
+			const errorJson = await response.json();
+			if (errorJson && errorJson.error) {
+				errorMsg = errorJson.error;
+			}
+		} catch {
+			console.warn('Failed to parse error response as JSON', response);
+		}
+		throw new Error(errorMsg);
 	}
 
 	const result = await response.json();

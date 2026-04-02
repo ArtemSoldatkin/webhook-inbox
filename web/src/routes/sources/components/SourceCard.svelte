@@ -51,15 +51,23 @@
 				})
 			});
 			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.message || 'Failed to update source status');
+				let errorMsg = `Failed to update source status: ${response.statusText}`;
+				try {
+					const errorJson = await response.json();
+					if (errorJson && errorJson.error) {
+						errorMsg = errorJson.error;
+					}
+				} catch {
+					console.warn('Failed to parse error response as JSON', response);
+				}
+				throw new Error(errorMsg);
 			}
 			source.status = newStatus;
 			isEditing = false;
 			onStatusUpdate?.();
-		} catch (err) {
+		} catch (err: unknown) {
 			console.error('Failed to update source status:', err);
-			error = 'Failed to update source status. Please try again.';
+			error = err instanceof Error ? err.message : String(err);
 			newStatus = source.status;
 		} finally {
 			loading = false;

@@ -60,7 +60,16 @@
 				body: JSON.stringify(data)
 			});
 			if (!response.ok) {
-				throw new Error(`Failed to create source: ${response.statusText}`);
+				let errorMsg = `Failed to create source: ${response.statusText}`;
+				try {
+					const errorJson = await response.json();
+					if (errorJson && errorJson.error) {
+						errorMsg = errorJson.error;
+					}
+				} catch {
+					console.warn('Failed to parse error response as JSON', response);
+				}
+				throw new Error(errorMsg);
 			}
 			const newSource = await response.json();
 			data = newData(); // Reset form after successful creation

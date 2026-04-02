@@ -50,7 +50,16 @@
 		try {
 			const response = await fetch(`/api/sources/${filters.sourceID}`);
 			if (!response.ok) {
-				throw new Error(`Failed to fetch source: ${response.statusText}`);
+				let errorMsg = `Failed to fetch source: ${response.statusText}`;
+				try {
+					const errorJson = await response.json();
+					if (errorJson && errorJson.error) {
+						errorMsg = errorJson.error;
+					}
+				} catch {
+					console.warn('Failed to parse error response as JSON', response);
+				}
+				throw new Error(errorMsg);
 			}
 			const rawData = await response.json();
 			data = parseSourceDTO(rawData);

@@ -56,7 +56,16 @@
 		try {
 			const response = await fetch(`/api/sources/${filters.sourceID}/events/${filters.eventID}`);
 			if (!response.ok) {
-				throw new Error(`Failed to fetch event details: ${response.statusText}`);
+				let errorMsg = `Request failed: ${response.statusText}`;
+				try {
+					const errorJson = await response.json();
+					if (errorJson && errorJson.error) {
+						errorMsg = errorJson.error;
+					}
+				} catch {
+					console.warn('Failed to parse error response as JSON', response);
+				}
+				throw new Error(errorMsg);
 			}
 			const rawData = await response.json();
 			data = parseEventDTO(rawData);
