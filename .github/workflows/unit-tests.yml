@@ -2,7 +2,14 @@ name: Unit Tests
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
   backend:
@@ -32,12 +39,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
 
@@ -45,4 +52,4 @@ jobs:
         run: npm ci
 
       - name: Run web tests
-        run: npm test -- --run
+        run: npm test
