@@ -88,7 +88,7 @@ func TestCreateSource_ValidationErrorReturns400(t *testing.T) {
 	req := httptest.NewRequest(
 		"POST",
 		"/sources",
-		bytes.NewBufferString(`{"EgressUrl":"https://example.com/webhook","Description":"`+string(bytes.Repeat([]byte("a"), 501))+`"}`),
+		bytes.NewBufferString(`{"egress_url":"https://example.com/webhook","description":"`+string(bytes.Repeat([]byte("a"), 501))+`"}`),
 	)
 	req.Header.Set("Content-Type", "application/json")
 	recorder := httptest.NewRecorder()
@@ -123,7 +123,7 @@ func TestCreateSource_ReturnsCreatedSource(t *testing.T) {
 	req := httptest.NewRequest(
 		"POST",
 		"/sources",
-		bytes.NewBufferString(`{"EgressUrl":"https://example.com/webhook","StaticHeaders":{"Authorization":"Bearer token"},"Description":"billing events"}`),
+		bytes.NewBufferString(`{"egress_url":"https://example.com/webhook","static_headers":{"Authorization":"Bearer token"},"description":"billing events"}`),
 	)
 	req.Header.Set("Content-Type", "application/json")
 	recorder := httptest.NewRecorder()
