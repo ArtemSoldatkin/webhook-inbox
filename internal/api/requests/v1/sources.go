@@ -31,9 +31,9 @@ type GetSourceByIDInput struct {
 
 // CreateSourceData defines the expected input parameters for creating a new source.
 type CreateSourceInput struct {
-	EgressUrl     string            `json:"EgressUrl"`
-	StaticHeaders map[string]string `json:"StaticHeaders,omitempty"`
-	Description   string            `json:"Description,omitempty"`
+	EgressUrl     string            `json:"egress_url"`
+	StaticHeaders map[string]string `json:"static_headers,omitempty"`
+	Description   string            `json:"description,omitempty"`
 }
 
 // ValidateCreateSourceInput validates the input parameters for creating a new source.
