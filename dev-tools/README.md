@@ -26,7 +26,7 @@ The server is exposed at `http://localhost:3002`.
 
 ```bash
 cd dev-tools
-python server.py
+python3 server.py
 ```
 
 ## What It Does

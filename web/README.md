@@ -32,6 +32,10 @@ By default the UI runs on `http://localhost:5173`.
 From the repo root:
 
 ```bash
+cp .env.example .env
+```
+
+```bash
 docker compose --profile dev up --build web
 ```
 
@@ -40,7 +44,7 @@ docker compose --profile dev up --build web
 Run tests:
 
 ```bash
-npm test -- --run
+npm test
 ```
 
 Run type checks:

@@ -33,13 +33,19 @@ webhook-inbox/
 
 ### Docker Compose
 
+Before starting, create a root `.env` file. The quickest option is:
+
+```bash
+cp .env.example .env
+```
+
 ```bash
 docker compose --profile dev up --build
 ```
 
 Services:
 
-- API: `http://localhost:3001`
+- API: `http://localhost:${API_PORT}` (default: `http://localhost:3000`)
 - Web: `http://localhost:5173`
 - Dev test server: `http://localhost:3002`
 - Postgres: `localhost:5432`
