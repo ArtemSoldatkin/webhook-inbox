@@ -1,42 +1,54 @@
-# sv
+# Web UI
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This is the SvelteKit frontend for Webhook Inbox. It provides pages for listing sources, viewing captured events, inspecting payloads, and checking delivery attempts.
 
-## Creating a project
+## Project Structure
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project
-npx sv create my-app
+```text
+web/
+├── src/
+│   ├── lib/                 # shared UI helpers, API utilities, components
+│   ├── routes/              # SvelteKit pages and route components
+│   └── test/                # frontend test setup and mocks
+├── static/                  # static assets
+├── package.json
+├── vite.config.ts
+└── svelte.config.js
 ```
 
-To recreate this project with the same configuration:
+## How To Run
 
-```sh
-# recreate this project
-npx sv create --template minimal --types ts --add prettier eslint --install npm web
-```
+### Local
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
+npm ci
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+By default the UI runs on `http://localhost:5173`.
 
-To create a production version of your app:
+### With Docker Compose
 
-```sh
-npm run build
+From the repo root:
+
+```bash
+cp .env.example .env
 ```
 
-You can preview the production build with `npm run preview`.
+```bash
+docker compose --profile dev up --build web
+```
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Useful Commands
+
+Run tests:
+
+```bash
+npm test
+```
+
+Run type checks:
+
+```bash
+npm run check
+```

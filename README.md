@@ -1,56 +1,82 @@
 # Webhook Inbox
 
-A minimal webhook inbox service built with Go and PostgreSQL.
+Webhook Inbox is a Go + PostgreSQL application for capturing incoming webhooks, storing events, and reviewing them through a small Svelte web UI.
 
-This project allows developers to create unique HTTP endpoints that capture and store incoming webhook requests. It’s useful for inspecting, debugging, or replaying events from third-party services like Stripe, GitHub, or Twilio.
+## What It Includes
 
-## ✨ Features
+- Go API under `/api/v1`
+- PostgreSQL storage
+- Svelte web UI for browsing sources, events, and delivery attempts
+- Docker Compose setup for local development
 
-- Create endpoints with unique ingest keys
-- Receive and store full webhook payloads + headers
-- Stable event ordering by timestamp + ID
-- Cursor-based pagination for event browsing
-- Raw JSON body and headers stored in Postgres (JSONB)
-- Fast, non-blocking ingestion (returns `202 Accepted`)
+## Project Structure
 
-## 🛠 Stack
-
-- **Go** (API)
-- **PostgreSQL** (event storage)
-- **Chi** (router)
-- **SQLC** (DB layer)
-- (Optional) Svelte + Vite for frontend
-
-## 📦 Project Structure
-
-```
+```text
 webhook-inbox/
-├── cmd/
-│   └── webhook-inbox/       # main.go (entrypoint)
-├── internal/                # all app logic, not exported
-│   ├── api/                 # HTTP handlers (versioned if needed)
-│   ├── config/              # app config
-│   ├── db/                  # SQLC or data access logic
-│   ├── ingest/              # validation + event persistence
-│   ├── models/              # types (Event, Endpoint, etc.)
-│   └── service/             # business logic of the app
-├── migrations/              # SQL files for schema
-├── web/                     # optional UI (React, HTMX, etc.)
-├── .dockerignore
-├── .gitignore
-├── docker-compose.yml
-├── Dockerfile
-├── go.mod
-├── go.sum
-├── LICENSE
-├── README.md
-└── sqlc.yaml
+├── cmd/webhook-inbox/       # application entrypoint
+├── internal/
+│   ├── api/                 # HTTP routes, DTO mapping, request parsing
+│   ├── config/              # environment-driven config
+│   ├── db/                  # generated database layer and SQL
+│   ├── delivery_engine/     # delivery and retry workers
+│   ├── service/             # business logic
+│   ├── struct_parser/       # request/query parsing helpers
+│   └── utils/               # shared helpers
+├── migrations/              # database migrations
+├── web/                     # Svelte frontend
+├── dev-tools/               # small local helper services
+├── docker-compose.yml       # local containers
+└── Dockerfile               # API image
 ```
 
-## 🚧 Status
+## How To Run
 
-This is a portfolio/study project. It's not production-ready, but demonstrates how to build a simple webhook recorder from scratch.
+### Docker Compose
 
-## 📄 License
+Before starting, create a root `.env` file. The quickest option is:
 
-[MIT](./LICENSE)
+```bash
+cp .env.example .env
+```
+
+```bash
+docker compose --profile dev up --build
+```
+
+Services:
+
+- API: `http://localhost:${API_PORT}` (default: `http://localhost:3000`)
+- Web: `http://localhost:5173`
+- Dev test server: `http://localhost:3002`
+- Postgres: `localhost:5432`
+
+### Run Without Docker
+
+Backend:
+
+```bash
+go run ./cmd/webhook-inbox
+```
+
+Frontend:
+
+```bash
+cd web
+npm ci
+npm run dev
+```
+
+## Tests
+
+Backend:
+
+```bash
+go test ./...
+```
+
+Frontend:
+
+```bash
+cd web
+npm test -- --run
+```
